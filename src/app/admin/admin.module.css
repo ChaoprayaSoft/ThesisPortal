@@ -1,0 +1,294 @@
+.layout {
+  display: flex;
+  min-height: calc(100vh - 61px);
+  background: #FDF9F1; /* Light cream background */
+  font-family: 'Inter', sans-serif;
+  color: #4A4238; /* Warm dark text */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Hide blobs for this minimalist beige theme */
+.blob1, .blob2 {
+  display: none;
+}
+
+.sidebar {
+  width: 260px;
+  background: #EBE4D1; /* Warm beige */
+  padding: 40px 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid #D6CEB8;
+  z-index: 1050;
+  position: fixed;
+  top: 61px; /* Below any top global nav if exists, or 0 */
+  bottom: 0;
+  left: 0;
+  transform: translateX(-100%);
+  transition: transform 0.3s ease;
+}
+
+.sidebarOpen {
+  transform: translateX(0);
+}
+
+.hamburgerBtn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #4A4238;
+  padding: 8px;
+  margin-right: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sidebarHeader {
+  padding: 0 30px 40px;
+}
+
+.sidebarHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0;
+  color: #4A4238;
+  letter-spacing: -0.5px;
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0 15px;
+}
+
+.navLink {
+  padding: 12px 20px;
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.95rem;
+  font-weight: 500;
+  border-radius: var(--radius-md);
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+}
+
+.navLink:hover {
+  color: var(--primary-color);
+  background: var(--primary-light);
+}
+
+.mainContent {
+  flex: 1;
+  overflow-y: auto;
+  z-index: 1;
+  position: relative;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.pageHeader {
+  margin-bottom: 40px;
+}
+
+.pageHeader h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #4A4238;
+  margin: 0;
+  letter-spacing: -1px;
+}
+
+.gradientText {
+  color: #4A4238; /* Removed gradient for this minimal theme */
+}
+
+.card {
+  background: #EBE4D1; /* Warm beige */
+  padding: 40px;
+  border: 1px solid #D6CEB8;
+  border-radius: 12px;
+  margin-bottom: 40px;
+}
+
+.card:hover {
+  /* Removed hover effect for flat minimal look */
+}
+
+.card h2 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--text-main);
+  margin-top: 0;
+  margin-bottom: 30px;
+  letter-spacing: -0.5px;
+}
+
+.card p {
+  color: var(--text-muted);
+  line-height: 1.6;
+  font-size: 0.95rem;
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.formGroup input, 
+.formGroup select, 
+.formGroup textarea {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 1rem;
+  color: var(--text-main);
+  background: var(--bg-card);
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.formGroup input:focus, 
+.formGroup select:focus, 
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+.btnPrimary {
+  background: #5A5043; /* Dark taupe/brown */
+  color: #ffffff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 10px;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: #4A4238;
+}
+
+.btnPrimary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btnPrimary:disabled {
+  background: #cbd5e1;
+  color: #ffffff;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Minimalist Table Styling */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  color: #7A7061; /* Darker beige for header text */
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  letter-spacing: 0.5px;
+  padding: 16px 20px;
+  text-align: left;
+  border-bottom: 2px solid #C6BFA5; /* Darker border for clarity */
+}
+
+.table td {
+  padding: 16px 20px;
+  color: #4A4238;
+  font-size: 0.95rem;
+  border-bottom: 1px solid #C6BFA5; /* Darker border for clarity */
+  transition: background 0.2s ease;
+}
+
+.table tr:hover td {
+  background: var(--bg-app);
+}
+
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(15, 23, 42, 0.6);
+  backdrop-filter: blur(4px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+}
+.modalContent { background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); width: 900px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
+.modalClose { float: right; cursor: pointer; font-size: 1.5rem; background: none; border: none; color: var(--text-muted); transition: color 0.2s ease; }
+.modalClose:hover { color: var(--danger-color); }
+
+.tooltipContainer {
+  position: relative;
+  display: inline-block;
+}
+.tooltipContent {
+  visibility: hidden;
+  width: max-content;
+  max-width: 300px;
+  background-color: #4A4238;
+  color: #fff;
+  text-align: left;
+  border-radius: 8px;
+  padding: 12px;
+  position: absolute;
+  z-index: 50;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  font-size: 0.85rem;
+  font-weight: normal;
+  pointer-events: none;
+}
+.tooltipContent::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: #4A4238 transparent transparent transparent;
+}
+.tooltipContainer:hover .tooltipContent {
+  visibility: visible;
+  opacity: 1;
+}
