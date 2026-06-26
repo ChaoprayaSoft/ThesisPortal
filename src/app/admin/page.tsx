@@ -184,8 +184,8 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <div className={styles.pageHeader} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h1><span className={styles.gradientText}>Admin Dashboard</span></h1>
+      <div className={styles.pageHeader} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "15px" }}>
+        <h1 style={{ margin: 0 }}><span className={styles.gradientText}>Admin Dashboard</span></h1>
         <button 
           onClick={handleExportCSV}
           className={styles.btnPrimary}
@@ -304,7 +304,7 @@ export default function AdminDashboard() {
           <div className={styles.card}>
             <h2 style={{ marginBottom: "20px" }}>Lecturer Workload Overview</h2>
             
-            <div style={{ display: "flex", gap: "15px", marginBottom: "15px" }}>
+            <div style={{ display: "flex", gap: "15px", marginBottom: "15px", flexWrap: "wrap" }}>
               <input 
                 type="text" 
                 placeholder="Search by name..." 
@@ -322,8 +322,8 @@ export default function AdminDashboard() {
               </select>
             </div>
 
-            <div style={{ overflow: "visible" }}>
-              <table className={styles.table} style={{ width: "100%", textAlign: "left" }}>
+            <div className={styles.tableResponsive}>
+              <table className={styles.table} style={{ width: "100%", textAlign: "left", minWidth: "900px" }}>
                 <thead>
                   <tr>
                     <th style={{ padding: "12px" }}>Lecturer Name</th>
