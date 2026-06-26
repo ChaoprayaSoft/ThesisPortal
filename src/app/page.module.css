@@ -4,7 +4,7 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background: #FDF9F1; /* Light cream */
+  background: var(--bg-app);
   padding: 20px;
   position: relative;
   overflow: hidden;
@@ -25,14 +25,14 @@
 
 .badge {
   display: inline-block;
-  background: #EBE4D1;
-  color: #5A5043;
+  background: var(--primary-light);
+  color: var(--primary-color);
   padding: 8px 16px;
   border-radius: 999px;
   font-size: 0.9rem;
   font-weight: 600;
   margin-bottom: 24px;
-  border: 1px solid #D6CEB8;
+  border: 1px solid var(--primary-color);
 }
 
 .title {
@@ -69,7 +69,7 @@
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  background: #5A5043;
+  background: var(--primary-color);
   color: white;
   padding: 16px 36px;
   border-radius: 6px;
@@ -80,7 +80,7 @@
 }
 
 .primaryButton:hover {
-  background: #4A4238;
+  background: var(--primary-hover);
 }
 
 .arrow {
@@ -99,10 +99,10 @@
 }
 
 .statBox {
-  background: #EBE4D1;
+  background: var(--bg-card);
   padding: 24px 40px;
   border-radius: 12px;
-  border: 1px solid #D6CEB8;
+  border: 1px solid var(--border-color);
 }
 
 .statBox:hover {

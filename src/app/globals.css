@@ -1,22 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Modern SaaS Color Palette */
-  --bg-app: #f8fafc; /* Very soft grayish-blue background */
+  /* Custom Theme Palette */
+  --bg-app: #fff5d7; /* Ragin Beige */
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
   
-  --primary-color: #4f46e5; /* Vibrant Indigo */
-  --primary-hover: #4338ca;
-  --primary-light: #e0e7ff; /* Very soft indigo for active states */
+  --primary-color: #ff5e6c; /* Coral Pink */
+  --primary-hover: #ffaaab; /* Pink Leaf */
+  --primary-light: #fff0f0; 
   
-  --text-main: #0f172a; /* Deep slate */
-  --text-muted: #64748b; /* Soft slate */
+  --text-main: #4A4238; 
+  --text-muted: #64748b; 
   
-  --border-color: #e2e8f0;
+  --border-color: #ffaaab; /* Pink Leaf for borders */
   
   --danger-color: #ef4444;
   --danger-hover: #dc2626;
+  
+  --accent-yellow: #feb300; /* Sleuthe Yellow */
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
