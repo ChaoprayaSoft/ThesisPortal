@@ -162,11 +162,50 @@ export default function LecturersPage() {
               style={{ padding: "8px 12px", borderRadius: "6px", border: "1px solid #D6CEB8", background: "#fff" }}
             >
               <option value="">All Fields of Study</option>
-              {Array.from(new Set(lecturers.map(l => l.fieldOfStudy).filter(Boolean))).map(f => (
+              {Array.from(new Set(lecturers.map(l => l.fieldOfStudy || "Not Specified"))).map(f => (
                 <option key={f as string} value={f as string}>{f as string}</option>
               ))}
             </select>
           </div>
+        </div>
+
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "20px" }}>
+          {Object.entries(
+            lecturers.reduce((acc, l) => {
+              const field = l.fieldOfStudy || "Not Specified";
+              acc[field] = (acc[field] || 0) + 1;
+              return acc;
+            }, {} as Record<string, number>)
+          ).sort((a, b) => b[1] - a[1]).map(([field, count]) => (
+            <div 
+              key={field} 
+              style={{ 
+                background: filterFieldOfStudy === field ? "var(--primary-color)" : "#f1f5f9", 
+                color: filterFieldOfStudy === field ? "white" : "#475569", 
+                padding: "6px 12px", 
+                borderRadius: "999px", 
+                fontSize: "0.85rem", 
+                fontWeight: "bold",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
+                cursor: "pointer",
+                border: filterFieldOfStudy === field ? "1px solid var(--primary-color)" : "1px solid #cbd5e1",
+                transition: "all 0.2s"
+              }}
+              onClick={() => setFilterFieldOfStudy(filterFieldOfStudy === field ? "" : field)}
+            >
+              {field}
+              <span style={{ 
+                background: filterFieldOfStudy === field ? "rgba(255,255,255,0.2)" : "#e2e8f0", 
+                padding: "2px 8px", 
+                borderRadius: "999px",
+                fontSize: "0.75rem"
+              }}>
+                {count as number}
+              </span>
+            </div>
+          ))}
         </div>
 
         <div className={styles.tableResponsive}>
@@ -185,7 +224,9 @@ export default function LecturersPage() {
               .filter(l => {
                 const matchesSearch = (l.name_th.toLowerCase().includes(searchQuery.toLowerCase()) || 
                                       (l.name_en && l.name_en.toLowerCase().includes(searchQuery.toLowerCase())));
-                const matchesField = filterFieldOfStudy ? l.fieldOfStudy === filterFieldOfStudy : true;
+                const matchesField = filterFieldOfStudy 
+                  ? (filterFieldOfStudy === "Not Specified" ? (!l.fieldOfStudy || l.fieldOfStudy.trim() === "") : l.fieldOfStudy === filterFieldOfStudy)
+                  : true;
                 return matchesSearch && matchesField;
               })
               .map(l => (
