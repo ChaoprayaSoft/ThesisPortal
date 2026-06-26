@@ -282,7 +282,7 @@ export default function LecturersPage() {
       {/* Confirmation Modal */}
       {confirmAction && (
         <div className={styles.modalOverlay} style={{ zIndex: 1100 }}>
-          <div className={styles.modalContent} style={{ width: "400px", textAlign: "center" }}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "400px", textAlign: "center" }}>
             <h3 style={{ marginTop: 0, marginBottom: "20px" }}>Confirm Action</h3>
             <p style={{ color: "#666", marginBottom: "30px" }}>{confirmAction.message}</p>
             <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>

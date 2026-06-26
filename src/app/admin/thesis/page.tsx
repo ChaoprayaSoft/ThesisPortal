@@ -515,7 +515,7 @@ export default function AdminThesisPage() {
       {/* Confirmation Modal */}
       {confirmAction && (
         <div className={styles.modalOverlay} style={{ zIndex: 1100 }}>
-          <div className={styles.modalContent} style={{ width: "400px", textAlign: "center" }}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "400px", textAlign: "center" }}>
             <h3 style={{ marginTop: 0, marginBottom: "20px" }}>Confirm Action</h3>
             <p style={{ color: "#666", marginBottom: "30px" }}>{confirmAction.message}</p>
             <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
@@ -529,7 +529,7 @@ export default function AdminThesisPage() {
       {/* Info Modal */}
       {infoMessage && (
         <div className={styles.modalOverlay} style={{ zIndex: 1200 }}>
-          <div className={styles.modalContent} style={{ width: "400px", textAlign: "center" }}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "400px", textAlign: "center" }}>
             <h3 style={{ marginTop: 0, marginBottom: "20px", color: "#0f172a" }}>Notification</h3>
             <p style={{ color: "#64748b", marginBottom: "30px" }}>{infoMessage}</p>
             <div style={{ display: "flex", justifyContent: "center" }}>
@@ -542,7 +542,7 @@ export default function AdminThesisPage() {
       {/* View Detail Modal */}
       {viewThesis && (
         <div className={styles.modalOverlay} style={{ zIndex: 1050 }}>
-          <div className={styles.modalContent} style={{ width: "600px", maxHeight: "80vh", overflowY: "auto" }}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "600px", maxHeight: "80vh", overflowY: "auto" }}>
             <h2 style={{ marginTop: 0, borderBottom: "1px solid #eee", paddingBottom: "10px" }}>Thesis Details</h2>
             <div style={{ marginBottom: "15px" }}><strong>Title:</strong> {viewThesis.title}</div>
             <div style={{ marginBottom: "15px" }}><strong>Group:</strong> {groups.find(g => g.id === viewThesis.groupId)?.name}</div>
