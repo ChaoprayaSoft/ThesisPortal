@@ -182,25 +182,28 @@ export default function StudentDashboard() {
       if (thesis.status === "Revise" || thesis.status === "Preparing") {
         await updateThesisStatus(thesis.id, "Pending Advisor", 0);
         if (thesis.lecturerUids?.advisor) {
+          const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
           await sendNotificationEmail({
             to: thesis.lecturerUids.advisor,
             subject: `Thesis Materials Submitted: ${thesis.title}`,
-            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your Advisor review.</p><p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your Advisor review.</p>${linksHtml}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
           });
         }
       } else if (thesis.status === "Pending Committee" && thesis.lecturerUids?.committees) {
+        const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
         for (const comm of thesis.lecturerUids.committees) {
           await sendNotificationEmail({
             to: comm,
             subject: `Thesis Materials Updated: ${thesis.title}`,
-            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p><p>It is currently pending your Committee review. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your Committee review. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
           });
         }
       } else if (thesis.status === "Pending Chairperson" && thesis.lecturerUids?.chairperson) {
+        const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
         await sendNotificationEmail({
           to: thesis.lecturerUids.chairperson,
           subject: `Thesis Materials Updated: ${thesis.title}`,
-          html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p><p>It is currently pending your Chairperson review. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+          html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your Chairperson review. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
         });
       }
 

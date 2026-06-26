@@ -153,11 +153,12 @@ export default function LecturerDashboard() {
         });
 
         if (activeWorkspace.thesis.studentUids?.length > 0) {
+          const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
           for (const sEmail of activeWorkspace.thesis.studentUids) {
             await sendNotificationEmail({
               to: sEmail,
               subject: `Thesis Revision Required`,
-              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> requires revision. Your ${activeWorkspace.role} (${user.email}) has requested changes.</p>${reviewComments ? `<p><b>Comments:</b> ${reviewComments}</p>` : ""}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a> to propose edits.</p>`
+              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> requires revision. Your ${activeWorkspace.role} (${user.email}) has requested changes.</p>${reviewComments ? `<p><b>Comments:</b> ${reviewComments}</p>` : ""}${linksHtml}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a> to propose edits.</p>`
             });
           }
         }
