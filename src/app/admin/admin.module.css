@@ -1,9 +1,9 @@
 .layout {
   display: flex;
   min-height: calc(100vh - 61px);
-  background: #FDF9F1; /* Light cream background */
+  background: var(--bg-app);
   font-family: 'Inter', sans-serif;
-  color: #4A4238; /* Warm dark text */
+  color: var(--text-main);
   position: relative;
   overflow: hidden;
 }
@@ -15,11 +15,11 @@
 
 .sidebar {
   width: 260px;
-  background: #EBE4D1; /* Warm beige */
+  background: var(--bg-sidebar);
   padding: 40px 0;
   display: flex;
   flex-direction: column;
-  border-right: 1px solid #D6CEB8;
+  border-right: 1px solid var(--border-color);
   z-index: 1050;
   position: fixed;
   top: 61px; /* Below any top global nav if exists, or 0 */
@@ -106,7 +106,7 @@
 .pageHeader h1 {
   font-size: 2.5rem;
   font-weight: 800;
-  color: #4A4238;
+  color: var(--text-main);
   margin: 0;
   letter-spacing: -1px;
 }
@@ -116,9 +116,9 @@
 }
 
 .card {
-  background: #EBE4D1; /* Warm beige */
+  background: var(--bg-card);
   padding: 40px;
-  border: 1px solid #D6CEB8;
+  border: 1px solid var(--border-color);
   border-radius: 12px;
   margin-bottom: 40px;
 }
@@ -179,7 +179,7 @@
 }
 
 .btnPrimary {
-  background: #5A5043; /* Dark taupe/brown */
+  background: var(--primary-color);
   color: #ffffff;
   border: none;
   padding: 12px 24px;
@@ -192,7 +192,7 @@
 }
 
 .btnPrimary:hover:not(:disabled) {
-  background: #4A4238;
+  background: var(--primary-hover);
 }
 
 .btnPrimary:active:not(:disabled) {
@@ -214,21 +214,21 @@
 }
 
 .table th {
-  color: #7A7061; /* Darker beige for header text */
+  color: var(--text-muted);
   font-weight: 600;
   text-transform: uppercase;
   font-size: 0.8rem;
   letter-spacing: 0.5px;
   padding: 16px 20px;
   text-align: left;
-  border-bottom: 2px solid #C6BFA5; /* Darker border for clarity */
+  border-bottom: 2px solid var(--border-color);
 }
 
 .table td {
   padding: 16px 20px;
-  color: #4A4238;
+  color: var(--text-main);
   font-size: 0.95rem;
-  border-bottom: 1px solid #C6BFA5; /* Darker border for clarity */
+  border-bottom: 1px solid var(--border-color);
   transition: background 0.2s ease;
 }
 
