@@ -292,7 +292,6 @@ export default function GroupsPage() {
               </tr>
             ))}
           </tbody>
-            </tbody>
           </table>
         </div>
       </div>
