@@ -23,6 +23,7 @@ export interface ThesisData {
   status: ThesisStatus;
   currentStage: number; // 0=Advisor, 1=Committee, 2=Chairperson, 3=Approved
   createdAt: number;
+  statusUpdatedAt?: number;
   deadlines?: {
     advisor?: number | null;
     committee?: number | null;
@@ -47,6 +48,7 @@ export async function createThesis(thesis: ThesisData) {
   const thesisRef = doc(collection(db, "theses"));
   thesis.id = thesisRef.id;
   thesis.createdAt = Date.now();
+  thesis.statusUpdatedAt = Date.now();
   thesis.committeeApprovals = [];
   await setDoc(thesisRef, thesis);
   return thesis;
@@ -131,7 +133,7 @@ export async function updateThesis(id: string, data: Partial<ThesisData>) {
 }
 
 export async function updateThesisStatus(thesisId: string, status: ThesisStatus, stage: number) {
-  await updateDoc(doc(db, "theses", thesisId), { status, currentStage: stage });
+  await updateDoc(doc(db, "theses", thesisId), { status, currentStage: stage, statusUpdatedAt: Date.now() });
 }
 
 export async function approveThesis(thesisId: string, userEmail: string, role: "Advisor" | "Committee" | "Chairperson", currentThesis: ThesisData) {
@@ -162,7 +164,8 @@ export async function approveThesis(thesisId: string, userEmail: string, role: "
   await updateDoc(doc(db, "theses", thesisId), {
     status: newStatus,
     currentStage: newStage,
-    committeeApprovals: newCommitteeApprovals
+    committeeApprovals: newCommitteeApprovals,
+    statusUpdatedAt: Date.now()
   });
 }
 

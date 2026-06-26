@@ -107,7 +107,8 @@ export default function StudentDashboard() {
     try {
       await updateThesis(thesis.id, {
         pendingAbstract: editAbstract,
-        pendingScope: editScope
+        pendingScope: editScope,
+        statusUpdatedAt: Date.now()
       });
       await logThesisActivity({
         thesisId: thesis.id,
@@ -206,6 +207,8 @@ export default function StudentDashboard() {
           html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your Chairperson review. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
         });
       }
+
+      await updateThesis(thesis.id, { statusUpdatedAt: Date.now() });
 
       setSubmissionLinks([{ type: "Manuscript", url: "" }]);
       await loadData();
