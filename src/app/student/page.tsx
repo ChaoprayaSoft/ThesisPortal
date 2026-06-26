@@ -406,7 +406,7 @@ export default function StudentDashboard() {
             
             <div style={{ display: "flex", flexDirection: "column", gap: "15px", marginBottom: "20px" }}>
               {submissionLinks.map((link, idx) => (
-                <div key={idx} style={{ display: "flex", gap: "10px", alignItems: "center", background: "#FDF9F1", padding: "10px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
+                <div key={idx} style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center", background: "#FDF9F1", padding: "10px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
                   <select 
                     value={link.type} 
                     onChange={e => handleLinkChange(idx, "type", e.target.value)}

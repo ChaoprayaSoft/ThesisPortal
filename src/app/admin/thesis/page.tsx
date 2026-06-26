@@ -450,8 +450,9 @@ export default function AdminThesisPage() {
         {filteredTheses.length === 0 ? (
           <p style={{ color: "#666", textAlign: "center", padding: "20px" }}>No theses found matching your criteria.</p>
         ) : (
-          <table className={styles.table} style={{ tableLayout: "fixed", width: "100%" }}>
-            <thead>
+          <div className={styles.tableResponsive}>
+            <table className={styles.table} style={{ tableLayout: "fixed", width: "100%", minWidth: "900px" }}>
+              <thead>
               <tr>
                 <th style={{ width: "25%" }}>Title</th>
                 <th style={{ width: "15%" }}>Group</th>
@@ -505,8 +506,9 @@ export default function AdminThesisPage() {
                   </tr>
                 );
               })}
-            </tbody>
-          </table>
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 

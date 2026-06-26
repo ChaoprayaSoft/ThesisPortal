@@ -53,31 +53,31 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       <main className={styles.mainContent} style={{ padding: 0, width: "100%" }}>
-        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", background: "var(--bg-app)", borderBottom: "1px solid var(--border-color)" }}>
+        <header className={styles.topHeader}>
           <div style={{ display: "flex", alignItems: "center" }}>
             <button className={styles.hamburgerBtn} onClick={() => setIsSidebarOpen(true)}>
               &#9776;
             </button>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
-            <div style={{ textAlign: "right" }}>
+            <div className={styles.userInfo}>
               <div style={{ fontWeight: "bold", color: "var(--text-main)", fontSize: "0.95rem" }}>{dbUser?.name_th || user?.email}</div>
               <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Administrator</div>
             </div>
-            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "var(--primary-color)", color: "white", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2rem" }}>
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "var(--primary-color)", color: "white", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2rem", flexShrink: 0 }}>
               {(dbUser?.name_th || user?.email || "A")[0].toUpperCase()}
             </div>
             <button 
               onClick={() => {
                 import("@/lib/firebase").then(({ auth }) => auth.signOut());
               }}
-              style={{ background: "none", border: "1px solid var(--primary-color)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem", marginLeft: "15px", fontWeight: "bold" }}
+              className={styles.logoutBtn}
             >
               Logout
             </button>
           </div>
         </header>
-        <div style={{ padding: "40px" }}>
+        <div className={styles.pageContainer}>
           {children}
         </div>
       </main>

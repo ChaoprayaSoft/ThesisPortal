@@ -169,8 +169,9 @@ export default function LecturersPage() {
           </div>
         </div>
 
-        <table className={styles.table} style={{ tableLayout: "fixed", width: "100%" }}>
-          <thead>
+        <div className={styles.tableResponsive}>
+          <table className={styles.table} style={{ tableLayout: "fixed", width: "100%", minWidth: "900px" }}>
+            <thead>
             <tr>
               <th style={{ width: "20%" }}>Name (TH)</th>
               <th style={{ width: "20%" }}>Name (EN)</th>
@@ -232,8 +233,9 @@ export default function LecturersPage() {
                 )}
               </tr>
             ))}
-          </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Confirmation Modal */}

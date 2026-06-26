@@ -272,8 +272,9 @@ export default function GroupsPage() {
           </select>
         </div>
         
-        <table className={styles.table}>
-          <thead>
+        <div className={styles.tableResponsive}>
+          <table className={styles.table} style={{ width: "100%", minWidth: "700px" }}>
+            <thead>
             <tr>
               <th>Group Name</th>
               <th>Field of Study</th>
@@ -291,7 +292,9 @@ export default function GroupsPage() {
               </tr>
             ))}
           </tbody>
-        </table>
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Modal Overlay */}
@@ -415,7 +418,7 @@ export default function GroupsPage() {
               </div>
             )}
             
-            <div style={{ overflowX: "auto", width: "100%" }}>
+            <div className={styles.tableResponsive}>
               <table className={styles.table} style={{ tableLayout: "fixed", width: "100%", minWidth: "900px" }}>
                 <thead>
                   <tr>

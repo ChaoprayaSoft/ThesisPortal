@@ -250,8 +250,8 @@ export default function LecturerDashboard() {
         {theses.filter(t => getActionableRoles(t, user?.email || "").length > 0).length === 0 ? (
           <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>No theses are currently waiting for your approval.</p>
         ) : (
-          <div className={styles.tableContainer}>
-            <table className={styles.table} style={{ marginTop: "20px" }}>
+          <div className={styles.tableResponsive}>
+            <table className={styles.table} style={{ marginTop: "20px", minWidth: "800px" }}>
             <thead>
               <tr>
                 <th style={{ width: "35%" }}>Title</th>
@@ -303,8 +303,8 @@ export default function LecturerDashboard() {
         {theses.length === 0 ? (
           <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>You have no assigned theses.</p>
         ) : (
-          <div className={styles.tableContainer}>
-            <table className={styles.table} style={{ marginTop: "20px" }}>
+          <div className={styles.tableResponsive}>
+            <table className={styles.table} style={{ marginTop: "20px", minWidth: "900px" }}>
             <thead>
               <tr>
                 <th style={{ width: "35%" }}>Title</th>
