@@ -25,20 +25,20 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   return (
     <div className={styles.layout}>
       <main className={styles.mainContent} style={{ padding: 0 }}>
-        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", background: "#FDF9F1", borderBottom: "1px solid #D6CEB8" }}>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", background: "var(--bg-app)", borderBottom: "1px solid var(--border-color)" }}>
           <div>
-            <h2 style={{ margin: 0, color: "#4A4238" }}>Student Portal</h2>
+            <h2 style={{ margin: 0, color: "var(--text-main)" }}>Student Portal</h2>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontWeight: "bold", color: "#4A4238", fontSize: "0.95rem" }}>{dbUser?.name_th || user?.email}</div>
-              <div style={{ fontSize: "0.8rem", color: "#7A7061" }}>Student</div>
+              <div style={{ fontWeight: "bold", color: "var(--text-main)", fontSize: "0.95rem" }}>{dbUser?.name_th || user?.email}</div>
+              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Student</div>
             </div>
-            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#5A5043", color: "white", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2rem" }}>
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "var(--primary-color)", color: "white", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2rem" }}>
               {(dbUser?.name_th || user?.email || "S")[0].toUpperCase()}
             </div>
             {role === "Admin" && (
-              <Link href="/admin" style={{ background: "transparent", color: "#5A5043", border: "1px solid #5A5043", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", fontWeight: "bold", textDecoration: "none", marginLeft: "15px" }}>
+              <Link href="/admin" style={{ background: "transparent", color: "var(--primary-color)", border: "1px solid var(--primary-color)", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", fontWeight: "bold", textDecoration: "none", marginLeft: "15px" }}>
                 Admin Portal ↗
               </Link>
             )}
@@ -46,7 +46,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
               onClick={() => {
                 import("@/lib/firebase").then(({ auth }) => auth.signOut());
               }}
-              style={{ background: "none", border: "1px solid #5A5043", color: "#5A5043", padding: "6px 12px", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem", marginLeft: "15px", fontWeight: "bold" }}
+              style={{ background: "none", border: "1px solid var(--primary-color)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem", marginLeft: "15px", fontWeight: "bold" }}
             >
               Logout
             </button>

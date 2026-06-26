@@ -39,8 +39,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/lecturers" className={styles.navLink}>Lecturers</Link>
           <Link href="/admin/groups" className={styles.navLink}>Student Groups</Link>
           <Link href="/admin/thesis" className={styles.navLink}>Theses</Link>
-          <div style={{ margin: "20px 0", borderBottom: "1px solid #D6CEB8" }}></div>
-          <Link href="/lecturer" className={styles.navLink} style={{ color: "#7A7061" }}>Lecturer Portal ↗</Link>
+          <div style={{ margin: "20px 0", borderBottom: "1px solid var(--border-color)" }}></div>
+          <Link href="/lecturer" className={styles.navLink} style={{ color: "var(--text-muted)" }}>Lecturer Portal ↗</Link>
         </nav>
       </aside>
       
@@ -53,7 +53,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       )}
 
       <main className={styles.mainContent} style={{ padding: 0, width: "100%" }}>
-        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", background: "#FDF9F1", borderBottom: "1px solid #D6CEB8" }}>
+        <header style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "15px 40px", background: "var(--bg-app)", borderBottom: "1px solid var(--border-color)" }}>
           <div style={{ display: "flex", alignItems: "center" }}>
             <button className={styles.hamburgerBtn} onClick={() => setIsSidebarOpen(true)}>
               &#9776;
@@ -61,17 +61,17 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <div style={{ textAlign: "right" }}>
-              <div style={{ fontWeight: "bold", color: "#4A4238", fontSize: "0.95rem" }}>{dbUser?.name_th || user?.email}</div>
-              <div style={{ fontSize: "0.8rem", color: "#7A7061" }}>Administrator</div>
+              <div style={{ fontWeight: "bold", color: "var(--text-main)", fontSize: "0.95rem" }}>{dbUser?.name_th || user?.email}</div>
+              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Administrator</div>
             </div>
-            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "#5A5043", color: "white", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2rem" }}>
+            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "var(--primary-color)", color: "white", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2rem" }}>
               {(dbUser?.name_th || user?.email || "A")[0].toUpperCase()}
             </div>
             <button 
               onClick={() => {
                 import("@/lib/firebase").then(({ auth }) => auth.signOut());
               }}
-              style={{ background: "none", border: "1px solid #5A5043", color: "#5A5043", padding: "6px 12px", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem", marginLeft: "15px", fontWeight: "bold" }}
+              style={{ background: "none", border: "1px solid var(--primary-color)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "4px", cursor: "pointer", fontSize: "0.85rem", marginLeft: "15px", fontWeight: "bold" }}
             >
               Logout
             </button>
