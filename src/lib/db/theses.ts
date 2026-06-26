@@ -24,9 +24,9 @@ export interface ThesisData {
   currentStage: number; // 0=Advisor, 1=Committee, 2=Chairperson, 3=Approved
   createdAt: number;
   deadlines?: {
-    advisor?: number;
-    committee?: number;
-    chairperson?: number;
+    advisor?: number | null;
+    committee?: number | null;
+    chairperson?: number | null;
   };
 }
 

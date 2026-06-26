@@ -126,9 +126,9 @@ export default function AdminThesisPage() {
               chairperson
             },
             deadlines: {
-              advisor: deadlineAdvisor ? new Date(deadlineAdvisor).getTime() : undefined,
-              committee: deadlineCommittee ? new Date(deadlineCommittee).getTime() : undefined,
-              chairperson: deadlineChairperson ? new Date(deadlineChairperson).getTime() : undefined
+              advisor: deadlineAdvisor ? new Date(deadlineAdvisor).getTime() : null,
+              committee: deadlineCommittee ? new Date(deadlineCommittee).getTime() : null,
+              chairperson: deadlineChairperson ? new Date(deadlineChairperson).getTime() : null
             }
           };
 

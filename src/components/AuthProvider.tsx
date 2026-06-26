@@ -23,7 +23,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
-        setUser(firebaseUser);
         // Fetch user role from Firestore by email
         const q = query(collection(db, "users"), where("email", "==", firebaseUser.email));
         const querySnapshot = await getDocs(q);
@@ -36,6 +35,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           // Fallback or handle unregistered user
           setRole(null);
         }
+        setUser(firebaseUser);
       } else {
         setUser(null);
         setRole(null);

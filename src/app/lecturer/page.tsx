@@ -136,7 +136,7 @@ export default function LecturerDashboard() {
             await sendNotificationEmail({
               to: sEmail,
               subject: `Thesis Approved by ${activeWorkspace.role}`,
-              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> has been approved by your ${activeWorkspace.role} (${user.email}).</p><p>Please log in to the Thesis Portal to view the updated status.</p>`
+              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> has been approved by your ${activeWorkspace.role} (${user.email}).</p><p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a> to view the updated status.</p>`
             });
           }
         }
@@ -157,7 +157,7 @@ export default function LecturerDashboard() {
             await sendNotificationEmail({
               to: sEmail,
               subject: `Thesis Revision Required`,
-              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> requires revision. Your ${activeWorkspace.role} (${user.email}) has requested changes.</p>${reviewComments ? `<p><b>Comments:</b> ${reviewComments}</p>` : ""}<p>Please log in to the Thesis Portal to propose edits.</p>`
+              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> requires revision. Your ${activeWorkspace.role} (${user.email}) has requested changes.</p>${reviewComments ? `<p><b>Comments:</b> ${reviewComments}</p>` : ""}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a> to propose edits.</p>`
             });
           }
         }
@@ -187,9 +187,9 @@ export default function LecturerDashboard() {
     try {
       const { updateThesis } = await import("@/lib/db/theses");
       const dData = {
-        advisor: deadlineAdvisor ? new Date(deadlineAdvisor).getTime() : undefined,
-        committee: deadlineCommittee ? new Date(deadlineCommittee).getTime() : undefined,
-        chairperson: deadlineChairperson ? new Date(deadlineChairperson).getTime() : undefined
+        advisor: deadlineAdvisor ? new Date(deadlineAdvisor).getTime() : null,
+        committee: deadlineCommittee ? new Date(deadlineCommittee).getTime() : null,
+        chairperson: deadlineChairperson ? new Date(deadlineChairperson).getTime() : null
       };
       await updateThesis(deadlineModalThesis.id, { deadlines: dData });
       
