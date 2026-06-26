@@ -31,7 +31,7 @@ export default function AdminThesisPage() {
   const [deadlineCommittee, setDeadlineCommittee] = useState("");
   const [deadlineChairperson, setDeadlineChairperson] = useState("");
 
-  const formatDatetimeLocal = (ts?: number) => {
+  const formatDatetimeLocal = (ts?: number | null) => {
     if (!ts) return "";
     const d = new Date(ts);
     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
