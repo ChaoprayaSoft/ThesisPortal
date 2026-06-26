@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus } from "@/lib/db/theses";
+import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus, getStatusForStage } from "@/lib/db/theses";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
@@ -60,6 +60,19 @@ export default function StudentDashboard() {
     }
   }, [user]);
 
+  const getStageIcon = (stage: number) => {
+    switch (stage) {
+      case 0: return "📝";
+      case 1: return "👥";
+      case 2: return "👨‍⚖️";
+      case 3: return "✒️";
+      case 4: return "🖊️";
+      case 5: return "🖋️";
+      case 6: return "🎓";
+      default: return "📄";
+    }
+  };
+
   const loadData = async () => {
     // left empty for backwards compatibility
   };
@@ -68,7 +81,7 @@ export default function StudentDashboard() {
     if (!thesis) return;
     
     let targetDeadline = undefined;
-    if (thesis.currentStage === 0 || thesis.status === "Revise") targetDeadline = thesis.deadlines?.advisor;
+    if (thesis.currentStage === 0) targetDeadline = thesis.deadlines?.advisor;
     else if (thesis.currentStage === 1) targetDeadline = thesis.deadlines?.committee;
     else if (thesis.currentStage === 2) targetDeadline = thesis.deadlines?.chairperson;
 
@@ -181,31 +194,33 @@ export default function StudentDashboard() {
       });
 
       if (thesis.status === "Revise" || thesis.status === "Preparing") {
-        await updateThesisStatus(thesis.id, "Pending Advisor", 0);
-        if (thesis.lecturerUids?.advisor) {
-          const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
+        const nextStatus = getStatusForStage(thesis.currentStage);
+        await updateThesisStatus(thesis.id, nextStatus, thesis.currentStage);
+        
+        const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
+        
+        // Notify based on currentStage
+        if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
           await sendNotificationEmail({
             to: thesis.lecturerUids.advisor,
             subject: `Thesis Materials Submitted: ${thesis.title}`,
-            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your Advisor review.</p>${linksHtml}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your review/signature.</p>${linksHtml}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
           });
-        }
-      } else if (thesis.status === "Pending Committee" && thesis.lecturerUids?.committees) {
-        const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
-        for (const comm of thesis.lecturerUids.committees) {
+        } else if ((thesis.currentStage === 1 || thesis.currentStage === 4) && thesis.lecturerUids?.committees) {
+          for (const comm of thesis.lecturerUids.committees) {
+            await sendNotificationEmail({
+              to: comm,
+              subject: `Thesis Materials Updated: ${thesis.title}`,
+              html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+            });
+          }
+        } else if ((thesis.currentStage === 2 || thesis.currentStage === 5) && thesis.lecturerUids?.chairperson) {
           await sendNotificationEmail({
-            to: comm,
+            to: thesis.lecturerUids.chairperson,
             subject: `Thesis Materials Updated: ${thesis.title}`,
-            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your Committee review. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
           });
         }
-      } else if (thesis.status === "Pending Chairperson" && thesis.lecturerUids?.chairperson) {
-        const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
-        await sendNotificationEmail({
-          to: thesis.lecturerUids.chairperson,
-          subject: `Thesis Materials Updated: ${thesis.title}`,
-          html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your Chairperson review. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
-        });
       }
 
       await updateThesis(thesis.id, { statusUpdatedAt: Date.now() });
@@ -249,7 +264,7 @@ export default function StudentDashboard() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }} className={styles.statusBadge}>
           <div style={{ fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Current Status</div>
           <div style={{ padding: "8px 16px", background: "#EBE4D1", borderRadius: "999px", fontWeight: "bold", color: "#4A4238", border: "1px solid #D6CEB8", display: "inline-block" }}>
-            {thesis.status}
+            {getStageIcon(thesis.currentStage)} {thesis.status}
           </div>
         </div>
       </div>
@@ -257,11 +272,11 @@ export default function StudentDashboard() {
       {/* COUNTDOWN TIMER */}
       {(() => {
         let stageName = "";
-        if (thesis.currentStage === 0 || thesis.status === "Revise" || thesis.status === "Preparing") stageName = "Advisor";
+        if (thesis.currentStage === 0) stageName = "Advisor";
         else if (thesis.currentStage === 1) stageName = "Committee";
         else if (thesis.currentStage === 2) stageName = "Chairperson";
 
-        return thesis.status !== "Approved" && (timeLeft || isLate) && (
+        return thesis.currentStage < 3 && (timeLeft || isLate) && (
         <div style={{ background: isLate ? "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)" : "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", borderRadius: "12px", padding: "20px 30px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", border: isLate ? "1px solid #fca5a5" : "1px solid #334155" }}>
           <div>
             <h3 style={{ margin: 0, color: isLate ? "#991b1b" : "#94a3b8", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Current Stage Deadline ({stageName})</h3>

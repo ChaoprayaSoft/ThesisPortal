@@ -64,24 +64,39 @@ export default function AdminThesisPage() {
     setTheses(await getAllTheses());
   };
 
+  const getStageIcon = (stage: number) => {
+    switch (stage) {
+      case 0: return "📝";
+      case 1: return "👥";
+      case 2: return "👨‍⚖️";
+      case 3: return "✒️";
+      case 4: return "🖊️";
+      case 5: return "🖋️";
+      case 6: return "🎓";
+      default: return "📄";
+    }
+  };
+
   const getDeadlineDisplay = (thesis: any) => {
-    if (thesis.status === "Approved") return null;
-    let deadline = undefined;
+    if (thesis.status === "Graduate") return null;
+    let targetDeadline = undefined;
     let stageName = "";
-    if (thesis.currentStage === 0 || thesis.status === "Revise" || thesis.status === "Preparing") {
-      deadline = thesis.deadlines?.advisor;
+    if (thesis.currentStage === 0) {
+      targetDeadline = thesis.deadlines?.advisor;
       stageName = "Advisor";
     } else if (thesis.currentStage === 1) {
-      deadline = thesis.deadlines?.committee;
+      targetDeadline = thesis.deadlines?.committee;
       stageName = "Committee";
     } else if (thesis.currentStage === 2) {
-      deadline = thesis.deadlines?.chairperson;
+      targetDeadline = thesis.deadlines?.chairperson;
       stageName = "Chairperson";
     }
+    
+    if (thesis.currentStage >= 3) return null; // no deadlines for signatures
 
-    if (!deadline) return null;
-    const isLate = Date.now() > deadline;
-    const dateStr = new Date(deadline).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    if (!targetDeadline) return null;
+    const isLate = Date.now() > targetDeadline;
+    const dateStr = new Date(targetDeadline).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
     return (
       <div style={{ fontSize: "0.8rem", marginTop: "6px" }}>
@@ -426,7 +441,10 @@ export default function AdminThesisPage() {
             <option value="Pending Advisor">Pending Advisor</option>
             <option value="Pending Committee">Pending Committee</option>
             <option value="Pending Chairperson">Pending Chairperson</option>
-            <option value="Approved">Approved</option>
+            <option value="Pending Sign. Advisor">Pending Sign. Advisor</option>
+            <option value="Pending Sign. Committee">Pending Sign. Committee</option>
+            <option value="Pending Sign. Chairperson">Pending Sign. Chairperson</option>
+            <option value="Graduate">Graduate</option>
             <option value="Revise">Revise</option>
           </select>
           <input
@@ -474,7 +492,7 @@ export default function AdminThesisPage() {
                     <td>{groupName}</td>
                     <td>{t.year || "-"}</td>
                     <td>{t.fieldOfStudy || "-"}</td>
-                    <td><span style={{ padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem", whiteSpace: "nowrap" }}>{t.status}</span></td>
+                    <td><span style={{ padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {t.status}</span></td>
                     <td>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button

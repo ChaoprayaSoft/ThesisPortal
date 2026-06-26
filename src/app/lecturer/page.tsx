@@ -176,9 +176,12 @@ export default function LecturerDashboard() {
   // Helper to determine what actionable role the current user has for a given thesis
   const getActionableRoles = (t: ThesisData, email: string) => {
     const roles: ("Advisor" | "Committee" | "Chairperson")[] = [];
-    if (t.lecturerUids.advisor === email && t.status === "Pending Advisor") roles.push("Advisor");
-    if (t.lecturerUids.committees.includes(email) && t.status === "Pending Committee" && !(t.committeeApprovals || []).includes(email)) roles.push("Committee");
-    if (t.lecturerUids.chairperson === email && t.status === "Pending Chairperson") roles.push("Chairperson");
+    if (t.lecturerUids.advisor === email && (t.status === "Pending Advisor" || t.status === "Pending Sign. Advisor")) roles.push("Advisor");
+    if (t.lecturerUids.committees.includes(email) && (
+      (t.status === "Pending Committee" && !(t.committeeApprovals || []).includes(email)) ||
+      (t.status === "Pending Sign. Committee" && !(t.committeeSignApprovals || []).includes(email))
+    )) roles.push("Committee");
+    if (t.lecturerUids.chairperson === email && (t.status === "Pending Chairperson" || t.status === "Pending Sign. Chairperson")) roles.push("Chairperson");
     return roles;
   };
 
@@ -207,7 +210,7 @@ export default function LecturerDashboard() {
   };
 
   const getDeadlineDisplay = (thesis: ThesisData) => {
-    if (thesis.status === "Approved") return null;
+    if (thesis.status === "Graduate" || thesis.currentStage >= 3) return null;
     let deadline = undefined;
     let stageName = "";
     if (thesis.currentStage === 0 || thesis.status === "Revise" || thesis.status === "Preparing") {
@@ -499,7 +502,7 @@ export default function LecturerDashboard() {
                         disabled={actionLoading === activeWorkspace.thesis.id}
                         onClick={triggerApprove}
                       >
-                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Approve Thesis"}
+                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : (activeWorkspace.thesis.currentStage >= 3 ? "Sign & Approve" : "Approve Manuscript")}
                       </button>
                       <button 
                         className={styles.btnDanger}
@@ -507,7 +510,7 @@ export default function LecturerDashboard() {
                         disabled={actionLoading === activeWorkspace.thesis.id}
                         onClick={triggerReject}
                       >
-                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Request Revise"}
+                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : (activeWorkspace.thesis.currentStage >= 3 ? "Refuse Signature / Request Revision" : "Request Revision")}
                       </button>
                     </div>
                     <p style={{ fontSize: "0.8rem", color: "#7A7061", marginTop: "10px", textAlign: "center" }}>

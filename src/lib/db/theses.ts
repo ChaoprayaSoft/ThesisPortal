@@ -1,7 +1,7 @@
 import { db } from "../firebase";
 import { collection, doc, setDoc, getDocs, getDoc, updateDoc, query, where, orderBy, onSnapshot } from "firebase/firestore";
 
-export type ThesisStatus = "Preparing" | "Pending Advisor" | "Pending Committee" | "Pending Chairperson" | "Approved" | "Revise";
+export type ThesisStatus = "Preparing" | "Pending Advisor" | "Pending Committee" | "Pending Chairperson" | "Pending Sign. Advisor" | "Pending Sign. Committee" | "Pending Sign. Chairperson" | "Graduate" | "Revise";
 
 export interface ThesisData {
   id?: string;
@@ -18,10 +18,11 @@ export interface ThesisData {
     chairperson: string;
   };
   committeeApprovals?: string[];
+  committeeSignApprovals?: string[];
   pendingAbstract?: string;
   pendingScope?: string;
   status: ThesisStatus;
-  currentStage: number; // 0=Advisor, 1=Committee, 2=Chairperson, 3=Approved
+  currentStage: number; // 0=Adv, 1=Comm, 2=Chair, 3=Sign.Adv, 4=Sign.Comm, 5=Sign.Chair, 6=Graduate
   createdAt: number;
   statusUpdatedAt?: number;
   deadlines?: {
@@ -140,6 +141,7 @@ export async function approveThesis(thesisId: string, userEmail: string, role: "
   let newStatus = currentThesis.status;
   let newStage = currentThesis.currentStage;
   let newCommitteeApprovals = currentThesis.committeeApprovals || [];
+  let newCommitteeSignApprovals = currentThesis.committeeSignApprovals || [];
 
   if (role === "Advisor" && currentThesis.status === "Pending Advisor") {
     newStatus = "Pending Committee";
@@ -148,15 +150,29 @@ export async function approveThesis(thesisId: string, userEmail: string, role: "
     if (!newCommitteeApprovals.includes(userEmail)) {
       newCommitteeApprovals.push(userEmail);
     }
-    // Check if all committee members have approved
     const allApproved = currentThesis.lecturerUids.committees.every(email => newCommitteeApprovals.includes(email));
     if (allApproved) {
       newStatus = "Pending Chairperson";
       newStage = 2;
     }
   } else if (role === "Chairperson" && currentThesis.status === "Pending Chairperson") {
-    newStatus = "Approved";
+    newStatus = "Pending Sign. Advisor";
     newStage = 3;
+  } else if (role === "Advisor" && currentThesis.status === "Pending Sign. Advisor") {
+    newStatus = "Pending Sign. Committee";
+    newStage = 4;
+  } else if (role === "Committee" && currentThesis.status === "Pending Sign. Committee") {
+    if (!newCommitteeSignApprovals.includes(userEmail)) {
+      newCommitteeSignApprovals.push(userEmail);
+    }
+    const allApproved = currentThesis.lecturerUids.committees.every(email => newCommitteeSignApprovals.includes(email));
+    if (allApproved) {
+      newStatus = "Pending Sign. Chairperson";
+      newStage = 5;
+    }
+  } else if (role === "Chairperson" && currentThesis.status === "Pending Sign. Chairperson") {
+    newStatus = "Graduate";
+    newStage = 6;
   } else {
     throw new Error("Invalid approval step.");
   }
@@ -165,8 +181,22 @@ export async function approveThesis(thesisId: string, userEmail: string, role: "
     status: newStatus,
     currentStage: newStage,
     committeeApprovals: newCommitteeApprovals,
+    committeeSignApprovals: newCommitteeSignApprovals,
     statusUpdatedAt: Date.now()
   });
+}
+
+export function getStatusForStage(stage: number): ThesisStatus {
+  switch (stage) {
+    case 0: return "Pending Advisor";
+    case 1: return "Pending Committee";
+    case 2: return "Pending Chairperson";
+    case 3: return "Pending Sign. Advisor";
+    case 4: return "Pending Sign. Committee";
+    case 5: return "Pending Sign. Chairperson";
+    case 6: return "Graduate";
+    default: return "Pending Advisor";
+  }
 }
 
 export async function rejectThesis(thesisId: string) {

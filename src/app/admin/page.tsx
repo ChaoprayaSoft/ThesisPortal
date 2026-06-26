@@ -41,7 +41,7 @@ export default function AdminDashboard() {
           "Pending Committee": 0,
           "Pending Chairperson": 0,
           "Revise": 0,
-          "Approved": 0
+          "Graduate": 0
         };
 
         const fieldBreakdown: Record<string, number> = {};
@@ -76,7 +76,7 @@ export default function AdminDashboard() {
           fieldBreakdown[field] = (fieldBreakdown[field] || 0) + 1;
 
           // Late Theses Calculation
-          if (t.status !== "Approved") {
+          if (t.currentStage < 3 && t.status !== "Graduate") {
             let deadline = undefined;
             if (t.currentStage === 0 || t.status === "Revise" || t.status === "Preparing") deadline = t.deadlines?.advisor;
             else if (t.currentStage === 1) deadline = t.deadlines?.committee;
@@ -87,8 +87,8 @@ export default function AdminDashboard() {
             }
           }
 
-          // Workload Calculation (only for non-approved theses, or all?)
-          if (t.status !== "Approved") {
+          // Workload Calculation (only for non-graduate theses, or all?)
+          if (t.status !== "Graduate") {
             const adv = t.lecturerUids?.advisor;
             const chair = t.lecturerUids?.chairperson;
             const comms = t.lecturerUids?.committees || [];
@@ -251,9 +251,21 @@ export default function AdminDashboard() {
                   const percentage = stats.totalTheses === 0 ? 0 : Math.round((count / stats.totalTheses) * 100);
                   
                   let barColor = "#3b82f6";
-                  if (status === "Approved") barColor = "#10b981";
-                  if (status === "Revise") barColor = "#ef4444";
-                  if (status === "Pending Chairperson") barColor = "#8b5cf6";
+                  if (status === "Graduate") barColor = "#10b981";
+                  else if (status === "Revise") barColor = "#ef4444";
+                  else if (status === "Pending Chairperson") barColor = "#8b5cf6";
+                  else if (status === "Pending Sign. Advisor") barColor = "#f59e0b";
+                  else if (status === "Pending Sign. Committee") barColor = "#d97706";
+                  else if (status === "Pending Sign. Chairperson") barColor = "#b45309";
+
+                  let icon = "📄";
+                  if (status === "Pending Advisor") icon = "📝";
+                  if (status === "Pending Committee") icon = "👥";
+                  if (status === "Pending Chairperson") icon = "👨‍⚖️";
+                  if (status === "Pending Sign. Advisor") icon = "✒️";
+                  if (status === "Pending Sign. Committee") icon = "🖊️";
+                  if (status === "Pending Sign. Chairperson") icon = "🖋️";
+                  if (status === "Graduate") icon = "🎓";
 
                   return (
                     <div 
@@ -263,8 +275,8 @@ export default function AdminDashboard() {
                       onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#FDF9F1"}
                       onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
                     >
-                      <div style={{ width: "150px", fontWeight: "bold", color: "#4A4238", fontSize: "0.9rem" }}>
-                        {status}
+                      <div style={{ width: "180px", fontWeight: "bold", color: "#4A4238", fontSize: "0.9rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {icon} {status}
                       </div>
                       <div style={{ flex: 1, background: "#EBE4D1", height: "12px", borderRadius: "6px", overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${percentage}%`, background: barColor, borderRadius: "6px", transition: "width 0.5s ease" }}></div>
@@ -484,7 +496,7 @@ export default function AdminDashboard() {
                 ))}
 
                 {activeKpiModal === "Late" && allTheses.filter(t => {
-                  if (t.status === "Approved") return false;
+                  if (t.status === "Graduate") return false;
                   let deadline = undefined;
                   if (t.currentStage === 0 || t.status === "Revise" || t.status === "Preparing") deadline = t.deadlines?.advisor;
                   else if (t.currentStage === 1) deadline = t.deadlines?.committee;
