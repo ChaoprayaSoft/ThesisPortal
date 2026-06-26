@@ -452,16 +452,28 @@ export default function StudentDashboard() {
             <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
               <div>
                 <strong style={{ display: "block", fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px" }}>Chairperson</strong>
-                <span style={{ color: "#4A4238" }}>
-                  {thesis.lecturerUids.chairperson ? (lecturersMap[thesis.lecturerUids.chairperson]?.name_en || lecturersMap[thesis.lecturerUids.chairperson]?.name_th || thesis.lecturerUids.chairperson) : "None"}
-                </span>
+                {thesis.lecturerUids.chairperson ? (
+                  <div style={{ display: "flex", flexDirection: "column", marginTop: "2px" }}>
+                    <span style={{ color: "#4A4238" }}>{lecturersMap[thesis.lecturerUids.chairperson]?.name_en || lecturersMap[thesis.lecturerUids.chairperson]?.name_th || thesis.lecturerUids.chairperson}</span>
+                    {(lecturersMap[thesis.lecturerUids.chairperson]?.name_en || lecturersMap[thesis.lecturerUids.chairperson]?.name_th) && (
+                      <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{thesis.lecturerUids.chairperson}</span>
+                    )}
+                  </div>
+                ) : <span style={{ color: "#4A4238" }}>None</span>}
               </div>
               <div>
                 <strong style={{ display: "block", fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px" }}>Committee</strong>
                 {thesis.lecturerUids.committees.length > 0 ? (
-                  <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px", color: "#4A4238" }}>
+                  <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px", color: "#4A4238", display: "flex", flexDirection: "column", gap: "8px" }}>
                     {thesis.lecturerUids.committees.map(c => (
-                      <li key={c}>{lecturersMap[c]?.name_en || lecturersMap[c]?.name_th || c}</li>
+                      <li key={c}>
+                        <div style={{ display: "flex", flexDirection: "column" }}>
+                          <span>{lecturersMap[c]?.name_en || lecturersMap[c]?.name_th || c}</span>
+                          {(lecturersMap[c]?.name_en || lecturersMap[c]?.name_th) && (
+                            <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{c}</span>
+                          )}
+                        </div>
+                      </li>
                     ))}
                   </ul>
                 ) : (
@@ -470,9 +482,14 @@ export default function StudentDashboard() {
               </div>
               <div>
                 <strong style={{ display: "block", fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px" }}>Advisor</strong>
-                <span style={{ color: "#4A4238" }}>
-                  {thesis.lecturerUids.advisor ? (lecturersMap[thesis.lecturerUids.advisor]?.name_en || lecturersMap[thesis.lecturerUids.advisor]?.name_th || thesis.lecturerUids.advisor) : "None"}
-                </span>
+                {thesis.lecturerUids.advisor ? (
+                  <div style={{ display: "flex", flexDirection: "column", marginTop: "2px" }}>
+                    <span style={{ color: "#4A4238" }}>{lecturersMap[thesis.lecturerUids.advisor]?.name_en || lecturersMap[thesis.lecturerUids.advisor]?.name_th || thesis.lecturerUids.advisor}</span>
+                    {(lecturersMap[thesis.lecturerUids.advisor]?.name_en || lecturersMap[thesis.lecturerUids.advisor]?.name_th) && (
+                      <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{thesis.lecturerUids.advisor}</span>
+                    )}
+                  </div>
+                ) : <span style={{ color: "#4A4238" }}>None</span>}
               </div>
             </div>
           </div>
