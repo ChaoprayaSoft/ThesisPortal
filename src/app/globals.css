@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Custom Theme Palette 2 */
-  --bg-app: #f4f6f9; /* Soft cool grey for baseline contrast */
+  /* Custom Theme Palette: Beige/Pink/Yellow */
+  --bg-app: #fff5d7; /* Ragin Beige */
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
   
-  --primary-color: #478559; /* Green Treeline */
-  --primary-hover: #39a0ca; /* Bluewater lowlight */
-  --primary-light: #e6f0ed; 
+  --primary-color: #ff5e6c; /* Coral Pink */
+  --primary-hover: #ffaaab; /* Pink Leaf */
+  --primary-light: #fff0f0; 
   
-  --text-main: #161748; /* Purple baseline */
-  --text-muted: #5a5b7d; 
+  --text-main: #4A4238; 
+  --text-muted: #64748b; 
   
-  --border-color: #39a0ca; /* Bluewater lowlight for borders */
+  --border-color: #ffaaab; /* Pink Leaf for borders */
   
   --danger-color: #ef4444;
   --danger-hover: #dc2626;
   
-  --accent-yellow: #f95d9b; /* Pink highlight */
+  --accent-yellow: #feb300; /* Sleuthe Yellow */
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
