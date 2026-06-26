@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import styles from "./admin.module.css";
+import ProfileIcon from "@/components/ProfileIcon";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, dbUser, role, loading } = useAuth();
@@ -64,9 +65,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <div style={{ fontWeight: "bold", color: "var(--text-main)", fontSize: "0.95rem" }}>{dbUser?.name_th || user?.email}</div>
               <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Administrator</div>
             </div>
-            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "var(--primary-color)", color: "white", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2rem", flexShrink: 0 }}>
-              {(dbUser?.name_th || user?.email || "A")[0].toUpperCase()}
-            </div>
+            <ProfileIcon dbUser={dbUser} user={user} defaultLetter="A" />
             <button 
               onClick={() => {
                 import("@/lib/firebase").then(({ auth }) => auth.signOut());

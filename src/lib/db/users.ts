@@ -11,6 +11,7 @@ export interface UserData {
   name_en: string;
   role: UserRole;
   fieldOfStudy?: string;
+  profileImageUrl?: string;
   createdAt: number;
 }
 

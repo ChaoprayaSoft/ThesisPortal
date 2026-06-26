@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import Link from "next/link";
 import styles from "./lecturer.module.css";
+import ProfileIcon from "@/components/ProfileIcon";
 
 export default function LecturerLayout({ children }: { children: React.ReactNode }) {
   const { user, dbUser, role, loading } = useAuth();
@@ -34,9 +35,7 @@ export default function LecturerLayout({ children }: { children: React.ReactNode
               <div style={{ fontWeight: "bold", color: "var(--text-main)", fontSize: "0.95rem" }}>{dbUser?.name_th || user?.email}</div>
               <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Lecturer</div>
             </div>
-            <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "var(--primary-color)", color: "white", display: "flex", justifyContent: "center", alignItems: "center", fontWeight: "bold", fontSize: "1.2rem", flexShrink: 0 }}>
-              {(dbUser?.name_th || user?.email || "L")[0].toUpperCase()}
-            </div>
+            <ProfileIcon dbUser={dbUser} user={user} defaultLetter="L" />
             {role === "Admin" && (
               <Link href="/admin" className={styles.adminLink}>
                 Admin Portal ↗
