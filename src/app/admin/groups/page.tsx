@@ -256,12 +256,12 @@ export default function GroupsPage() {
       </div>
 
       <div className={styles.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "20px" }}>
-          <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+          <div style={{ flex: "1 1 300px" }}>
             <h2 style={{ marginBottom: "5px" }}>Existing Groups</h2>
             <p style={{ margin: 0 }}>Click on a group to view and edit its students.</p>
           </div>
-          <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "250px" }}>
+          <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "250px", maxWidth: "100%", flex: "1 1 250px" }}>
             <option value="">All Fields of Study</option>
             <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
             <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>

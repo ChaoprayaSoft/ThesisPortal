@@ -436,7 +436,7 @@ export default function AdminThesisPage() {
             onChange={e => setFilterYear(e.target.value)}
             style={{ flex: "1 1 120px", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
           />
-          <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ flex: "1 1 200px", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}>
+          <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ flex: "1 1 200px", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", maxWidth: "100%" }}>
             <option value="">All Fields</option>
             <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
             <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
