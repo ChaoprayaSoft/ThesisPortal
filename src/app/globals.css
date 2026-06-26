@@ -1,24 +1,24 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Custom Theme Palette: Beige/Pink/Yellow */
-  --bg-app: #fff5d7; /* Ragin Beige */
+  /* Custom Theme Palette: Tan/Purple/Yellow/Red */
+  --bg-app: #fceed1; /* Background Tan */
   --bg-card: #ffffff;
   --bg-sidebar: #ffffff;
   
-  --primary-color: #ff5e6c; /* Coral Pink */
-  --primary-hover: #ffaaab; /* Pink Leaf */
-  --primary-light: #fff0f0; 
+  --primary-color: #7d3cff; /* Purple-y */
+  --primary-hover: #581cba; /* Darker purple for normal hover */
+  --primary-light: #f3ebff; 
   
-  --text-main: #4A4238; 
+  --text-main: #2d2a26; 
   --text-muted: #64748b; 
   
-  --border-color: #ffaaab; /* Pink Leaf for borders */
+  --border-color: #f2d53c; /* Yellow Gloves for borders/accents */
   
-  --danger-color: #ef4444;
-  --danger-hover: #dc2626;
+  --danger-color: #c80e13; /* Redhead */
+  --danger-hover: #a10a0f;
   
-  --accent-yellow: #feb300; /* Sleuthe Yellow */
+  --accent-yellow: #f2d53c; /* Yellow Gloves */
   
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
