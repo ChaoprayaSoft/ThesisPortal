@@ -243,7 +243,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(400px, 1fr))", gap: "20px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 400px), 1fr))", gap: "20px" }}>
             <div className={styles.card}>
               <h2 style={{ marginBottom: "20px" }}>Thesis Status Overview</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
