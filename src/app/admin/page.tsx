@@ -579,17 +579,45 @@ export default function AdminDashboard() {
                     <div><strong>Group:</strong> {allGroups.find(g => g.id === selectedFieldThesis.groupId)?.name || "-"}</div>
                     <div><strong>Field:</strong> {selectedFieldThesis.fieldOfStudy || "-"}</div>
                   </div>
-                  <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "15px", marginBottom: "20px" }}>
-                    <h4 style={{ margin: "0 0 10px 0" }}>Committee Members</h4>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "0.9rem" }}>
-                      <div><strong>Advisor:</strong> {selectedFieldThesis.lecturerUids?.advisor || "None"}</div>
-                      <div><strong>Committee:</strong> {selectedFieldThesis.lecturerUids?.committees?.join(", ") || "None"}</div>
-                      <div><strong>Chairperson:</strong> {selectedFieldThesis.lecturerUids?.chairperson || "None"}</div>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", borderTop: "1px solid #e2e8f0", paddingTop: "15px", marginBottom: "20px" }}>
+                    <div>
+                      <h4 style={{ margin: "0 0 10px 0" }}>Student Members</h4>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "0.9rem" }}>
+                        {(() => {
+                          const group = allGroups.find(g => g.id === selectedFieldThesis.groupId);
+                          if (!group || !group.students || group.students.length === 0) return <div>No students</div>;
+                          return group.students.map((s: any, idx: number) => (
+                            <div key={idx}>&bull; {s.name} ({s.studentId})</div>
+                          ));
+                        })()}
+                      </div>
+                    </div>
+                    <div>
+                      <h4 style={{ margin: "0 0 10px 0" }}>Committee Members</h4>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "0.9rem" }}>
+                        {(() => {
+                          const getLecName = (email: string) => {
+                            const l = allLecturers.find(l => l.email === email);
+                            return l ? (l.name_en || l.name_th || email) : email;
+                          };
+                          return (
+                            <>
+                              <div><strong>Advisor:</strong> {selectedFieldThesis.lecturerUids?.advisor ? getLecName(selectedFieldThesis.lecturerUids.advisor) : "None"}</div>
+                              <div><strong>Committee:</strong> {selectedFieldThesis.lecturerUids?.committees?.length > 0 ? selectedFieldThesis.lecturerUids.committees.map(getLecName).join(", ") : "None"}</div>
+                              <div><strong>Chairperson:</strong> {selectedFieldThesis.lecturerUids?.chairperson ? getLecName(selectedFieldThesis.lecturerUids.chairperson) : "None"}</div>
+                            </>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </div>
-                  <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "15px" }}>
+                  <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "15px", marginBottom: "20px" }}>
                     <h4 style={{ margin: "0 0 10px 0" }}>Abstract</h4>
-                    <p style={{ fontSize: "0.95rem", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>{selectedFieldThesis.abstract || "No abstract provided."}</p>
+                    <p style={{ fontSize: "0.95rem", lineHeight: "1.6", whiteSpace: "pre-wrap", color: "#4A4238" }}>{selectedFieldThesis.abstract || "No abstract provided."}</p>
+                  </div>
+                  <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "15px" }}>
+                    <h4 style={{ margin: "0 0 10px 0" }}>Scope</h4>
+                    <p style={{ fontSize: "0.95rem", lineHeight: "1.6", whiteSpace: "pre-wrap", color: "#4A4238" }}>{selectedFieldThesis.scope || "No scope provided."}</p>
                   </div>
                 </div>
               ) : (
@@ -639,7 +667,13 @@ export default function AdminDashboard() {
                             <div style={{ display: "flex", gap: "15px", fontSize: "0.85rem", color: "#4A4238" }}>
                               <div><strong>Year:</strong> {t.year || "-"}</div>
                               <div><strong>Status:</strong> {t.status}</div>
-                              <div><strong>Advisor:</strong> {t.lecturerUids?.advisor || "None"}</div>
+                              {(() => {
+                                const getLecName = (email: string) => {
+                                  const l = allLecturers.find(l => l.email === email);
+                                  return l ? (l.name_en || l.name_th || email) : email;
+                                };
+                                return <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecName(t.lecturerUids.advisor) : "None"}</div>;
+                              })()}
                             </div>
                           </div>
                         ))}
