@@ -23,6 +23,11 @@ export default function AdminDashboard() {
   const [activeStatusModal, setActiveStatusModal] = useState<string | null>(null);
   const [activeKpiModal, setActiveKpiModal] = useState<"Theses" | "Groups" | "Lecturers" | "Late" | null>(null);
   
+  const [activeFieldModal, setActiveFieldModal] = useState<string | null>(null);
+  const [fieldSearch, setFieldSearch] = useState("");
+  const [fieldYear, setFieldYear] = useState("All");
+  const [selectedFieldThesis, setSelectedFieldThesis] = useState<any | null>(null);
+  
   const [workloadSearch, setWorkloadSearch] = useState("");
   const [workloadFieldFilter, setWorkloadFieldFilter] = useState("All");
 
@@ -296,7 +301,13 @@ export default function AdminDashboard() {
                 {Object.entries(stats.fieldBreakdown).sort((a,b) => b[1] - a[1]).map(([field, count]) => {
                   const percentage = stats.totalTheses === 0 ? 0 : Math.round((count / stats.totalTheses) * 100);
                   return (
-                    <div key={field} style={{ display: "flex", alignItems: "center", gap: "15px", padding: "8px" }}>
+                    <div 
+                      key={field} 
+                      onClick={() => setActiveFieldModal(field)}
+                      style={{ display: "flex", alignItems: "center", gap: "15px", padding: "8px", cursor: "pointer", borderRadius: "8px", transition: "background 0.2s" }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#FDF9F1"}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
                       <div style={{ width: "200px", fontWeight: "bold", color: "#4A4238", fontSize: "0.85rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }} title={field}>
                         {field}
                       </div>
@@ -531,6 +542,116 @@ export default function AdminDashboard() {
         </div>
       )}
 
+      {/* Field Modal */}
+      {activeFieldModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "#FDF9F1", width: "900px", maxWidth: "100%", maxHeight: "90vh", borderRadius: "12px", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}>
+            <div style={{ padding: "20px 30px", borderBottom: "1px solid #D6CEB8", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EBE4D1" }}>
+              <h2 style={{ margin: 0, color: "#4A4238", fontSize: "1.4rem", display: "flex", alignItems: "center", gap: "10px" }}>
+                {selectedFieldThesis ? (
+                  <>
+                    <button onClick={() => setSelectedFieldThesis(null)} style={{ background: "none", border: "none", cursor: "pointer", color: "#3b82f6", fontSize: "1rem", fontWeight: "bold", padding: 0 }}>&larr; Back</button>
+                    <span style={{ color: "#D6CEB8" }}>|</span>
+                    Thesis Details
+                  </>
+                ) : (
+                  `Theses in Field: ${activeFieldModal}`
+                )}
+              </h2>
+              <button 
+                onClick={() => {
+                  setActiveFieldModal(null);
+                  setSelectedFieldThesis(null);
+                  setFieldSearch("");
+                  setFieldYear("All");
+                }}
+                style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer", color: "#4A4238" }}
+              >&times;</button>
+            </div>
+
+            <div style={{ padding: "30px", overflowY: "auto", flex: 1 }}>
+              {selectedFieldThesis ? (
+                <div style={{ background: "#fff", padding: "20px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
+                  <h3 style={{ margin: "0 0 15px 0", color: "#3b82f6", fontSize: "1.3rem" }}>{selectedFieldThesis.title}</h3>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px", marginBottom: "20px" }}>
+                    <div><strong>Status:</strong> <span style={{ padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem" }}>{selectedFieldThesis.status}</span></div>
+                    <div><strong>Year:</strong> {selectedFieldThesis.year || "-"}</div>
+                    <div><strong>Group:</strong> {allGroups.find(g => g.id === selectedFieldThesis.groupId)?.name || "-"}</div>
+                    <div><strong>Field:</strong> {selectedFieldThesis.fieldOfStudy || "-"}</div>
+                  </div>
+                  <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "15px", marginBottom: "20px" }}>
+                    <h4 style={{ margin: "0 0 10px 0" }}>Committee Members</h4>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "0.9rem" }}>
+                      <div><strong>Advisor:</strong> {selectedFieldThesis.lecturerUids?.advisor || "None"}</div>
+                      <div><strong>Committee:</strong> {selectedFieldThesis.lecturerUids?.committees?.join(", ") || "None"}</div>
+                      <div><strong>Chairperson:</strong> {selectedFieldThesis.lecturerUids?.chairperson || "None"}</div>
+                    </div>
+                  </div>
+                  <div style={{ borderTop: "1px solid #e2e8f0", paddingTop: "15px" }}>
+                    <h4 style={{ margin: "0 0 10px 0" }}>Abstract</h4>
+                    <p style={{ fontSize: "0.95rem", lineHeight: "1.6", whiteSpace: "pre-wrap" }}>{selectedFieldThesis.abstract || "No abstract provided."}</p>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ display: "flex", gap: "15px", marginBottom: "20px" }}>
+                    <input 
+                      type="text" 
+                      placeholder="Search by title..." 
+                      value={fieldSearch}
+                      onChange={e => setFieldSearch(e.target.value)}
+                      style={{ flex: 1, padding: "10px 15px", borderRadius: "6px", border: "1px solid #D6CEB8", fontSize: "0.95rem" }}
+                    />
+                    <select 
+                      value={fieldYear}
+                      onChange={e => setFieldYear(e.target.value)}
+                      style={{ padding: "10px 15px", borderRadius: "6px", border: "1px solid #D6CEB8", fontSize: "0.95rem", background: "#fff" }}
+                    >
+                      <option value="All">All Years</option>
+                      {Array.from(new Set(allTheses.map(t => t.year).filter(y => y))).sort().reverse().map(y => (
+                        <option key={y} value={y}>{y}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {(() => {
+                    const filtered = allTheses.filter(t => {
+                      const tField = t.fieldOfStudy || allGroups.find(g => g.id === t.groupId)?.fieldOfStudy;
+                      if (tField !== activeFieldModal) return false;
+                      const matchesSearch = t.title.toLowerCase().includes(fieldSearch.toLowerCase());
+                      const matchesYear = fieldYear === "All" || t.year === fieldYear;
+                      return matchesSearch && matchesYear;
+                    });
+
+                    if (filtered.length === 0) return <p style={{ color: "#7A7061", fontStyle: "italic", textAlign: "center", marginTop: "40px" }}>No theses found matching your criteria.</p>;
+
+                    return (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                        {filtered.map(t => (
+                          <div 
+                            key={t.id} 
+                            onClick={() => setSelectedFieldThesis(t)}
+                            style={{ background: "#fff", padding: "15px", borderRadius: "8px", border: "1px solid #D6CEB8", cursor: "pointer", transition: "all 0.2s" }}
+                            onMouseEnter={(e) => e.currentTarget.style.borderColor = "#3b82f6"}
+                            onMouseLeave={(e) => e.currentTarget.style.borderColor = "#D6CEB8"}
+                          >
+                            <div style={{ fontWeight: "bold", color: "#3b82f6", fontSize: "1.05rem", marginBottom: "5px" }}>{t.title}</div>
+                            <div style={{ display: "flex", gap: "15px", fontSize: "0.85rem", color: "#4A4238" }}>
+                              <div><strong>Year:</strong> {t.year || "-"}</div>
+                              <div><strong>Status:</strong> {t.status}</div>
+                              <div><strong>Advisor:</strong> {t.lecturerUids?.advisor || "None"}</div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    );
+                  })()}
+                </>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
