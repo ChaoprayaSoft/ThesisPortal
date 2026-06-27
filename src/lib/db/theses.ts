@@ -38,6 +38,7 @@ export interface ThesisActivity {
   type: string; // e.g., "Manuscript Submitted", "Reviewed"
   timestamp: number;
   actorEmail: string;
+  actorName?: string; // Add optional actorName for backward compatibility
   actorRole: string; // e.g., "Student", "Advisor"
   description: string;
   documentUrl?: string; // Kept for lecturer backwards compatibility

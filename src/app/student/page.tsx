@@ -21,7 +21,7 @@ export default function StudentDashboard() {
   const [submittingEdits, setSubmittingEdits] = useState(false);
 
   // Link Submission State
-  const [submissionLinks, setSubmissionLinks] = useState<{type: string, url: string}[]>([
+  const [submissionLinks, setSubmissionLinks] = useState<{ type: string, url: string }[]>([
     { type: "Manuscript", url: "" }
   ]);
   const [submittingLinks, setSubmittingLinks] = useState(false);
@@ -31,7 +31,7 @@ export default function StudentDashboard() {
   const [lecturersMap, setLecturersMap] = useState<Record<string, UserData>>({});
 
   // Countdown Timer State
-  const [timeLeft, setTimeLeft] = useState<{days: number, hours: number, minutes: number, seconds: number} | null>(null);
+  const [timeLeft, setTimeLeft] = useState<{ days: number, hours: number, minutes: number, seconds: number } | null>(null);
   const [isLate, setIsLate] = useState(false);
 
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function StudentDashboard() {
           setThesis(myThesis);
           setEditAbstract(myThesis.pendingAbstract || myThesis.abstract);
           setEditScope(myThesis.pendingScope || myThesis.scope);
-          
+
           const acts = await getThesisActivities(myThesis.id!);
           setActivities(acts);
 
@@ -79,7 +79,7 @@ export default function StudentDashboard() {
 
   useEffect(() => {
     if (!thesis) return;
-    
+
     let targetDeadline = undefined;
     if (thesis.currentStage === 0) targetDeadline = thesis.deadlines?.advisor;
     else if (thesis.currentStage === 1) targetDeadline = thesis.deadlines?.committee;
@@ -125,11 +125,12 @@ export default function StudentDashboard() {
       });
       await logThesisActivity({
         thesisId: thesis.id,
-        type: "Edits Proposed",
+        type: "Topic Edit Proposed",
         timestamp: Date.now(),
         actorEmail: user.email,
+        actorName: user.displayName || user.email,
         actorRole: "Student",
-        description: "Student proposed edits to the Abstract and Scope."
+        description: "Student proposed edits to abstract and scope.",
       });
       setIsEditing(false);
       await loadData();
@@ -185,40 +186,41 @@ export default function StudentDashboard() {
     try {
       await logThesisActivity({
         thesisId: thesis.id,
-        type: "Materials Submitted",
+        type: thesis.status === "Preparing" ? "Initial Submission" : "Revision Resubmitted",
         timestamp: Date.now(),
         actorEmail: user.email,
+        actorName: user.displayName || user.email,
         actorRole: "Student",
-        description: "Student submitted external material links for review.",
+        description: "Student submitted thesis materials for review.",
         links: validLinks
       });
 
       if (thesis.status === "Revise" || thesis.status === "Preparing") {
         const nextStatus = getStatusForStage(thesis.currentStage);
         await updateThesisStatus(thesis.id, nextStatus, thesis.currentStage);
-        
+
         const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
-        
+
         // Notify based on currentStage
         if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
           await sendNotificationEmail({
             to: thesis.lecturerUids.advisor,
             subject: `Thesis Materials Submitted: ${thesis.title}`,
-            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your review/signature.</p>${linksHtml}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+            html: `<p>Student <b>${user.displayName}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your review/signature.</p>${linksHtml}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
           });
         } else if ((thesis.currentStage === 1 || thesis.currentStage === 4) && thesis.lecturerUids?.committees) {
           for (const comm of thesis.lecturerUids.committees) {
             await sendNotificationEmail({
               to: comm,
               subject: `Thesis Materials Updated: ${thesis.title}`,
-              html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+              html: `<p>Student <b>${user.displayName}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
             });
           }
         } else if ((thesis.currentStage === 2 || thesis.currentStage === 5) && thesis.lecturerUids?.chairperson) {
           await sendNotificationEmail({
             to: thesis.lecturerUids.chairperson,
             subject: `Thesis Materials Updated: ${thesis.title}`,
-            html: `<p>Student <b>${user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
+            html: `<p>Student <b>${user.displayName}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a>.</p>`
           });
         }
       }
@@ -277,40 +279,40 @@ export default function StudentDashboard() {
         else if (thesis.currentStage === 2) stageName = "Chairperson";
 
         return thesis.currentStage < 3 && (timeLeft || isLate) && (
-        <div style={{ background: isLate ? "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)" : "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", borderRadius: "12px", padding: "20px 30px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", border: isLate ? "1px solid #fca5a5" : "1px solid #334155" }}>
-          <div>
-            <h3 style={{ margin: 0, color: isLate ? "#991b1b" : "#94a3b8", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Current Stage Deadline ({stageName})</h3>
-            <div style={{ color: isLate ? "#dc2626" : "#f8fafc", fontSize: "1.2rem", fontWeight: "bold", marginTop: "5px" }}>
-              {isLate ? "Submission is LATE!" : "Time Remaining for Submission"}
+          <div style={{ background: isLate ? "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)" : "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", borderRadius: "12px", padding: "20px 30px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", border: isLate ? "1px solid #fca5a5" : "1px solid #334155" }}>
+            <div>
+              <h3 style={{ margin: 0, color: isLate ? "#991b1b" : "#94a3b8", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Current Stage Deadline ({stageName})</h3>
+              <div style={{ color: isLate ? "#dc2626" : "#f8fafc", fontSize: "1.2rem", fontWeight: "bold", marginTop: "5px" }}>
+                {isLate ? "Submission is LATE!" : "Time Remaining for Submission"}
+              </div>
             </div>
+
+            {!isLate && timeLeft && (
+              <div style={{ display: "flex", gap: "15px", color: "#fff", textAlign: "center" }}>
+                <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
+                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.days}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Days</div>
+                </div>
+                <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
+                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.hours}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Hours</div>
+                </div>
+                <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
+                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.minutes}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Mins</div>
+                </div>
+                <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
+                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.seconds}</div>
+                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Secs</div>
+                </div>
+              </div>
+            )}
           </div>
-          
-          {!isLate && timeLeft && (
-            <div style={{ display: "flex", gap: "15px", color: "#fff", textAlign: "center" }}>
-              <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
-                <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.days}</div>
-                <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Days</div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
-                <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.hours}</div>
-                <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Hours</div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
-                <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.minutes}</div>
-                <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Mins</div>
-              </div>
-              <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
-                <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.seconds}</div>
-                <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Secs</div>
-              </div>
-            </div>
-          )}
-        </div>
         );
       })()}
 
       <div className={styles.dashboardGrid}>
-        
+
         {/* LEFT COLUMN */}
         <div>
           <div className={styles.card}>
@@ -322,7 +324,7 @@ export default function StudentDashboard() {
                 </button>
               )}
             </div>
-            
+
             {thesis.pendingAbstract && !isEditing && (
               <div style={{ background: "#fef3c7", padding: "10px 15px", borderRadius: "6px", fontSize: "0.85rem", color: "#92400e", marginBottom: "20px", border: "1px solid #fcd34d" }}>
                 <strong>Note:</strong> You have proposed edits pending approval from your Advisor.
@@ -333,16 +335,16 @@ export default function StudentDashboard() {
               <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
                 <div>
                   <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "5px" }}>Abstract</label>
-                  <textarea 
-                    value={editAbstract} 
+                  <textarea
+                    value={editAbstract}
                     onChange={e => setEditAbstract(e.target.value)}
                     style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "150px", fontFamily: "inherit" }}
                   />
                 </div>
                 <div>
                   <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "5px" }}>Scope</label>
-                  <textarea 
-                    value={editScope} 
+                  <textarea
+                    value={editScope}
                     onChange={e => setEditScope(e.target.value)}
                     style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "100px", fontFamily: "inherit" }}
                   />
@@ -372,7 +374,7 @@ export default function StudentDashboard() {
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
               <h2 style={{ margin: 0 }}>Activity & Reviews</h2>
             </div>
-            
+
             {activities.length === 0 ? (
               <p style={{ color: "#7A7061", fontStyle: "italic" }}>No activity recorded yet.</p>
             ) : (
@@ -385,8 +387,8 @@ export default function StudentDashboard() {
                     </div>
                     <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem" }}>{act.description}</p>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.85rem", flexDirection: "column", gap: "10px" }}>
-                      <span style={{ color: "#7A7061" }}>By: {act.actorEmail} ({act.actorRole})</span>
-                      
+                      <span style={{ color: "#7A7061" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
+
                       {act.documentUrl && (
                         <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "5px" }}>
                           <ExternalLink size={14} /> View Document ({act.documentName || "PDF"})
@@ -418,12 +420,12 @@ export default function StudentDashboard() {
             <p style={{ fontSize: "0.9rem", marginBottom: "20px", color: "#7A7061" }}>
               Provide links to your manuscript, video clips, or other external resources.
             </p>
-            
+
             <div style={{ display: "flex", flexDirection: "column", gap: "15px", marginBottom: "20px" }}>
               {submissionLinks.map((link, idx) => (
                 <div key={idx} style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center", background: "#FDF9F1", padding: "10px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
-                  <select 
-                    value={link.type} 
+                  <select
+                    value={link.type}
                     onChange={e => handleLinkChange(idx, "type", e.target.value)}
                     style={{ padding: "8px", borderRadius: "4px", border: "1px solid #C6BFA5", background: "#fff", fontSize: "0.85rem" }}
                   >
@@ -431,15 +433,15 @@ export default function StudentDashboard() {
                     <option value="Video Clip">Video Clip</option>
                     <option value="Other documents">Other documents</option>
                   </select>
-                  <input 
-                    type="url" 
-                    placeholder="https://..." 
-                    value={link.url} 
+                  <input
+                    type="url"
+                    placeholder="https://..."
+                    value={link.url}
                     onChange={e => handleLinkChange(idx, "url", e.target.value)}
                     style={{ flex: 1, padding: "8px", borderRadius: "4px", border: "1px solid #C6BFA5", fontSize: "0.85rem" }}
                   />
                   {submissionLinks.length > 1 && (
-                    <button 
+                    <button
                       onClick={() => handleRemoveLink(idx)}
                       style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: "4px", width: "32px", height: "32px", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer" }}
                       title="Remove Link"
@@ -449,8 +451,8 @@ export default function StudentDashboard() {
                   )}
                 </div>
               ))}
-              
-              <button 
+
+              <button
                 onClick={handleAddLink}
                 style={{ alignSelf: "flex-start", background: "#EBE4D1", border: "1px solid #D6CEB8", color: "#4A4238", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "5px", cursor: "pointer", fontWeight: "bold" }}
               >
@@ -458,9 +460,9 @@ export default function StudentDashboard() {
               </button>
             </div>
 
-            <button 
-              className={styles.btnPrimary} 
-              style={{ width: "100%", margin: 0, padding: "12px", fontSize: "1rem" }} 
+            <button
+              className={styles.btnPrimary}
+              style={{ width: "100%", margin: 0, padding: "12px", fontSize: "1rem" }}
               onClick={handleSubmitLinks}
               disabled={submittingLinks}
             >
@@ -525,7 +527,7 @@ export default function StudentDashboard() {
             <p style={{ color: "#4A4238", fontSize: "1.05rem", marginBottom: "30px", lineHeight: "1.5" }}>
               {errorDialog}
             </p>
-            <button 
+            <button
               onClick={() => setErrorDialog(null)}
               style={{ width: "100%", padding: "12px", borderRadius: "6px", background: "#EBE4D1", border: "none", color: "#4A4238", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
             >

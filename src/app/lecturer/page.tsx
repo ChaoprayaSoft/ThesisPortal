@@ -136,12 +136,13 @@ export default function LecturerDashboard() {
         await approveThesis(activeWorkspace.thesis.id, user.email, activeWorkspace.role as "Advisor" | "Committee" | "Chairperson", activeWorkspace.thesis);
         await logThesisActivity({
           thesisId: activeWorkspace.thesis.id,
-          type: "Approved",
+          type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Approved" : "Manuscript Approved",
           timestamp: Date.now(),
           actorEmail: user.email,
-          actorRole: activeWorkspace.role !== "ViewOnly" ? activeWorkspace.role : "System",
-          description: reviewComments || `Approved the thesis.`,
-          ...(validLinks.length > 0 ? { links: validLinks } : {})
+          actorName: user.displayName || user.email,
+          actorRole: activeWorkspace.role,
+          description: reviewComments.trim() || (activeWorkspace.thesis.currentStage >= 3 ? "Lecturer signed off on thesis." : "Lecturer approved manuscript."),
+          links: validLinks
         });
         
         if (activeWorkspace.thesis.studentUids?.length > 0) {
@@ -157,12 +158,13 @@ export default function LecturerDashboard() {
         await rejectThesis(activeWorkspace.thesis.id);
         await logThesisActivity({
           thesisId: activeWorkspace.thesis.id,
-          type: "Revision Required",
+          type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Refused" : "Revision Requested",
           timestamp: Date.now(),
           actorEmail: user.email,
-          actorRole: activeWorkspace.role !== "ViewOnly" ? activeWorkspace.role : "System",
-          description: reviewComments || `Requested revisions on the thesis.`,
-          ...(validLinks.length > 0 ? { links: validLinks } : {})
+          actorName: user.displayName || user.email,
+          actorRole: activeWorkspace.role,
+          description: reviewComments.trim() || "Lecturer requested revision.",
+          links: validLinks
         });
 
         if (activeWorkspace.thesis.studentUids?.length > 0) {
@@ -421,7 +423,7 @@ export default function LecturerDashboard() {
                         </div>
                         <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem", color: "#4A4238" }}>{act.description}</p>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.85rem", flexDirection: "column", gap: "10px" }}>
-                          <span style={{ color: "#7A7061" }}>By: {act.actorEmail} ({act.actorRole})</span>
+                          <span style={{ color: "#7A7061" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
                           
                           {act.documentUrl && (
                             <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "5px" }}>
