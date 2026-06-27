@@ -23,6 +23,11 @@ export default function AdminDashboard() {
   const [activeStatusModal, setActiveStatusModal] = useState<string | null>(null);
   const [activeKpiModal, setActiveKpiModal] = useState<"Theses" | "Groups" | "Lecturers" | "Late" | null>(null);
   
+  const getLecturerNameTh = (email: string) => {
+    const l = allLecturers.find(l => l.email === email);
+    return l ? (l.name_th || l.name_en || email) : email;
+  };
+  
   const [activeFieldModal, setActiveFieldModal] = useState<string | null>(null);
   const [fieldSearch, setFieldSearch] = useState("");
   const [fieldYear, setFieldYear] = useState("All");
@@ -443,7 +448,7 @@ export default function AdminDashboard() {
                         <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", fontSize: "0.85rem", color: "#4A4238" }}>
                           <div><strong>Student Group:</strong> {group?.name || "-"}</div>
                           <div><strong>Field of Study:</strong> {group?.fieldOfStudy || t.fieldOfStudy || "-"}</div>
-                          <div><strong>Advisor:</strong> {t.lecturerUids?.advisor || "None"}</div>
+                          <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
                           
                           {t.status === "Revise" && (
                             <div style={{ color: "#dc2626" }}><strong>Revise Requested By:</strong> {reviseBy}</div>
@@ -485,7 +490,7 @@ export default function AdminDashboard() {
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", fontSize: "0.85rem", color: "#4A4238" }}>
                         <div><strong>Status:</strong> {t.status}</div>
                         <div><strong>Group:</strong> {group?.name || "-"}</div>
-                        <div><strong>Advisor:</strong> {t.lecturerUids?.advisor || "None"}</div>
+                        <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
                       </div>
                     </div>
                   );
@@ -526,7 +531,7 @@ export default function AdminDashboard() {
                       <div style={{ fontWeight: "bold", color: "#dc2626", fontSize: "1.05rem", marginBottom: "8px" }}>{t.title}</div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "15px", fontSize: "0.85rem", color: "#7f1d1d" }}>
                         <div><strong>Status:</strong> {t.status}</div>
-                        <div><strong>Advisor:</strong> {t.lecturerUids?.advisor || "None"}</div>
+                        <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
                         <div><strong>Missed Deadline:</strong> {new Date(deadline).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} ({stageName})</div>
                       </div>
                     </div>
@@ -596,15 +601,11 @@ export default function AdminDashboard() {
                       <h4 style={{ margin: "0 0 10px 0" }}>Committee Members</h4>
                       <div style={{ display: "flex", flexDirection: "column", gap: "5px", fontSize: "0.9rem" }}>
                         {(() => {
-                          const getLecName = (email: string) => {
-                            const l = allLecturers.find(l => l.email === email);
-                            return l ? (l.name_en || l.name_th || email) : email;
-                          };
                           return (
                             <>
-                              <div><strong>Advisor:</strong> {selectedFieldThesis.lecturerUids?.advisor ? getLecName(selectedFieldThesis.lecturerUids.advisor) : "None"}</div>
-                              <div><strong>Committee:</strong> {selectedFieldThesis.lecturerUids?.committees?.length > 0 ? selectedFieldThesis.lecturerUids.committees.map(getLecName).join(", ") : "None"}</div>
-                              <div><strong>Chairperson:</strong> {selectedFieldThesis.lecturerUids?.chairperson ? getLecName(selectedFieldThesis.lecturerUids.chairperson) : "None"}</div>
+                              <div><strong>Advisor:</strong> {selectedFieldThesis.lecturerUids?.advisor ? getLecturerNameTh(selectedFieldThesis.lecturerUids.advisor) : "None"}</div>
+                              <div><strong>Committee:</strong> {selectedFieldThesis.lecturerUids?.committees?.length > 0 ? selectedFieldThesis.lecturerUids.committees.map(getLecturerNameTh).join(", ") : "None"}</div>
+                              <div><strong>Chairperson:</strong> {selectedFieldThesis.lecturerUids?.chairperson ? getLecturerNameTh(selectedFieldThesis.lecturerUids.chairperson) : "None"}</div>
                             </>
                           );
                         })()}
@@ -668,11 +669,7 @@ export default function AdminDashboard() {
                               <div><strong>Year:</strong> {t.year || "-"}</div>
                               <div><strong>Status:</strong> {t.status}</div>
                               {(() => {
-                                const getLecName = (email: string) => {
-                                  const l = allLecturers.find(l => l.email === email);
-                                  return l ? (l.name_en || l.name_th || email) : email;
-                                };
-                                return <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecName(t.lecturerUids.advisor) : "None"}</div>;
+                                return <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>;
                               })()}
                             </div>
                           </div>
