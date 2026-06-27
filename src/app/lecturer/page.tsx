@@ -40,6 +40,19 @@ export default function LecturerDashboard() {
     return new Date(d.getTime() - (d.getTimezoneOffset() * 60000)).toISOString().slice(0, 16);
   };
 
+  const getStageIcon = (stage: number) => {
+    switch (stage) {
+      case 0: return "📝";
+      case 1: return "👥";
+      case 2: return "👨‍⚖️";
+      case 3: return "✒️";
+      case 4: return "🖊️";
+      case 5: return "🖋️";
+      case 6: return "🎓";
+      default: return "📄";
+    }
+  };
+
   useEffect(() => {
     if (user?.email) {
       setLoading(true);
@@ -278,7 +291,7 @@ export default function LecturerDashboard() {
                     </td>
                     <td>{t.year || "-"}</td>
                     <td>
-                      <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{t.status}</span>
+                      <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {t.status}</span>
                     </td>
                     <td>{roles.join(", ")}</td>
                     <td>
@@ -333,7 +346,7 @@ export default function LecturerDashboard() {
                     </td>
                     <td>{t.year || "-"}</td>
                     <td>
-                      <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8" }}>{t.status}</span>
+                      <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {t.status}</span>
                     </td>
                     <td>{myRoles.join(", ")}</td>
                     <td>
