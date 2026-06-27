@@ -9,7 +9,7 @@ import styles from "./student.module.css";
 import { Plus, X, ExternalLink } from "lucide-react";
 
 export default function StudentDashboard() {
-  const { user } = useAuth();
+  const { user, dbUser } = useAuth();
   const [thesis, setThesis] = useState<ThesisData | null>(null);
   const [activities, setActivities] = useState<ThesisActivity[]>([]);
   const [loading, setLoading] = useState(true);
@@ -128,7 +128,7 @@ export default function StudentDashboard() {
         type: "Topic Edit Proposed",
         timestamp: Date.now(),
         actorEmail: user.email,
-        actorName: user.displayName || user.email,
+        actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
         actorRole: "Student",
         description: "Student proposed edits to abstract and scope.",
       });
@@ -189,7 +189,7 @@ export default function StudentDashboard() {
         type: thesis.status === "Preparing" ? "Initial Submission" : "Revision Resubmitted",
         timestamp: Date.now(),
         actorEmail: user.email,
-        actorName: user.displayName || user.email,
+        actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
         actorRole: "Student",
         description: "Student submitted thesis materials for review.",
         links: validLinks
