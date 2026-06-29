@@ -1,5 +1,5 @@
 import { db } from "../firebase";
-import { collection, doc, setDoc, getDocs, getDoc, updateDoc, query, where, orderBy, onSnapshot } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs, getDoc, updateDoc, query, where, orderBy, onSnapshot, deleteField } from "firebase/firestore";
 
 export type ThesisStatus = "Preparing" | "Pending Advisor" | "Pending Committee" | "Pending Chairperson" | "Pending Sign. Advisor" | "Pending Sign. Committee" | "Pending Sign. Chairperson" | "Graduate" | "Revise";
 
@@ -219,4 +219,22 @@ export async function getThesisActivities(thesisId: string) {
   // Sort descending by timestamp (newest first)
   const activities = snapshot.docs.map(d => d.data() as ThesisActivity);
   return activities.sort((a, b) => b.timestamp - a.timestamp);
+}
+
+export async function approveTopicEdits(thesisId: string, newAbstract: string, newScope: string) {
+  await updateDoc(doc(db, "theses", thesisId), {
+    abstract: newAbstract,
+    scope: newScope,
+    pendingAbstract: deleteField(),
+    pendingScope: deleteField(),
+    statusUpdatedAt: Date.now()
+  });
+}
+
+export async function rejectTopicEdits(thesisId: string) {
+  await updateDoc(doc(db, "theses", thesisId), {
+    pendingAbstract: deleteField(),
+    pendingScope: deleteField(),
+    statusUpdatedAt: Date.now()
+  });
 }

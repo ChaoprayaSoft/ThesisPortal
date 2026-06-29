@@ -19,6 +19,10 @@ export default function LecturerDashboard() {
   const [reviewComments, setReviewComments] = useState("");
   const [deadlineModalThesis, setDeadlineModalThesis] = useState<ThesisData | null>(null);
 
+  // Topic Edit State
+  const [topicReviewThesis, setTopicReviewThesis] = useState<ThesisData | null>(null);
+  const [topicReviewActionLoading, setTopicReviewActionLoading] = useState(false);
+
   // Link Submission State
   const [reviewLinks, setReviewLinks] = useState<{ type: string, url: string }[]>([
     { type: "Marked-up Manuscript", url: "" }
@@ -224,6 +228,74 @@ export default function LecturerDashboard() {
     setSavingDeadlines(false);
   };
 
+  const handleApproveTopicEdits = async () => {
+    if (!topicReviewThesis || !topicReviewThesis.id || !user?.email) return;
+    setTopicReviewActionLoading(true);
+    try {
+      const { approveTopicEdits } = await import("@/lib/db/theses");
+      await approveTopicEdits(topicReviewThesis.id, topicReviewThesis.pendingAbstract || "", topicReviewThesis.pendingScope || "");
+      
+      await logThesisActivity({
+        thesisId: topicReviewThesis.id,
+        type: "Topic Edits Approved",
+        timestamp: Date.now(),
+        actorEmail: user.email,
+        actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
+        actorRole: "Advisor",
+        description: "Advisor approved the proposed abstract and scope."
+      });
+
+      if (topicReviewThesis.studentUids?.length > 0) {
+        for (const sEmail of topicReviewThesis.studentUids) {
+          await sendNotificationEmail({
+            to: sEmail,
+            subject: `Topic Edits Approved: ${topicReviewThesis.title}`,
+            html: `<p>Your proposed topic edits (Abstract & Scope) for <b>${topicReviewThesis.title}</b> have been approved by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a>.</p>`
+          });
+        }
+      }
+      setTopicReviewThesis(null);
+      await loadData();
+    } catch (err: any) {
+      alert(`Failed to approve edits: ${err.message}`);
+    }
+    setTopicReviewActionLoading(false);
+  };
+
+  const handleRejectTopicEdits = async () => {
+    if (!topicReviewThesis || !topicReviewThesis.id || !user?.email) return;
+    setTopicReviewActionLoading(true);
+    try {
+      const { rejectTopicEdits } = await import("@/lib/db/theses");
+      await rejectTopicEdits(topicReviewThesis.id);
+      
+      await logThesisActivity({
+        thesisId: topicReviewThesis.id,
+        type: "Topic Edits Rejected",
+        timestamp: Date.now(),
+        actorEmail: user.email,
+        actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
+        actorRole: "Advisor",
+        description: "Advisor rejected the proposed abstract and scope."
+      });
+
+      if (topicReviewThesis.studentUids?.length > 0) {
+        for (const sEmail of topicReviewThesis.studentUids) {
+          await sendNotificationEmail({
+            to: sEmail,
+            subject: `Topic Edits Rejected: ${topicReviewThesis.title}`,
+            html: `<p>Your proposed topic edits (Abstract & Scope) for <b>${topicReviewThesis.title}</b> have been rejected by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review.</p>`
+          });
+        }
+      }
+      setTopicReviewThesis(null);
+      await loadData();
+    } catch (err: any) {
+      alert(`Failed to reject edits: ${err.message}`);
+    }
+    setTopicReviewActionLoading(false);
+  };
+
   const getDeadlineDisplay = (thesis: ThesisData) => {
     if (thesis.status === "Graduate" || thesis.currentStage >= 3) return null;
     let deadline = undefined;
@@ -259,6 +331,51 @@ export default function LecturerDashboard() {
     <div>
       <div className={styles.pageHeader}>
         <h1>My Assigned Theses</h1>
+      </div>
+
+      <div className={styles.card}>
+        <h2>Topic Edit Proposals</h2>
+        <p>Theses where the student has proposed changes to the Abstract or Scope.</p>
+
+        {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).length === 0 ? (
+          <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>No pending topic edits.</p>
+        ) : (
+          <div className={styles.tableResponsive}>
+            <table className={styles.table} style={{ marginTop: "20px", minWidth: "800px" }}>
+              <thead>
+                <tr>
+                  <th style={{ width: "40%" }}>Title</th>
+                  <th style={{ width: "20%" }}>Year</th>
+                  <th style={{ width: "20%" }}>Status</th>
+                  <th style={{ width: "20%" }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).map(t => (
+                  <tr key={`topic-${t.id}`}>
+                    <td>
+                      <strong>{t.title}</strong>
+                      <div style={{ fontSize: "0.85rem", color: "#7A7061", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                    </td>
+                    <td>{t.year || "-"}</td>
+                    <td>
+                      <span style={{ padding: "4px 8px", background: "#fef3c7", color: "#92400e", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #fcd34d", whiteSpace: "nowrap", fontWeight: "bold" }}>Pending Topic Edits</span>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.btnPrimary}
+                        style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f59e0b", color: "#fff", border: "1px solid #d97706" }}
+                        onClick={() => setTopicReviewThesis(t)}
+                      >
+                        Review Edits
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       <div className={styles.card}>
@@ -619,6 +736,71 @@ export default function LecturerDashboard() {
             >
               Okay
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Topic Edit Review Modal */}
+      {topicReviewThesis && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "#FDF9F1", width: "900px", maxWidth: "100%", maxHeight: "90vh", borderRadius: "12px", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)" }}>
+            
+            <div style={{ padding: "20px 30px", borderBottom: "1px solid #D6CEB8", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EBE4D1" }}>
+              <div>
+                <h2 style={{ margin: 0, color: "#4A4238", fontSize: "1.4rem" }}>Review Topic Edits</h2>
+                <div style={{ fontSize: "0.9rem", color: "#7A7061", marginTop: "5px" }}>
+                  <strong>{topicReviewThesis.title}</strong>
+                </div>
+              </div>
+              <button
+                onClick={() => setTopicReviewThesis(null)}
+                style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer", color: "#4A4238" }}
+              >&times;</button>
+            </div>
+
+            <div style={{ padding: "30px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+                <div style={{ flex: "1 1 300px", background: "#fff", padding: "15px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "#64748b", fontSize: "1rem" }}>Current Abstract</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "#334155", margin: 0 }}>{topicReviewThesis.abstract || "No abstract provided."}</p>
+                </div>
+                <div style={{ flex: "1 1 300px", background: "#fff", padding: "15px", borderRadius: "8px", border: "2px solid #fcd34d" }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "#92400e", fontSize: "1rem" }}>Proposed Abstract</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "#334155", margin: 0 }}>{topicReviewThesis.pendingAbstract || "No abstract provided."}</p>
+                </div>
+              </div>
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+                <div style={{ flex: "1 1 300px", background: "#fff", padding: "15px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "#64748b", fontSize: "1rem" }}>Current Scope</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "#334155", margin: 0 }}>{topicReviewThesis.scope || "No scope provided."}</p>
+                </div>
+                <div style={{ flex: "1 1 300px", background: "#fff", padding: "15px", borderRadius: "8px", border: "2px solid #fcd34d" }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "#92400e", fontSize: "1rem" }}>Proposed Scope</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "#334155", margin: 0 }}>{topicReviewThesis.pendingScope || "No scope provided."}</p>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ padding: "20px 30px", borderTop: "1px solid #D6CEB8", display: "flex", justifyContent: "flex-end", gap: "15px", background: "#f8fafc" }}>
+              <button
+                className={styles.btnDanger}
+                style={{ margin: 0, padding: "10px 20px" }}
+                onClick={handleRejectTopicEdits}
+                disabled={topicReviewActionLoading}
+              >
+                {topicReviewActionLoading ? "Processing..." : "Reject Edits"}
+              </button>
+              <button
+                className={styles.btnPrimary}
+                style={{ margin: 0, padding: "10px 20px" }}
+                onClick={handleApproveTopicEdits}
+                disabled={topicReviewActionLoading}
+              >
+                {topicReviewActionLoading ? "Processing..." : "Approve Edits"}
+              </button>
+            </div>
+
           </div>
         </div>
       )}

@@ -325,7 +325,7 @@ export default function StudentDashboard() {
               )}
             </div>
 
-            {thesis.pendingAbstract && !isEditing && (
+            {(thesis.pendingAbstract || thesis.pendingScope) && !isEditing && (
               <div style={{ background: "#fef3c7", padding: "10px 15px", borderRadius: "6px", fontSize: "0.85rem", color: "#92400e", marginBottom: "20px", border: "1px solid #fcd34d" }}>
                 <strong>Note:</strong> You have proposed edits pending approval from your Advisor.
               </div>
