@@ -593,7 +593,7 @@ export default function LecturerDashboard() {
                         </div>
                         <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem", color: "#4A4238" }}>{act.description}</p>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.85rem", flexDirection: "column", gap: "10px" }}>
-                          <span style={{ color: "#7A7061" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
+                          <span style={{ color: "#7A7061", wordBreak: "break-word" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
 
                           {act.documentUrl && (
                             <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "5px" }}>
@@ -605,7 +605,7 @@ export default function LecturerDashboard() {
                             <div style={{ display: "flex", flexDirection: "column", gap: "5px", width: "100%", marginTop: "5px" }}>
                               <strong style={{ color: "#4A4238" }}>Submitted Links:</strong>
                               {act.links.map((link, idx) => (
-                                <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px", background: "#fff", padding: "6px 12px", borderRadius: "6px", border: "1px solid #D6CEB8", width: "fit-content" }}>
+                                <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px", background: "#fff", padding: "6px 12px", borderRadius: "6px", border: "1px solid #D6CEB8", width: "fit-content", maxWidth: "100%", wordBreak: "break-all" }}>
                                   <ExternalLink size={14} /> <span>{link.type}</span>
                                 </a>
                               ))}
