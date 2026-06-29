@@ -527,8 +527,59 @@ export default function LecturerDashboard() {
             <div className={styles.workspaceBody}>
 
               {/* Left Column: Activity Log & Submissions */}
-              <div className={activeWorkspace.role === "ViewOnly" ? styles.workspaceFull : styles.workspaceLeft} style={activeWorkspace.role === "ViewOnly" ? { width: "100%", borderRight: "none", padding: "30px" } : {}}>
-                <h3 style={{ margin: "0 0 20px 0", color: "#4A4238" }}>Submission History</h3>
+              <div className={activeWorkspace.role === "ViewOnly" ? styles.workspaceFull : styles.workspaceLeft} style={activeWorkspace.role === "ViewOnly" ? { width: "100%", borderRight: "none", padding: "30px", overflowY: "auto" } : {}}>
+                {activeWorkspace.role === "ViewOnly" && (
+                  <div style={{ marginBottom: "40px" }}>
+                    <h3 style={{ margin: "0 0 15px 0", color: "#4A4238", borderBottom: "1px solid #D6CEB8", paddingBottom: "10px" }}>Thesis Details</h3>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
+                      <div>
+                        <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase" }}>Title</strong>
+                        <div style={{ color: "#4A4238", fontWeight: "bold", fontSize: "1.05rem" }}>{activeWorkspace.thesis.title}</div>
+                      </div>
+                      <div>
+                        <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase" }}>Status</strong>
+                        <div style={{ color: "#4A4238", fontWeight: "bold" }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {activeWorkspace.thesis.status}</div>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: "20px" }}>
+                      <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Abstract</strong>
+                      <div style={{ color: "#4A4238", whiteSpace: "pre-wrap", background: "#fff", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8" }}>{activeWorkspace.thesis.abstract || "No abstract provided."}</div>
+                    </div>
+
+                    <div style={{ marginBottom: "20px" }}>
+                      <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Scope</strong>
+                      <div style={{ color: "#4A4238", whiteSpace: "pre-wrap", background: "#fff", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8" }}>{activeWorkspace.thesis.scope || "No scope provided."}</div>
+                    </div>
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
+                      <div>
+                        <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Members (Students)</strong>
+                        {activeWorkspace.thesis.studentUids?.length > 0 ? (
+                          <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238" }}>
+                            {activeWorkspace.thesis.studentUids.map(uid => <li key={uid}>{uid}</li>)}
+                          </ul>
+                        ) : <div style={{ color: "#4A4238" }}>None</div>}
+                      </div>
+                      <div>
+                        <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Committees & Advisors</strong>
+                        <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238" }}>
+                          <li><strong>Advisor:</strong> {activeWorkspace.thesis.lecturerUids.advisor || "None"}</li>
+                          <li><strong>Chairperson:</strong> {activeWorkspace.thesis.lecturerUids.chairperson || "None"}</li>
+                          {activeWorkspace.thesis.lecturerUids.committees?.length > 0 ? (
+                            <li><strong>Committees:</strong>
+                              <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px" }}>
+                                {activeWorkspace.thesis.lecturerUids.committees.map(c => <li key={c}>{c}</li>)}
+                              </ul>
+                            </li>
+                          ) : <li><strong>Committees:</strong> None</li>}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                <h3 style={{ margin: "0 0 20px 0", color: "#4A4238", borderBottom: activeWorkspace.role === "ViewOnly" ? "1px solid #D6CEB8" : "none", paddingBottom: activeWorkspace.role === "ViewOnly" ? "10px" : "0" }}>Submission History</h3>
 
                 {activities.length === 0 ? (
                   <p style={{ color: "#7A7061", fontStyle: "italic" }}>No activity recorded yet.</p>
