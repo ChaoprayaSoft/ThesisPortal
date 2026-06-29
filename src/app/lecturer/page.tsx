@@ -531,12 +531,12 @@ export default function LecturerDashboard() {
                 {activeWorkspace.role === "ViewOnly" && (
                   <div style={{ marginBottom: "40px" }}>
                     <h3 style={{ margin: "0 0 15px 0", color: "#4A4238", borderBottom: "1px solid #D6CEB8", paddingBottom: "10px" }}>Thesis Details</h3>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px", marginBottom: "20px" }}>
-                      <div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginBottom: "20px" }}>
+                      <div style={{ flex: "1 1 250px" }}>
                         <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase" }}>Title</strong>
                         <div style={{ color: "#4A4238", fontWeight: "bold", fontSize: "1.05rem" }}>{activeWorkspace.thesis.title}</div>
                       </div>
-                      <div>
+                      <div style={{ flex: "1 1 250px" }}>
                         <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase" }}>Status</strong>
                         <div style={{ color: "#4A4238", fontWeight: "bold" }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {activeWorkspace.thesis.status}</div>
                       </div>
@@ -552,23 +552,23 @@ export default function LecturerDashboard() {
                       <div style={{ color: "#4A4238", whiteSpace: "pre-wrap", background: "#fff", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8" }}>{activeWorkspace.thesis.scope || "No scope provided."}</div>
                     </div>
 
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-                      <div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
+                      <div style={{ flex: "1 1 250px", minWidth: 0 }}>
                         <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Members (Students)</strong>
                         {activeWorkspace.thesis.studentUids?.length > 0 ? (
-                          <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238" }}>
+                          <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238", wordBreak: "break-all" }}>
                             {activeWorkspace.thesis.studentUids.map(uid => <li key={uid}>{uid}</li>)}
                           </ul>
                         ) : <div style={{ color: "#4A4238" }}>None</div>}
                       </div>
-                      <div>
+                      <div style={{ flex: "1 1 250px", minWidth: 0 }}>
                         <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Committees & Advisors</strong>
-                        <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238" }}>
+                        <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238", wordBreak: "break-word" }}>
                           <li><strong>Advisor:</strong> {activeWorkspace.thesis.lecturerUids.advisor || "None"}</li>
                           <li><strong>Chairperson:</strong> {activeWorkspace.thesis.lecturerUids.chairperson || "None"}</li>
                           {activeWorkspace.thesis.lecturerUids.committees?.length > 0 ? (
                             <li><strong>Committees:</strong>
-                              <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px" }}>
+                              <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px", wordBreak: "break-all" }}>
                                 {activeWorkspace.thesis.lecturerUids.committees.map(c => <li key={c}>{c}</li>)}
                               </ul>
                             </li>
