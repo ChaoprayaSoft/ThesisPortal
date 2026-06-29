@@ -173,7 +173,7 @@ export default function LecturerDashboard() {
             await sendNotificationEmail({
               to: sEmail,
               subject: `Thesis Revision Required`,
-              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> requires revision. Your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}) has requested changes.</p>${reviewComments ? `<p><b>Comments:</b> ${reviewComments}</p>` : ""}${linksHtml}<p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a> to propose edits.</p>`
+              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> requires revision. Your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}) has requested changes.</p>${reviewComments ? `<p><b>Comments:</b> ${reviewComments}</p>` : ""}${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to propose edits.</p>`
             });
           }
         }
