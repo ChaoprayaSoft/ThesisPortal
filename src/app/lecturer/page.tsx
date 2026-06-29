@@ -19,7 +19,7 @@ export default function LecturerDashboard() {
   const [reviewComments, setReviewComments] = useState("");
   const [deadlineModalThesis, setDeadlineModalThesis] = useState<ThesisData | null>(null);
 
-  // Topic Edit State
+  // Abstract & Scope Edit State
   const [topicReviewThesis, setTopicReviewThesis] = useState<ThesisData | null>(null);
   const [topicReviewActionLoading, setTopicReviewActionLoading] = useState(false);
 
@@ -234,10 +234,10 @@ export default function LecturerDashboard() {
     try {
       const { approveTopicEdits } = await import("@/lib/db/theses");
       await approveTopicEdits(topicReviewThesis.id, topicReviewThesis.pendingAbstract || "", topicReviewThesis.pendingScope || "");
-      
+
       await logThesisActivity({
         thesisId: topicReviewThesis.id,
-        type: "Topic Edits Approved",
+        type: "Abstract & Scope Edits Approved",
         timestamp: Date.now(),
         actorEmail: user.email,
         actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
@@ -249,8 +249,8 @@ export default function LecturerDashboard() {
         for (const sEmail of topicReviewThesis.studentUids) {
           await sendNotificationEmail({
             to: sEmail,
-            subject: `Topic Edits Approved: ${topicReviewThesis.title}`,
-            html: `<p>Your proposed topic edits (Abstract & Scope) for <b>${topicReviewThesis.title}</b> have been approved by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a>.</p>`
+            subject: `Abstract & Scope Edits Approved: ${topicReviewThesis.title}`,
+            html: `<p>Your proposed Abstract & Scope edits for <b>${topicReviewThesis.title}</b> have been approved by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a>.</p>`
           });
         }
       }
@@ -268,10 +268,10 @@ export default function LecturerDashboard() {
     try {
       const { rejectTopicEdits } = await import("@/lib/db/theses");
       await rejectTopicEdits(topicReviewThesis.id);
-      
+
       await logThesisActivity({
         thesisId: topicReviewThesis.id,
-        type: "Topic Edits Rejected",
+        type: "Abstract & Scope Edits Rejected",
         timestamp: Date.now(),
         actorEmail: user.email,
         actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
@@ -283,8 +283,8 @@ export default function LecturerDashboard() {
         for (const sEmail of topicReviewThesis.studentUids) {
           await sendNotificationEmail({
             to: sEmail,
-            subject: `Topic Edits Rejected: ${topicReviewThesis.title}`,
-            html: `<p>Your proposed topic edits (Abstract & Scope) for <b>${topicReviewThesis.title}</b> have been rejected by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review.</p>`
+            subject: `Abstract & Scope Edits Rejected: ${topicReviewThesis.title}`,
+            html: `<p>Your proposed Abstract & Scope edits for <b>${topicReviewThesis.title}</b> have been rejected by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review.</p>`
           });
         }
       }
@@ -333,50 +333,7 @@ export default function LecturerDashboard() {
         <h1>My Assigned Theses</h1>
       </div>
 
-      <div className={styles.card}>
-        <h2>Topic Edit Proposals</h2>
-        <p>Theses where the student has proposed changes to the Abstract or Scope.</p>
 
-        {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).length === 0 ? (
-          <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>No pending topic edits.</p>
-        ) : (
-          <div className={styles.tableResponsive}>
-            <table className={styles.table} style={{ marginTop: "20px", minWidth: "800px" }}>
-              <thead>
-                <tr>
-                  <th style={{ width: "40%" }}>Title</th>
-                  <th style={{ width: "20%" }}>Year</th>
-                  <th style={{ width: "20%" }}>Status</th>
-                  <th style={{ width: "20%" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).map(t => (
-                  <tr key={`topic-${t.id}`}>
-                    <td>
-                      <strong>{t.title}</strong>
-                      <div style={{ fontSize: "0.85rem", color: "#7A7061", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
-                    </td>
-                    <td>{t.year || "-"}</td>
-                    <td>
-                      <span style={{ padding: "4px 8px", background: "#fef3c7", color: "#92400e", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #fcd34d", whiteSpace: "nowrap", fontWeight: "bold" }}>Pending Topic Edits</span>
-                    </td>
-                    <td>
-                      <button
-                        className={styles.btnPrimary}
-                        style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f59e0b", color: "#fff", border: "1px solid #d97706" }}
-                        onClick={() => setTopicReviewThesis(t)}
-                      >
-                        Review Edits
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
 
       <div className={styles.card}>
         <h2>Action Required</h2>
@@ -425,6 +382,51 @@ export default function LecturerDashboard() {
                     </tr>
                   );
                 })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className={styles.card}>
+        <h2>Abstract & Scope Edit Proposals</h2>
+        <p>Theses where the student has proposed changes to the Abstract or Scope.</p>
+
+        {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).length === 0 ? (
+          <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>No pending Abstract & Scope edits.</p>
+        ) : (
+          <div className={styles.tableResponsive}>
+            <table className={styles.table} style={{ marginTop: "20px", minWidth: "800px" }}>
+              <thead>
+                <tr>
+                  <th style={{ width: "40%" }}>Title</th>
+                  <th style={{ width: "20%" }}>Year</th>
+                  <th style={{ width: "20%" }}>Status</th>
+                  <th style={{ width: "20%" }}>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).map(t => (
+                  <tr key={`topic-${t.id}`}>
+                    <td>
+                      <strong>{t.title}</strong>
+                      <div style={{ fontSize: "0.85rem", color: "#7A7061", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                    </td>
+                    <td>{t.year || "-"}</td>
+                    <td>
+                      <span style={{ padding: "4px 8px", background: "#fef3c7", color: "#92400e", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #fcd34d", whiteSpace: "nowrap", fontWeight: "bold" }}>Pending Abstract & Scope Edits</span>
+                    </td>
+                    <td>
+                      <button
+                        className={styles.btnPrimary}
+                        style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f59e0b", color: "#fff", border: "1px solid #d97706" }}
+                        onClick={() => setTopicReviewThesis(t)}
+                      >
+                        Review Edits
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -740,14 +742,14 @@ export default function LecturerDashboard() {
         </div>
       )}
 
-      {/* Topic Edit Review Modal */}
+      {/* Abstract & Scope Edit Review Modal */}
       {topicReviewThesis && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
           <div style={{ background: "#FDF9F1", width: "900px", maxWidth: "100%", maxHeight: "90vh", borderRadius: "12px", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)" }}>
-            
+
             <div style={{ padding: "20px 30px", borderBottom: "1px solid #D6CEB8", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EBE4D1" }}>
               <div>
-                <h2 style={{ margin: 0, color: "#4A4238", fontSize: "1.4rem" }}>Review Topic Edits</h2>
+                <h2 style={{ margin: 0, color: "#4A4238", fontSize: "1.4rem" }}>Review Abstract & Scope Edits</h2>
                 <div style={{ fontSize: "0.9rem", color: "#7A7061", marginTop: "5px" }}>
                   <strong>{topicReviewThesis.title}</strong>
                 </div>
