@@ -565,10 +565,10 @@ export default function StudentDashboard() {
                 <strong style={{ display: "block", fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px" }}>Committee</strong>
                 {thesis.lecturerUids.committees.length > 0 ? (
                   <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px", color: "#4A4238", display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {thesis.lecturerUids.committees.map(c => (
+                    {thesis.lecturerUids.committees.map((c, idx) => (
                       <li key={c}>
                         <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span>{lecturersMap[c]?.name_en || lecturersMap[c]?.name_th || c}</span>
+                          <span>{thesis.lecturerUids.committees.length > 1 ? `Committee #${idx + 1}: ` : ""}{lecturersMap[c]?.name_en || lecturersMap[c]?.name_th || c}</span>
                           {(lecturersMap[c]?.name_en || lecturersMap[c]?.name_th) && (
                             <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{c}</span>
                           )}

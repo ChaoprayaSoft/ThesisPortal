@@ -606,7 +606,7 @@ export default function LecturerDashboard() {
                           {activeWorkspace.thesis.lecturerUids.committees?.length > 0 ? (
                             <li><strong>Committees:</strong>
                               <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px", wordBreak: "break-all" }}>
-                                {activeWorkspace.thesis.lecturerUids.committees.map(c => <li key={c}>{userMap[c] || c}</li>)}
+                                {activeWorkspace.thesis.lecturerUids.committees.map((c, idx) => <li key={c}>{activeWorkspace.thesis.lecturerUids.committees.length > 1 ? `Committee #${idx + 1}: ` : ""}{userMap[c] || c}</li>)}
                               </ul>
                             </li>
                           ) : <li><strong>Committees:</strong> None</li>}

@@ -642,7 +642,7 @@ export default function AdminDashboard() {
                           return (
                             <>
                               <div><strong>Advisor:</strong> {selectedFieldThesis.lecturerUids?.advisor ? getLecturerNameTh(selectedFieldThesis.lecturerUids.advisor) : "None"}</div>
-                              <div><strong>Committee:</strong> {selectedFieldThesis.lecturerUids?.committees?.length > 0 ? selectedFieldThesis.lecturerUids.committees.map(getLecturerNameTh).join(", ") : "None"}</div>
+                              <div><strong>Committee:</strong> {selectedFieldThesis.lecturerUids?.committees?.length > 0 ? selectedFieldThesis.lecturerUids.committees.map((c: string, i: number) => selectedFieldThesis.lecturerUids.committees.length > 1 ? `Committee #${i+1}: ${getLecturerNameTh(c)}` : getLecturerNameTh(c)).join(", ") : "None"}</div>
                               <div><strong>Chairperson:</strong> {selectedFieldThesis.lecturerUids?.chairperson ? getLecturerNameTh(selectedFieldThesis.lecturerUids.chairperson) : "None"}</div>
                             </>
                           );

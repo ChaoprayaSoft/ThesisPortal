@@ -601,8 +601,8 @@ export default function AdminThesisPage() {
                 <li>
                   <strong>Committees:</strong>
                   <ul style={{ paddingLeft: "20px", marginTop: "4px" }}>
-                    {viewThesis.lecturerUids.committees.map((email: string) => (
-                      <li key={email}>{lecturers.find(l => l.email === email)?.name_th || ""} - {email}</li>
+                    {viewThesis.lecturerUids.committees.map((email: string, idx: number) => (
+                      <li key={email}>{viewThesis.lecturerUids.committees.length > 1 ? `Committee #${idx + 1}: ` : ""}{lecturers.find(l => l.email === email)?.name_th || ""} - {email}</li>
                     ))}
                   </ul>
                 </li>
