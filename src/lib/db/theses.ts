@@ -138,16 +138,33 @@ export async function updateThesisStatus(thesisId: string, status: ThesisStatus,
   await updateDoc(doc(db, "theses", thesisId), { status, currentStage: stage, statusUpdatedAt: Date.now() });
 }
 
-export async function approveThesis(thesisId: string, userEmail: string, role: "Advisor" | "Committee" | "Chairperson", currentThesis: ThesisData) {
+export function getDisplayStatus(t: ThesisData): string {
+  if (t.status === "Pending Committee" && t.lecturerUids.committees.length > 1) {
+    const unapprovedIdx = t.lecturerUids.committees.findIndex(c => !(t.committeeApprovals || []).includes(c));
+    if (unapprovedIdx !== -1) {
+      return `Pending Committee #${unapprovedIdx + 1}`;
+    }
+  }
+  if (t.status === "Pending Sign. Committee" && t.lecturerUids.committees.length > 1) {
+    const unapprovedIdx = t.lecturerUids.committees.findIndex(c => !(t.committeeSignApprovals || []).includes(c));
+    if (unapprovedIdx !== -1) {
+      return `Pending Sign. Committee #${unapprovedIdx + 1}`;
+    }
+  }
+  return t.status;
+}
+
+export async function approveThesis(thesisId: string, userEmail: string, role: string, currentThesis: ThesisData) {
+  const baseRole = role.startsWith("Committee") ? "Committee" : role;
   let newStatus = currentThesis.status;
   let newStage = currentThesis.currentStage;
   let newCommitteeApprovals = currentThesis.committeeApprovals || [];
   let newCommitteeSignApprovals = currentThesis.committeeSignApprovals || [];
 
-  if (role === "Advisor" && currentThesis.status === "Pending Advisor") {
+  if (baseRole === "Advisor" && currentThesis.status === "Pending Advisor") {
     newStatus = "Pending Committee";
     newStage = 1;
-  } else if (role === "Committee" && currentThesis.status === "Pending Committee") {
+  } else if (baseRole === "Committee" && currentThesis.status === "Pending Committee") {
     if (!newCommitteeApprovals.includes(userEmail)) {
       newCommitteeApprovals.push(userEmail);
     }
@@ -156,13 +173,13 @@ export async function approveThesis(thesisId: string, userEmail: string, role: "
       newStatus = "Pending Chairperson";
       newStage = 2;
     }
-  } else if (role === "Chairperson" && currentThesis.status === "Pending Chairperson") {
+  } else if (baseRole === "Chairperson" && currentThesis.status === "Pending Chairperson") {
     newStatus = "Pending Sign. Advisor";
     newStage = 3;
-  } else if (role === "Advisor" && currentThesis.status === "Pending Sign. Advisor") {
+  } else if (baseRole === "Advisor" && currentThesis.status === "Pending Sign. Advisor") {
     newStatus = "Pending Sign. Committee";
     newStage = 4;
-  } else if (role === "Committee" && currentThesis.status === "Pending Sign. Committee") {
+  } else if (baseRole === "Committee" && currentThesis.status === "Pending Sign. Committee") {
     if (!newCommitteeSignApprovals.includes(userEmail)) {
       newCommitteeSignApprovals.push(userEmail);
     }
@@ -171,7 +188,7 @@ export async function approveThesis(thesisId: string, userEmail: string, role: "
       newStatus = "Pending Sign. Chairperson";
       newStage = 5;
     }
-  } else if (role === "Chairperson" && currentThesis.status === "Pending Sign. Chairperson") {
+  } else if (baseRole === "Chairperson" && currentThesis.status === "Pending Sign. Chairperson") {
     newStatus = "Graduate";
     newStage = 6;
   } else {

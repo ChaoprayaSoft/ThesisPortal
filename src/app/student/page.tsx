@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus, getStatusForStage, deleteThesisActivity } from "@/lib/db/theses";
+import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus, getStatusForStage, deleteThesisActivity, getDisplayStatus } from "@/lib/db/theses";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
@@ -332,7 +332,7 @@ export default function StudentDashboard() {
         <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }} className={styles.statusBadge}>
           <div style={{ fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Current Status</div>
           <div style={{ padding: "8px 16px", background: "#EBE4D1", borderRadius: "999px", fontWeight: "bold", color: "#4A4238", border: "1px solid #D6CEB8", display: "inline-block" }}>
-            {getStageIcon(thesis.currentStage)} {thesis.status}
+            {getStageIcon(thesis.currentStage)} {getDisplayStatus(thesis)}
           </div>
         </div>
       </div>

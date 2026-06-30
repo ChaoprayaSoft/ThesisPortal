@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import styles from "./lecturer.module.css";
-import { getThesesByLecturer, subscribeToThesesByLecturer, approveThesis, rejectThesis, ThesisData, getThesisActivities, ThesisActivity, logThesisActivity } from "@/lib/db/theses";
+import { getThesesByLecturer, subscribeToThesesByLecturer, approveThesis, rejectThesis, ThesisData, getThesisActivities, ThesisActivity, logThesisActivity, getDisplayStatus } from "@/lib/db/theses";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import { getAllUsers } from "@/lib/db/users";
 import { ExternalLink, Plus, X } from "lucide-react";
@@ -16,7 +16,7 @@ export default function LecturerDashboard() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
   // Review Workspace State
-  const [activeWorkspace, setActiveWorkspace] = useState<{ thesis: ThesisData, role: "Advisor" | "Committee" | "Chairperson" | "ViewOnly" } | null>(null);
+  const [activeWorkspace, setActiveWorkspace] = useState<{ thesis: ThesisData, role: string } | null>(null);
   const [activities, setActivities] = useState<ThesisActivity[]>([]);
   const [reviewComments, setReviewComments] = useState("");
   const [deadlineModalThesis, setDeadlineModalThesis] = useState<ThesisData | null>(null);
@@ -90,7 +90,7 @@ export default function LecturerDashboard() {
     // though real-time listener handles state updates automatically now.
   };
 
-  const openWorkspace = async (thesis: ThesisData, role: "Advisor" | "Committee" | "Chairperson" | "ViewOnly") => {
+  const openWorkspace = async (thesis: ThesisData, role: string) => {
     setActiveWorkspace({ thesis, role });
     setReviewComments("");
     setReviewLinks([{ type: "Marked-up Manuscript", url: "" }]);
@@ -119,13 +119,29 @@ export default function LecturerDashboard() {
     setReviewLinks(newLinks);
   };
 
+  const validateLinksBeforeAction = () => {
+    const validLinks = reviewLinks.filter(l => l.url.trim() !== "");
+    if (validLinks.length === 0) {
+      setErrorDialog("Please provide at least one valid URL for your review materials.");
+      return false;
+    }
+    const invalidUrl = validLinks.find(l => !l.url.trim().startsWith("http"));
+    if (invalidUrl) {
+      setErrorDialog("URLs must start with http:// or https://");
+      return false;
+    }
+    return true;
+  };
+
   const triggerApprove = () => {
     if (!user?.email || !activeWorkspace?.thesis.id) return;
+    if (!validateLinksBeforeAction()) return;
     setConfirmDialog({ type: "Approve", message: `Are you sure you want to approve this thesis as ${activeWorkspace.role}?` });
   };
 
   const triggerReject = () => {
     if (!user?.email || !activeWorkspace?.thesis.id) return;
+    if (!validateLinksBeforeAction()) return;
     setConfirmDialog({ type: "Revise", message: "Are you sure you want to mark this thesis for revision? It will be returned to the student." });
   };
 
@@ -134,6 +150,11 @@ export default function LecturerDashboard() {
 
     // Validation
     const validLinks = reviewLinks.filter(l => l.url.trim() !== "");
+    if (validLinks.length === 0) {
+      setConfirmDialog(null);
+      setErrorDialog("Please provide at least one valid URL for your review materials.");
+      return;
+    }
     const invalidUrl = validLinks.find(l => !l.url.trim().startsWith("http"));
     if (invalidUrl) {
       setConfirmDialog(null);
@@ -147,7 +168,7 @@ export default function LecturerDashboard() {
 
     try {
       if (actionType === "Approve") {
-        await approveThesis(activeWorkspace.thesis.id, user.email, activeWorkspace.role as "Advisor" | "Committee" | "Chairperson", activeWorkspace.thesis);
+        await approveThesis(activeWorkspace.thesis.id, user.email, activeWorkspace.role, activeWorkspace.thesis);
         await logThesisActivity({
           thesisId: activeWorkspace.thesis.id,
           type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Approved" : "Manuscript Approved",
@@ -204,14 +225,21 @@ export default function LecturerDashboard() {
 
   // Helper to determine what actionable role the current user has for a given thesis
   const getActionableRoles = (t: ThesisData, email: string) => {
-    const roles: ("Advisor" | "Committee" | "Chairperson")[] = [];
+    const roles: string[] = [];
     if (t.lecturerUids.advisor === email && (t.status === "Pending Advisor" || t.status === "Pending Sign. Advisor")) roles.push("Advisor");
-    if (t.lecturerUids.committees.includes(email) && (
+    const commIdx = t.lecturerUids.committees.indexOf(email);
+    if (commIdx !== -1 && (
       (t.status === "Pending Committee" && !(t.committeeApprovals || []).includes(email)) ||
       (t.status === "Pending Sign. Committee" && !(t.committeeSignApprovals || []).includes(email))
-    )) roles.push("Committee");
+    )) {
+      if (t.lecturerUids.committees.length > 1) {
+        roles.push(`Committee #${commIdx + 1}`);
+      } else {
+        roles.push("Committee");
+      }
+    }
     if (t.lecturerUids.chairperson === email && (t.status === "Pending Chairperson" || t.status === "Pending Sign. Chairperson")) roles.push("Chairperson");
-    return roles;
+    return roles as any[];
   };
 
   const handleSaveDeadlines = async () => {
@@ -377,7 +405,7 @@ export default function LecturerDashboard() {
                       </td>
                       <td>{t.year || "-"}</td>
                       <td>
-                        <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {t.status}</span>
+                        <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
                       </td>
                       <td>{roles.join(", ")}</td>
                       <td>
@@ -477,7 +505,7 @@ export default function LecturerDashboard() {
                       </td>
                       <td>{t.year || "-"}</td>
                       <td>
-                        <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {t.status}</span>
+                        <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
                       </td>
                       <td>{myRoles.join(", ")}</td>
                       <td>
@@ -548,7 +576,7 @@ export default function LecturerDashboard() {
                       </div>
                       <div style={{ flex: "1 1 250px" }}>
                         <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase" }}>Status</strong>
-                        <div style={{ color: "#4A4238", fontWeight: "bold" }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {activeWorkspace.thesis.status}</div>
+                        <div style={{ color: "#4A4238", fontWeight: "bold" }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {getDisplayStatus(activeWorkspace.thesis)}</div>
                       </div>
                     </div>
 
@@ -646,8 +674,8 @@ export default function LecturerDashboard() {
                     </div>
 
                     <div style={{ marginBottom: "30px" }}>
-                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "8px" }}>Attach Materials (Optional)</label>
-                      <p style={{ fontSize: "0.85rem", color: "#7A7061", marginBottom: "10px", marginTop: 0 }}>Provide links to your marked-up manuscript or external references.</p>
+                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "8px" }}>Attach Materials (Required)</label>
+                      <p style={{ fontSize: "0.85rem", color: "#7A7061", marginBottom: "10px", marginTop: 0 }}>You must provide at least one link to your marked-up manuscript or external references.</p>
 
                       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                         {reviewLinks.map((link, idx) => (
@@ -789,7 +817,7 @@ export default function LecturerDashboard() {
       {errorDialog && (
         <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
           <div style={{ background: "#fff", width: "400px", maxWidth: "100%", borderRadius: "12px", padding: "30px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)", textAlign: "center" }}>
-            <h2 style={{ margin: "0 0 15px 0", color: "#dc2626", fontSize: "1.5rem" }}>Upload Error</h2>
+            <h2 style={{ margin: "0 0 15px 0", color: "#dc2626", fontSize: "1.5rem" }}>Notice</h2>
             <p style={{ color: "#4A4238", fontSize: "1.05rem", marginBottom: "30px", lineHeight: "1.5" }}>
               {errorDialog}
             </p>

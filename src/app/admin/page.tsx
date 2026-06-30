@@ -50,6 +50,9 @@ export default function AdminDashboard() {
           "Pending Advisor": 0,
           "Pending Committee": 0,
           "Pending Chairperson": 0,
+          "Pending Sign. Advisor": 0,
+          "Pending Sign. Committee": 0,
+          "Pending Sign. Chairperson": 0,
           "Revise": 0,
           "Graduate": 0
         };
@@ -257,25 +260,60 @@ export default function AdminDashboard() {
             <div className={styles.card}>
               <h2 style={{ marginBottom: "20px" }}>Thesis Status Overview</h2>
               <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                {Object.entries(stats.statusBreakdown).map(([status, count]) => {
+                {Object.entries(stats.statusBreakdown)
+                  .filter(([status]) => ["Preparing", "Pending Advisor", "Pending Committee", "Pending Chairperson", "Revise", "Graduate"].includes(status))
+                  .map(([status, count]) => {
                   const percentage = stats.totalTheses === 0 ? 0 : Math.round((count / stats.totalTheses) * 100);
                   
                   let barColor = "#3b82f6";
                   if (status === "Graduate") barColor = "#10b981";
                   else if (status === "Revise") barColor = "#ef4444";
                   else if (status === "Pending Chairperson") barColor = "#8b5cf6";
-                  else if (status === "Pending Sign. Advisor") barColor = "#f59e0b";
-                  else if (status === "Pending Sign. Committee") barColor = "#d97706";
-                  else if (status === "Pending Sign. Chairperson") barColor = "#b45309";
 
                   let icon = "📄";
                   if (status === "Pending Advisor") icon = "📝";
                   if (status === "Pending Committee") icon = "👥";
                   if (status === "Pending Chairperson") icon = "👨‍⚖️";
-                  if (status === "Pending Sign. Advisor") icon = "✒️";
+                  if (status === "Graduate") icon = "🎓";
+
+                  return (
+                    <div 
+                      key={status} 
+                      onClick={() => setActiveStatusModal(status)}
+                      style={{ display: "flex", alignItems: "center", gap: "15px", cursor: "pointer", padding: "8px", borderRadius: "8px", transition: "background 0.2s" }}
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "#FDF9F1"}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
+                    >
+                      <div style={{ width: "180px", fontWeight: "bold", color: "#4A4238", fontSize: "0.9rem", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+                        {icon} {status}
+                      </div>
+                      <div style={{ flex: 1, background: "#EBE4D1", height: "12px", borderRadius: "6px", overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${percentage}%`, background: barColor, borderRadius: "6px", transition: "width 0.5s ease" }}></div>
+                      </div>
+                      <div style={{ width: "50px", textAlign: "right", color: "#7A7061", fontSize: "0.9rem", fontWeight: "bold" }}>
+                        {count}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className={styles.card}>
+              <h2 style={{ marginBottom: "20px" }}>Signature Stage Overview</h2>
+              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                {Object.entries(stats.statusBreakdown)
+                  .filter(([status]) => ["Pending Sign. Advisor", "Pending Sign. Committee", "Pending Sign. Chairperson"].includes(status))
+                  .map(([status, count]) => {
+                  const percentage = stats.totalTheses === 0 ? 0 : Math.round((count / stats.totalTheses) * 100);
+                  
+                  let barColor = "#f59e0b";
+                  if (status === "Pending Sign. Committee") barColor = "#d97706";
+                  else if (status === "Pending Sign. Chairperson") barColor = "#b45309";
+
+                  let icon = "✒️";
                   if (status === "Pending Sign. Committee") icon = "🖊️";
                   if (status === "Pending Sign. Chairperson") icon = "🖋️";
-                  if (status === "Graduate") icon = "🎓";
 
                   return (
                     <div 

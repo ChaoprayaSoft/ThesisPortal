@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import styles from "../admin.module.css";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { getGroups, StudentGroup } from "@/lib/db/groups";
-import { createThesis, getAllTheses, deleteThesis, updateThesis } from "@/lib/db/theses";
+import { createThesis, getAllTheses, deleteThesis, updateThesis, getDisplayStatus } from "@/lib/db/theses";
 
 export default function AdminThesisPage() {
   const [lecturers, setLecturers] = useState<UserData[]>([]);
@@ -492,7 +492,7 @@ export default function AdminThesisPage() {
                     <td>{groupName}</td>
                     <td>{t.year || "-"}</td>
                     <td>{t.fieldOfStudy || "-"}</td>
-                    <td><span style={{ padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {t.status}</span></td>
+                    <td><span style={{ padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span></td>
                     <td>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button
@@ -564,7 +564,7 @@ export default function AdminThesisPage() {
             <h2 style={{ marginTop: 0, borderBottom: "1px solid #eee", paddingBottom: "10px" }}>Thesis Details</h2>
             <div style={{ marginBottom: "15px" }}><strong>Title:</strong> {viewThesis.title}</div>
             <div style={{ marginBottom: "15px" }}><strong>Group:</strong> {groups.find(g => g.id === viewThesis.groupId)?.name}</div>
-            <div style={{ marginBottom: "15px" }}><strong>Status:</strong> <span style={{ padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem" }}>{viewThesis.status}</span></div>
+            <div style={{ marginBottom: "15px" }}><strong>Status:</strong> <span style={{ padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem" }}>{getDisplayStatus(viewThesis)}</span></div>
             <div style={{ marginBottom: "15px" }}><strong>Year:</strong> {viewThesis.year || "-"}</div>
             <div style={{ marginBottom: "15px" }}><strong>Field of Study:</strong> {viewThesis.fieldOfStudy || "-"}</div>
             {(viewThesis.deadlines?.advisor || viewThesis.deadlines?.committee || viewThesis.deadlines?.chairperson) && (
