@@ -564,7 +564,6 @@ export default function LecturerDashboard() {
                       <div style={{ flex: "1 1 250px", minWidth: 0 }}>
                         <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Committees & Advisors</strong>
                         <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238", wordBreak: "break-word" }}>
-                          <li><strong>Advisor:</strong> {activeWorkspace.thesis.lecturerUids.advisor || "None"}</li>
                           <li><strong>Chairperson:</strong> {activeWorkspace.thesis.lecturerUids.chairperson || "None"}</li>
                           {activeWorkspace.thesis.lecturerUids.committees?.length > 0 ? (
                             <li><strong>Committees:</strong>
@@ -573,6 +572,7 @@ export default function LecturerDashboard() {
                               </ul>
                             </li>
                           ) : <li><strong>Committees:</strong> None</li>}
+                          <li><strong>Advisor:</strong> {activeWorkspace.thesis.lecturerUids.advisor || "None"}</li>
                         </ul>
                       </div>
                     </div>
