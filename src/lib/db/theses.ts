@@ -1,5 +1,5 @@
 import { db } from "../firebase";
-import { collection, doc, setDoc, getDocs, getDoc, updateDoc, query, where, orderBy, onSnapshot, deleteField } from "firebase/firestore";
+import { collection, doc, setDoc, getDocs, getDoc, updateDoc, query, where, orderBy, onSnapshot, deleteField, deleteDoc } from "firebase/firestore";
 
 export type ThesisStatus = "Preparing" | "Pending Advisor" | "Pending Committee" | "Pending Chairperson" | "Pending Sign. Advisor" | "Pending Sign. Committee" | "Pending Sign. Chairperson" | "Graduate" | "Revise";
 
@@ -237,4 +237,8 @@ export async function rejectTopicEdits(thesisId: string) {
     pendingScope: deleteField(),
     statusUpdatedAt: Date.now()
   });
+}
+
+export async function deleteThesisActivity(activityId: string) {
+  await deleteDoc(doc(db, "thesisActivities", activityId));
 }

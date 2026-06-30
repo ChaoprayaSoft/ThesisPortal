@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus, getStatusForStage } from "@/lib/db/theses";
+import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus, getStatusForStage, deleteThesisActivity } from "@/lib/db/theses";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
@@ -236,6 +236,60 @@ export default function StudentDashboard() {
     setSubmittingLinks(false);
   };
 
+  const handleCancelSubmission = async (activity: ThesisActivity) => {
+    if (!thesis?.id || !user?.email || !activity.id) return;
+    if (!confirm("Are you sure you want to cancel this submission? This will notify your lecturer.")) return;
+
+    try {
+      await logThesisActivity({
+        thesisId: thesis.id,
+        type: "Submission Cancelled",
+        timestamp: Date.now(),
+        actorEmail: user.email,
+        actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
+        actorRole: "Student",
+        description: "Student cancelled their recent submission.",
+      });
+      const revertStatus = activity.type === "Initial Submission" ? "Preparing" : "Revise";
+      await updateThesis(thesis.id, { status: revertStatus, statusUpdatedAt: Date.now() });
+
+      // Notify Student
+      await sendNotificationEmail({
+        to: user.email,
+        subject: `Submission Cancelled: ${thesis.title}`,
+        html: `<p>You have successfully cancelled your recent submission for <b>${thesis.title}</b>.</p><p>You can make a new submission when ready.</p>`
+      });
+
+      // Notify Lecturer(s) based on current stage
+      if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
+        await sendNotificationEmail({
+          to: thesis.lecturerUids.advisor,
+          subject: `Submission Cancelled: ${thesis.title}`,
+          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
+        });
+      } else if ((thesis.currentStage === 1 || thesis.currentStage === 4) && thesis.lecturerUids?.committees) {
+        for (const comm of thesis.lecturerUids.committees) {
+          await sendNotificationEmail({
+            to: comm,
+            subject: `Submission Cancelled: ${thesis.title}`,
+            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
+          });
+        }
+      } else if ((thesis.currentStage === 2 || thesis.currentStage === 5) && thesis.lecturerUids?.chairperson) {
+        await sendNotificationEmail({
+          to: thesis.lecturerUids.chairperson,
+          subject: `Submission Cancelled: ${thesis.title}`,
+          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
+        });
+      }
+
+      await loadData();
+    } catch (err) {
+      console.error(err);
+      setErrorDialog("Failed to cancel submission.");
+    }
+  };
+
   if (loading) {
     return <div className={styles.loading}>Loading your workspace...</div>;
   }
@@ -383,7 +437,18 @@ export default function StudentDashboard() {
                   <div key={act.id} style={{ background: "#FDF9F1", padding: "15px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
                       <strong>{act.type}</strong>
-                      <span style={{ fontSize: "0.8rem", color: "#7A7061" }}>{new Date(act.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                        <span style={{ fontSize: "0.8rem", color: "#7A7061" }}>{new Date(act.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                        {/* Cancel Button only for latest activity, if it's a submission, and submitted by this student */}
+                        {activities.indexOf(act) === 0 && act.actorEmail === user?.email && (act.type === "Initial Submission" || act.type === "Revision Resubmitted") && (
+                          <button
+                            onClick={() => handleCancelSubmission(act)}
+                            style={{ background: "#dc2626", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", cursor: "pointer", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}
+                          >
+                            <X size={12} /> Cancel
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem" }}>{act.description}</p>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.85rem", flexDirection: "column", gap: "10px" }}>
