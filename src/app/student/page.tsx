@@ -8,6 +8,18 @@ import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
 import { Plus, X, ExternalLink } from "lucide-react";
 
+const getStageLabel = (stage: number) => {
+  switch (stage) {
+    case 0: return "Advisor";
+    case 1: return "Committee";
+    case 2: return "Chairperson";
+    case 3: return "Sign. Advisor";
+    case 4: return "Sign. Committee";
+    case 5: return "Sign. Chairperson";
+    case 6: return "Graduate";
+    default: return "Unknown";
+  }
+};
 export default function StudentDashboard() {
   const { user, dbUser } = useAuth();
   const [thesis, setThesis] = useState<ThesisData | null>(null);
@@ -191,7 +203,7 @@ export default function StudentDashboard() {
         actorEmail: user.email,
         actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
         actorRole: "Student",
-        description: "Student submitted thesis materials for review.",
+        description: `Student submitted thesis materials for review. (${getStageLabel(thesis.currentStage)})`,
         links: validLinks
       });
 
