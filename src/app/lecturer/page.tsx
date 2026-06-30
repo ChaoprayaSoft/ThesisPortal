@@ -5,11 +5,13 @@ import { useAuth } from "@/components/AuthProvider";
 import styles from "./lecturer.module.css";
 import { getThesesByLecturer, subscribeToThesesByLecturer, approveThesis, rejectThesis, ThesisData, getThesisActivities, ThesisActivity, logThesisActivity } from "@/lib/db/theses";
 import { sendNotificationEmail } from "@/lib/actions/email";
+import { getAllUsers } from "@/lib/db/users";
 import { ExternalLink, Plus, X } from "lucide-react";
 
 export default function LecturerDashboard() {
   const { user, dbUser } = useAuth();
   const [theses, setTheses] = useState<ThesisData[]>([]);
+  const [userMap, setUserMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
 
@@ -56,6 +58,14 @@ export default function LecturerDashboard() {
       default: return "📄";
     }
   };
+
+  useEffect(() => {
+    getAllUsers().then(users => {
+      const map: Record<string, string> = {};
+      users.forEach(u => map[u.email] = u.name_th || u.name_en || u.email);
+      setUserMap(map);
+    }).catch(console.error);
+  }, []);
 
   useEffect(() => {
     if (user?.email) {
@@ -557,22 +567,22 @@ export default function LecturerDashboard() {
                         <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Members (Students)</strong>
                         {activeWorkspace.thesis.studentUids?.length > 0 ? (
                           <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238", wordBreak: "break-all" }}>
-                            {activeWorkspace.thesis.studentUids.map(uid => <li key={uid}>{uid}</li>)}
+                            {activeWorkspace.thesis.studentUids.map(uid => <li key={uid}>{userMap[uid] || uid}</li>)}
                           </ul>
                         ) : <div style={{ color: "#4A4238" }}>None</div>}
                       </div>
                       <div style={{ flex: "1 1 250px", minWidth: 0 }}>
                         <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Committees & Advisors</strong>
                         <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238", wordBreak: "break-word" }}>
-                          <li><strong>Chairperson:</strong> {activeWorkspace.thesis.lecturerUids.chairperson || "None"}</li>
+                          <li><strong>Chairperson:</strong> {userMap[activeWorkspace.thesis.lecturerUids.chairperson] || activeWorkspace.thesis.lecturerUids.chairperson || "None"}</li>
                           {activeWorkspace.thesis.lecturerUids.committees?.length > 0 ? (
                             <li><strong>Committees:</strong>
                               <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px", wordBreak: "break-all" }}>
-                                {activeWorkspace.thesis.lecturerUids.committees.map(c => <li key={c}>{c}</li>)}
+                                {activeWorkspace.thesis.lecturerUids.committees.map(c => <li key={c}>{userMap[c] || c}</li>)}
                               </ul>
                             </li>
                           ) : <li><strong>Committees:</strong> None</li>}
-                          <li><strong>Advisor:</strong> {activeWorkspace.thesis.lecturerUids.advisor || "None"}</li>
+                          <li><strong>Advisor:</strong> {userMap[activeWorkspace.thesis.lecturerUids.advisor] || activeWorkspace.thesis.lecturerUids.advisor || "None"}</li>
                         </ul>
                       </div>
                     </div>

@@ -41,6 +41,11 @@ export async function getLecturers() {
   return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as unknown as UserData));
 }
 
+export async function getAllUsers() {
+  const snapshot = await getDocs(collection(db, "users"));
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as unknown as UserData));
+}
+
 export async function deleteUserByEmail(email: string) {
   const q = query(collection(db, "users"), where("email", "==", email));
   const snapshot = await getDocs(q);
