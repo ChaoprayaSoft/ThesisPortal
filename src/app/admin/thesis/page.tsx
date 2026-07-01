@@ -573,7 +573,32 @@ export default function AdminThesisPage() {
       {viewThesis && (
         <div className={styles.modalOverlay} style={{ zIndex: 1050 }}>
           <div className={styles.modalContent} style={{ width: "100%", maxWidth: "600px", maxHeight: "80vh", overflowY: "auto" }}>
-            <h2 style={{ marginTop: 0, borderBottom: "1px solid #eee", paddingBottom: "10px" }}>Thesis Details</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid #eee", paddingBottom: "10px", marginBottom: "15px", flexWrap: "wrap", gap: "10px" }}>
+              <h2 style={{ margin: 0 }}>Thesis Details</h2>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button className={styles.btnPrimary} style={{ margin: 0, background: "#3b82f6", padding: "8px 16px", fontSize: "0.9rem" }} onClick={() => {
+                  setTitle(viewThesis.title);
+                  setAbstract(viewThesis.abstract);
+                  setScope(viewThesis.scope);
+                  setYear(viewThesis.year || (new Date().getFullYear() + 543).toString());
+                  setFieldOfStudy(viewThesis.fieldOfStudy || "");
+                  setSelectedGroup(viewThesis.groupId);
+                  setSelectedStudents(viewThesis.studentUids);
+                  setAdvisor(viewThesis.lecturerUids.advisor);
+                  setCommittees(viewThesis.lecturerUids.committees);
+                  setChairperson(viewThesis.lecturerUids.chairperson);
+                  setDeadlineAdvisor(formatDatetimeLocal(viewThesis.deadlines?.advisor));
+                  setDeadlineCommittee(formatDatetimeLocal(viewThesis.deadlines?.committee));
+                  setDeadlineChairperson(formatDatetimeLocal(viewThesis.deadlines?.chairperson));
+                  
+                  setEditThesisId(viewThesis.id);
+                  setShowCreateForm(true);
+                  setViewThesis(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}>Edit Thesis</button>
+                <button className={styles.btnPrimary} style={{ margin: 0, background: "#64748b", padding: "8px 16px", fontSize: "0.9rem" }} onClick={() => setViewThesis(null)}>Close Details</button>
+              </div>
+            </div>
             <div style={{ marginBottom: "15px" }}><strong>Title:</strong> {viewThesis.title}</div>
             <div style={{ marginBottom: "15px" }}><strong>Group:</strong> {groups.find(g => g.id === viewThesis.groupId)?.name}</div>
             <div style={{ marginBottom: "15px" }}><strong>Status:</strong> <span style={{ padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem" }}>{getDisplayStatus(viewThesis)}</span></div>
@@ -664,30 +689,7 @@ export default function AdminThesisPage() {
               )}
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "30px", flexWrap: "wrap", gap: "10px" }}>
-              <button className={styles.btnPrimary} style={{ margin: 0, background: "#3b82f6" }} onClick={() => {
-                // Populate Edit Form
-                setTitle(viewThesis.title);
-                setAbstract(viewThesis.abstract);
-                setScope(viewThesis.scope);
-                setYear(viewThesis.year || (new Date().getFullYear() + 543).toString());
-                setFieldOfStudy(viewThesis.fieldOfStudy || "");
-                setSelectedGroup(viewThesis.groupId);
-                setSelectedStudents(viewThesis.studentUids);
-                setAdvisor(viewThesis.lecturerUids.advisor);
-                setCommittees(viewThesis.lecturerUids.committees);
-                setChairperson(viewThesis.lecturerUids.chairperson);
-                setDeadlineAdvisor(formatDatetimeLocal(viewThesis.deadlines?.advisor));
-                setDeadlineCommittee(formatDatetimeLocal(viewThesis.deadlines?.committee));
-                setDeadlineChairperson(formatDatetimeLocal(viewThesis.deadlines?.chairperson));
 
-                setEditThesisId(viewThesis.id);
-                setShowCreateForm(true);
-                setViewThesis(null);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-              }}>Edit Thesis</button>
-              <button className={styles.btnPrimary} style={{ margin: 0, background: "#64748b" }} onClick={() => setViewThesis(null)}>Close Details</button>
-            </div>
           </div>
         </div>
       )}
