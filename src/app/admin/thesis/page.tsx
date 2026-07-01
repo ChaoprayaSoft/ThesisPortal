@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import styles from "../admin.module.css";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { getGroups, StudentGroup } from "@/lib/db/groups";
-import { createThesis, getAllTheses, deleteThesis, updateThesis, getDisplayStatus } from "@/lib/db/theses";
+import { createThesis, getAllTheses, deleteThesis, updateThesis, getDisplayStatus, getThesisActivities } from "@/lib/db/theses";
 
 export default function AdminThesisPage() {
   const [lecturers, setLecturers] = useState<UserData[]>([]);
@@ -45,6 +45,8 @@ export default function AdminThesisPage() {
   const [filterField, setFilterField] = useState("");
   const [searchTitle, setSearchTitle] = useState("");
   const [viewThesis, setViewThesis] = useState<any>(null);
+  const [thesisActivities, setThesisActivities] = useState<any[]>([]);
+  const [loadingActivities, setLoadingActivities] = useState(false);
   const [editThesisId, setEditThesisId] = useState<string | null>(null);
 
   // Confirmation Modal
@@ -496,7 +498,17 @@ export default function AdminThesisPage() {
                     <td>
                       <div style={{ display: "flex", gap: "8px" }}>
                         <button
-                          onClick={() => setViewThesis(t)}
+                          onClick={async () => {
+                            setViewThesis(t);
+                            setLoadingActivities(true);
+                            try {
+                              const acts = await getThesisActivities(t.id);
+                              setThesisActivities(acts);
+                            } catch (err) {
+                              console.error(err);
+                            }
+                            setLoadingActivities(false);
+                          }}
                           style={{ background: "none", border: "1px solid #3b82f6", color: "#3b82f6", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
                         >
                           View Detail
@@ -612,7 +624,47 @@ export default function AdminThesisPage() {
               </ul>
             </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "30px" }}>
+            <hr style={{ margin: "20px 0", border: "0", borderTop: "1px solid #ddd" }} />
+            
+            <div style={{ marginBottom: "15px" }}>
+              <strong>Activity History:</strong>
+              {loadingActivities ? (
+                <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "10px" }}>Loading activities...</p>
+              ) : thesisActivities.length === 0 ? (
+                <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "10px" }}>No activity history found.</p>
+              ) : (
+                <div style={{ marginTop: "15px", display: "flex", flexDirection: "column", gap: "10px" }}>
+                  {thesisActivities.map(act => (
+                    <div key={act.id} style={{ padding: "10px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                        <strong style={{ color: "#334155" }}>{act.type}</strong>
+                        <span style={{ fontSize: "0.8rem", color: "#64748b" }}>{new Date(act.timestamp).toLocaleString('th-TH')}</span>
+                      </div>
+                      <div style={{ fontSize: "0.85rem", color: "#475569", marginBottom: "5px" }}>
+                        By: {act.actorName || act.actorEmail} ({act.actorRole})
+                      </div>
+                      <div style={{ fontSize: "0.9rem" }}>{act.description}</div>
+                      {act.documentUrl && (
+                        <div style={{ marginTop: "5px" }}>
+                          <a href={act.documentUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#3b82f6", fontSize: "0.85rem", textDecoration: "underline" }}>
+                            {act.documentName || "View Document"}
+                          </a>
+                        </div>
+                      )}
+                      {act.links && act.links.map((lnk: any, idx: number) => (
+                        <div key={idx} style={{ marginTop: "5px" }}>
+                          <a href={lnk.url} target="_blank" rel="noopener noreferrer" style={{ color: "#3b82f6", fontSize: "0.85rem", textDecoration: "underline" }}>
+                            {lnk.type} Link
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", marginTop: "30px", flexWrap: "wrap", gap: "10px" }}>
               <button className={styles.btnPrimary} style={{ margin: 0, background: "#3b82f6" }} onClick={() => {
                 // Populate Edit Form
                 setTitle(viewThesis.title);
