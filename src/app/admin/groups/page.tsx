@@ -13,6 +13,7 @@ export default function GroupsPage() {
   const [loading, setLoading] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
   const [filterField, setFilterField] = useState("");
+  const [groupSearch, setGroupSearch] = useState("");
 
   // Modal State
   const [selectedGroup, setSelectedGroup] = useState<StudentGroup | null>(null);
@@ -278,15 +279,24 @@ export default function GroupsPage() {
             <h2 style={{ marginBottom: "5px" }}>Existing Groups</h2>
             <p style={{ margin: 0 }}>Click on a group to view and edit its students.</p>
           </div>
-          <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "250px", maxWidth: "100%", flex: "1 1 250px" }}>
-            <option value="">All Fields of Study</option>
-            <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
-            <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
-            <option value="แขนงวิชาเครื่องมือวัดและควบคุม">แขนงวิชาเครื่องมือวัดและควบคุม</option>
-            <option value="แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย">แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย</option>
-            <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
-            <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
-          </select>
+          <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", flex: "1 1 auto", justifyContent: "flex-end" }}>
+            <input 
+              type="text" 
+              placeholder="Search group name..." 
+              value={groupSearch} 
+              onChange={e => setGroupSearch(e.target.value)} 
+              style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc", width: "250px", maxWidth: "100%" }}
+            />
+            <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "250px", maxWidth: "100%" }}>
+              <option value="">All Fields of Study</option>
+              <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
+              <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
+              <option value="แขนงวิชาเครื่องมือวัดและควบคุม">แขนงวิชาเครื่องมือวัดและควบคุม</option>
+              <option value="แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย">แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย</option>
+              <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
+              <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
+            </select>
+          </div>
         </div>
         
         <div className={styles.tableResponsive}>
@@ -300,7 +310,13 @@ export default function GroupsPage() {
             </tr>
           </thead>
           <tbody>
-            {groups.filter(g => !filterField || g.fieldOfStudy === filterField).map(g => (
+            {groups
+              .filter(g => {
+                const matchesField = !filterField || g.fieldOfStudy === filterField;
+                const matchesName = !groupSearch || g.name.toLowerCase().includes(groupSearch.toLowerCase());
+                return matchesField && matchesName;
+              })
+              .map(g => (
               <tr key={g.id} style={{ cursor: "pointer" }} onClick={() => openModal(g)}>
                 <td>{g.name}</td>
                 <td>{g.fieldOfStudy || "-"}</td>
