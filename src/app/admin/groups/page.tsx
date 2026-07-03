@@ -63,13 +63,13 @@ export default function GroupsPage() {
           });
           
           if (!res.ok) {
+            const errorText = await res.text();
             let errorMsg = `Server error: ${res.status}`;
             try {
-              const errData = await res.json();
+              const errData = JSON.parse(errorText);
               errorMsg = errData.error || errorMsg;
             } catch (e) {
-              const text = await res.text();
-              errorMsg = text.substring(0, 100); // show a snippet if it's HTML
+              errorMsg = errorText.substring(0, 150); // show a snippet if it's HTML
             }
             alert("Upload failed: " + errorMsg);
             setLoading(false);
