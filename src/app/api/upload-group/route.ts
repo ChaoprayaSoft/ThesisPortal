@@ -1,5 +1,4 @@
 import { NextResponse } from 'next/server';
-import * as xlsx from 'xlsx';
 import { adminDb } from '@/lib/firebase-admin';
 
 export async function POST(request: Request) {
@@ -13,6 +12,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing file or group name' }, { status: 400 });
     }
 
+    const xlsx = await import('xlsx');
+    
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
     const workbook = xlsx.read(buffer, { type: 'buffer' });
