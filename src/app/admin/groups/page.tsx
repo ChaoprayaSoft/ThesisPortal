@@ -61,6 +61,21 @@ export default function GroupsPage() {
             method: "POST",
             body: formData,
           });
+          
+          if (!res.ok) {
+            let errorMsg = `Server error: ${res.status}`;
+            try {
+              const errData = await res.json();
+              errorMsg = errData.error || errorMsg;
+            } catch (e) {
+              const text = await res.text();
+              errorMsg = text.substring(0, 100); // show a snippet if it's HTML
+            }
+            alert("Upload failed: " + errorMsg);
+            setLoading(false);
+            return;
+          }
+
           const data = await res.json();
           if (data.success) {
             alert(`Group uploaded successfully! Extracted ${data.studentCount} students.`);
@@ -72,8 +87,8 @@ export default function GroupsPage() {
           } else {
             alert("Upload failed: " + data.error);
           }
-        } catch (err) {
-          alert("Error during upload.");
+        } catch (err: any) {
+          alert("Network or parsing error: " + err.message);
         }
         setLoading(false);
       }
