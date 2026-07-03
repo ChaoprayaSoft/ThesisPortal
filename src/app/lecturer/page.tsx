@@ -6,14 +6,20 @@ import styles from "./lecturer.module.css";
 import { getThesesByLecturer, subscribeToThesesByLecturer, approveThesis, rejectThesis, ThesisData, getThesisActivities, ThesisActivity, logThesisActivity, getDisplayStatus } from "@/lib/db/theses";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import { getAllUsers } from "@/lib/db/users";
+import { getGroups } from "@/lib/db/groups";
 import { ExternalLink, Plus, X } from "lucide-react";
 
 export default function LecturerDashboard() {
   const { user, dbUser } = useAuth();
   const [theses, setTheses] = useState<ThesisData[]>([]);
   const [userMap, setUserMap] = useState<Record<string, string>>({});
+  const [groupMap, setGroupMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  
+  // Search & filter for All Assigned Theses
+  const [assignedSearch, setAssignedSearch] = useState("");
+  const [roleFilter, setRoleFilter] = useState("");
 
   // Review Workspace State
   const [activeWorkspace, setActiveWorkspace] = useState<{ thesis: ThesisData, role: string } | null>(null);
@@ -64,6 +70,14 @@ export default function LecturerDashboard() {
       const map: Record<string, string> = {};
       users.forEach(u => map[u.email] = u.name_th || u.name_en || u.email);
       setUserMap(map);
+    }).catch(console.error);
+
+    getGroups().then(groups => {
+      const map: Record<string, string> = {};
+      groups.forEach(g => {
+        if (g.id) map[g.id] = g.name;
+      });
+      setGroupMap(map);
     }).catch(console.error);
   }, []);
 
@@ -478,67 +492,116 @@ export default function LecturerDashboard() {
         {theses.length === 0 ? (
           <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>You have no assigned theses.</p>
         ) : (
-          <div className={styles.tableResponsive}>
-            <table className={styles.table} style={{ marginTop: "20px", minWidth: "900px" }}>
-              <thead>
-                <tr>
-                  <th style={{ width: "35%" }}>Title</th>
-                  <th style={{ width: "15%" }}>Year</th>
-                  <th style={{ width: "20%" }}>Status</th>
-                  <th style={{ width: "15%" }}>Your Roles</th>
-                  <th style={{ width: "15%" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {theses.map(t => {
-                  const myRoles = [];
-                  if (t.lecturerUids.advisor === user?.email) myRoles.push("Advisor");
-                  if (t.lecturerUids.committees.includes(user?.email || "")) myRoles.push("Committee");
-                  if (t.lecturerUids.chairperson === user?.email) myRoles.push("Chairperson");
+          <>
+            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "15px", marginBottom: "15px" }}>
+              <input
+                type="text"
+                placeholder="Search title, group, year..."
+                value={assignedSearch}
+                onChange={e => setAssignedSearch(e.target.value)}
+                style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #D6CEB8", background: "#fff", color: "#4A4238", width: "300px", maxWidth: "100%" }}
+              />
+              <select
+                value={roleFilter}
+                onChange={e => setRoleFilter(e.target.value)}
+                style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #D6CEB8", background: "#fff", color: "#4A4238", width: "200px" }}
+              >
+                <option value="">All Roles</option>
+                <option value="Advisor">Advisor</option>
+                <option value="Committee">Committee</option>
+                <option value="Chairperson">Chairperson</option>
+              </select>
+            </div>
 
-                  return (
-                    <tr key={t.id}>
-                      <td style={{ wordBreak: "break-all" }}>
-                        <strong>{t.title}</strong>
-                        {getDeadlineDisplay(t)}
-                        <div style={{ fontSize: "0.85rem", color: "#7A7061", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
-                      </td>
-                      <td>{t.year || "-"}</td>
-                      <td>
-                        <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
-                      </td>
-                      <td>{myRoles.join(", ")}</td>
-                      <td>
-                        <div style={{ display: "flex", gap: "8px" }}>
-                          <button
-                            className={styles.btnPrimary}
-                            style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f1f5f9", color: "#334155", border: "1px solid #cbd5e1" }}
-                            onClick={() => openWorkspace(t, "ViewOnly")}
-                          >
-                            View Details
-                          </button>
-                          {t.lecturerUids.advisor === user?.email && (
-                            <button
-                              className={styles.btnPrimary}
-                              style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f59e0b", color: "#fff", border: "1px solid #d97706" }}
-                              onClick={() => {
-                                setDeadlineAdvisor(formatDatetimeLocal(t.deadlines?.advisor));
-                                setDeadlineCommittee(formatDatetimeLocal(t.deadlines?.committee));
-                                setDeadlineChairperson(formatDatetimeLocal(t.deadlines?.chairperson));
-                                setDeadlineModalThesis(t);
-                              }}
-                            >
-                              Manage Deadlines
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+            <div className={styles.tableResponsive}>
+              <table className={styles.table} style={{ marginTop: "20px", minWidth: "900px" }}>
+                <thead>
+                  <tr>
+                    <th style={{ width: "30%" }}>Title</th>
+                    <th style={{ width: "15%" }}>Group</th>
+                    <th style={{ width: "10%" }}>Year</th>
+                    <th style={{ width: "15%" }}>Status</th>
+                    <th style={{ width: "15%" }}>Your Roles</th>
+                    <th style={{ width: "15%" }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {theses
+                    .filter(t => {
+                      const myRoles: string[] = [];
+                      if (t.lecturerUids.advisor === user?.email) myRoles.push("Advisor");
+                      if (t.lecturerUids.committees.includes(user?.email || "")) myRoles.push("Committee");
+                      if (t.lecturerUids.chairperson === user?.email) myRoles.push("Chairperson");
+
+                      // Filter by Role
+                      if (roleFilter && !myRoles.includes(roleFilter)) return false;
+
+                      // Filter by Search (Title, Group, Year)
+                      if (assignedSearch) {
+                        const searchLower = assignedSearch.toLowerCase();
+                        const groupName = groupMap[t.groupId] || "";
+                        const matchesTitle = t.title.toLowerCase().includes(searchLower);
+                        const matchesGroup = groupName.toLowerCase().includes(searchLower);
+                        const matchesYear = (t.year || "").toLowerCase().includes(searchLower);
+
+                        if (!matchesTitle && !matchesGroup && !matchesYear) return false;
+                      }
+
+                      return true;
+                    })
+                    .map(t => {
+                      const myRoles = [];
+                      if (t.lecturerUids.advisor === user?.email) myRoles.push("Advisor");
+                      if (t.lecturerUids.committees.includes(user?.email || "")) myRoles.push("Committee");
+                      if (t.lecturerUids.chairperson === user?.email) myRoles.push("Chairperson");
+
+                      const groupName = groupMap[t.groupId] || "-";
+
+                      return (
+                        <tr key={t.id}>
+                          <td style={{ wordBreak: "break-all" }}>
+                            <strong>{t.title}</strong>
+                            {getDeadlineDisplay(t)}
+                            <div style={{ fontSize: "0.85rem", color: "#7A7061", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                          </td>
+                          <td>{groupName}</td>
+                          <td>{t.year || "-"}</td>
+                          <td>
+                            <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
+                          </td>
+                          <td>{myRoles.join(", ")}</td>
+                          <td>
+                            <div style={{ display: "flex", gap: "8px" }}>
+                              <button
+                                className={styles.btnPrimary}
+                                style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f1f5f9", color: "#334155", border: "1px solid #cbd5e1" }}
+                                onClick={() => openWorkspace(t, "ViewOnly")}
+                              >
+                                View Details
+                              </button>
+                              {t.lecturerUids.advisor === user?.email && (
+                                <button
+                                  className={styles.btnPrimary}
+                                  style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f59e0b", color: "#fff", border: "1px solid #d97706" }}
+                                  onClick={() => {
+                                    setDeadlineAdvisor(formatDatetimeLocal(t.deadlines?.advisor));
+                                    setDeadlineCommittee(formatDatetimeLocal(t.deadlines?.committee));
+                                    setDeadlineChairperson(formatDatetimeLocal(t.deadlines?.chairperson));
+                                    setDeadlineModalThesis(t);
+                                  }}
+                                >
+                                  Manage Deadlines
+                                </button>
+                              )}
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </div>
 
