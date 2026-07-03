@@ -13,7 +13,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing file or group name' }, { status: 400 });
     }
 
-    const buffer = await file.arrayBuffer();
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
     const workbook = xlsx.read(buffer, { type: 'buffer' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
@@ -31,6 +32,10 @@ export async function POST(request: Request) {
       group: getVal(row, ['กลุ่ม', 'กลุ่ม', 'group']),
       email: getVal(row, ['email', 'e-mail', 'อีเมล']),
     })).filter(s => s.email && s.name);
+
+    if (students.length === 0) {
+      return NextResponse.json({ error: 'No valid students found in the file. Ensure the headers are correct (รหัสนักศึกษา, ชื่อ, Email).' }, { status: 400 });
+    }
 
     // Save Group
     const groupRef = adminDb.collection('studentGroups').doc();

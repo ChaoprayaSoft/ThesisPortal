@@ -29,6 +29,7 @@ export default function GroupsPage() {
   // Edit State
   const [editingIndex, setEditingIndex] = useState<number | null>(null);
   const [editData, setEditData] = useState({ studentId: "", name: "", name_en: "", email: "" });
+  const [studentSearch, setStudentSearch] = useState("");
 
   // Confirmation Modal
   const [confirmAction, setConfirmAction] = useState<{ message: string, onConfirm: () => void } | null>(null);
@@ -84,6 +85,7 @@ export default function GroupsPage() {
     setEditingIndex(null);
     setIsEditingGroupInfo(false);
     setGroupInfoEdit({ name: group.name, fieldOfStudy: group.fieldOfStudy || "" });
+    setStudentSearch("");
   };
 
   const closeModal = () => {
@@ -216,7 +218,7 @@ export default function GroupsPage() {
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showUploadForm ? "20px" : "0" }}>
           <div>
             <h2 style={{ margin: 0 }}>Create Group (Upload Excel)</h2>
-            {showUploadForm && <p style={{ marginTop: "10px", marginBottom: 0 }}>Excel should have headers: รหัสนักศึกษา | ชื่อ-นามสกุล | กลุ่มเรียน | Email</p>}
+            {showUploadForm && <p style={{ marginTop: "10px", marginBottom: 0 }}>Excel should have headers: รหัสนักศึกษา | ชื่อ-นามสกุล | Email</p>}
           </div>
           <button onClick={() => {
             if (showUploadForm) { setGroupName(""); setFieldOfStudy(""); setFile(null); }
@@ -416,6 +418,17 @@ export default function GroupsPage() {
                 </form>
               </div>
             )}
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+              <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Students in Group</h3>
+              <input
+                type="text"
+                placeholder="Search student name..."
+                value={studentSearch}
+                onChange={e => setStudentSearch(e.target.value)}
+                style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc", width: "250px", fontSize: "0.9rem" }}
+              />
+            </div>
             
             <div className={styles.tableResponsive}>
               <table className={styles.table} style={{ tableLayout: "fixed", width: "100%", minWidth: "900px" }}>
@@ -429,7 +442,13 @@ export default function GroupsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {selectedGroup.students?.map((s, idx) => (
+                  {selectedGroup.students?.map((s, idx) => {
+                    const searchLower = studentSearch.toLowerCase();
+                    const matchesSearch = s.name.toLowerCase().includes(searchLower) || 
+                                          (s.name_en && s.name_en.toLowerCase().includes(searchLower)) ||
+                                          (s.studentId && s.studentId.toLowerCase().includes(searchLower));
+                    if (studentSearch && !matchesSearch && editingIndex !== idx) return null;
+                    return (
                     <tr key={idx}>
                       {editingIndex === idx ? (
                         <>
@@ -457,7 +476,8 @@ export default function GroupsPage() {
                         </>
                       )}
                     </tr>
-                  ))}
+                  );
+                  })}
                 </tbody>
               </table>
             </div>
