@@ -15,8 +15,7 @@ export async function POST(request: Request) {
     const xlsx = await import('xlsx');
     
     const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const workbook = xlsx.read(buffer, { type: 'buffer' });
+    const workbook = xlsx.read(arrayBuffer, { type: 'array' });
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(sheet) as any[];
