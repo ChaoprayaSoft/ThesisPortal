@@ -162,7 +162,7 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
   let newCommitteeSignApprovals = currentThesis.committeeSignApprovals || [];
 
   if (baseRole === "Advisor" && currentThesis.status === "Pending Advisor") {
-    newStatus = "Pending Committee";
+    newStatus = "Preparing";
     newStage = 1;
   } else if (baseRole === "Committee" && currentThesis.status === "Pending Committee") {
     if (!newCommitteeApprovals.includes(userEmail)) {
@@ -170,14 +170,14 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
     }
     const allApproved = currentThesis.lecturerUids.committees.every(email => newCommitteeApprovals.includes(email));
     if (allApproved) {
-      newStatus = "Pending Chairperson";
+      newStatus = "Preparing";
       newStage = 2;
     }
   } else if (baseRole === "Chairperson" && currentThesis.status === "Pending Chairperson") {
-    newStatus = "Pending Sign. Advisor";
+    newStatus = "Preparing";
     newStage = 3;
   } else if (baseRole === "Advisor" && currentThesis.status === "Pending Sign. Advisor") {
-    newStatus = "Pending Sign. Committee";
+    newStatus = "Preparing";
     newStage = 4;
   } else if (baseRole === "Committee" && currentThesis.status === "Pending Sign. Committee") {
     if (!newCommitteeSignApprovals.includes(userEmail)) {
@@ -185,7 +185,7 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
     }
     const allApproved = currentThesis.lecturerUids.committees.every(email => newCommitteeSignApprovals.includes(email));
     if (allApproved) {
-      newStatus = "Pending Sign. Chairperson";
+      newStatus = "Preparing";
       newStage = 5;
     }
   } else if (baseRole === "Chairperson" && currentThesis.status === "Pending Sign. Chairperson") {
