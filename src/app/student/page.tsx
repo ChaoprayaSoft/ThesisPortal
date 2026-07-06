@@ -324,7 +324,7 @@ export default function StudentDashboard() {
         <button 
           onClick={() => setIsNoteModalOpen(true)}
           className={styles.btnPrimary}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
         >
           <Bell size={18} />
           Important Note
