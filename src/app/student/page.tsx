@@ -6,7 +6,8 @@ import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesis
 import { getLecturers, UserData } from "@/lib/db/users";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
-import { Plus, X, ExternalLink } from "lucide-react";
+import { Plus, X, ExternalLink, Bell } from "lucide-react";
+import ImportantNoteModal from "@/components/ImportantNoteModal";
 
 const getStageLabel = (stage: number) => {
   switch (stage) {
@@ -25,6 +26,7 @@ export default function StudentDashboard() {
   const [thesis, setThesis] = useState<ThesisData | null>(null);
   const [activities, setActivities] = useState<ThesisActivity[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
 
   // Edit State
   const [isEditing, setIsEditing] = useState(false);
@@ -317,9 +319,23 @@ export default function StudentDashboard() {
 
   return (
     <div>
-      <div className={styles.pageHeader}>
+      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>My Workspace</h1>
+        <button 
+          onClick={() => setIsNoteModalOpen(true)}
+          className={styles.btnPrimary}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+        >
+          <Bell size={18} />
+          Important Note
+        </button>
       </div>
+      
+      <ImportantNoteModal 
+        isOpen={isNoteModalOpen} 
+        onClose={() => setIsNoteModalOpen(false)} 
+        fieldOfStudy={thesis.fieldOfStudy}
+      />
 
       <div className={`${styles.card} ${styles.workspaceHeader}`}>
         <div>

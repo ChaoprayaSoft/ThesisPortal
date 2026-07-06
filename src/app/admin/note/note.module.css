@@ -1,0 +1,154 @@
+.container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: var(--bg-card);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+.header {
+  margin-bottom: 20px;
+}
+
+.header h1 {
+  font-size: 1.5rem;
+  color: var(--text-main);
+  margin-bottom: 5px;
+}
+
+.header p {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.editorContainer {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--bg-main);
+  min-height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 10px;
+  background-color: var(--bg-card);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.toolbar button {
+  padding: 5px 10px;
+  background-color: transparent;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s;
+}
+
+.toolbar button:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.toolbar button.active {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+}
+
+.editorContent {
+  padding: 15px;
+  flex-grow: 1;
+  outline: none;
+}
+
+.editorContent > div {
+  outline: none;
+  min-height: 300px;
+}
+
+/* Tiptap styles */
+.editorContent :global(.ProseMirror) {
+  outline: none;
+}
+
+.editorContent :global(.ProseMirror p.is-editor-empty:first-child::before) {
+  color: #adb5bd;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+}
+
+.editorContent h1 { font-size: 2em; margin-bottom: 0.5em; }
+.editorContent h2 { font-size: 1.5em; margin-bottom: 0.5em; }
+.editorContent ul { list-style-type: disc; padding-left: 20px; }
+.editorContent ol { list-style-type: decimal; padding-left: 20px; }
+.editorContent a { color: var(--primary-color); text-decoration: underline; }
+.editorContent blockquote {
+  border-left: 3px solid var(--border-color);
+  padding-left: 10px;
+  margin-left: 0;
+  color: var(--text-muted);
+}
+
+.footer {
+  margin-top: 20px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.saveBtn {
+  padding: 10px 20px;
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+
+.saveBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.saveBtn:disabled {
+  background-color: var(--text-muted);
+  cursor: not-allowed;
+}
+
+.statusMessage {
+  margin-top: 15px;
+  padding: 10px;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.statusSuccess {
+  background-color: rgba(40, 167, 69, 0.1);
+  color: #28a745;
+}
+
+.statusError {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 15px;
+  }
+  
+  .toolbar button {
+    padding: 5px 8px;
+    font-size: 0.8rem;
+  }
+}
