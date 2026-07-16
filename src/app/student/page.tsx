@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus, getStatusForStage, deleteThesisActivity, getDisplayStatus } from "@/lib/db/theses";
+import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus, getStatusForStage, deleteThesisActivity, getDisplayStatus, requestEquipmentCheck } from "@/lib/db/theses";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
@@ -40,6 +40,7 @@ export default function StudentDashboard() {
   ]);
   const [submittingLinks, setSubmittingLinks] = useState(false);
   const [errorDialog, setErrorDialog] = useState<string | null>(null);
+  const [requestingEquipmentCheck, setRequestingEquipmentCheck] = useState(false);
 
   // Lecturers Map
   const [lecturersMap, setLecturersMap] = useState<Record<string, UserData>>({});
@@ -248,6 +249,35 @@ export default function StudentDashboard() {
       setErrorDialog("Failed to submit links.");
     }
     setSubmittingLinks(false);
+  };
+
+  const handleRequestEquipmentCheck = async () => {
+    if (!thesis?.id || !user?.email) return;
+    setRequestingEquipmentCheck(true);
+    try {
+      await requestEquipmentCheck(thesis.id);
+      await logThesisActivity({
+        thesisId: thesis.id,
+        type: "Equipment Check Requested",
+        timestamp: Date.now(),
+        actorEmail: user.email,
+        actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
+        actorRole: "Student",
+        description: `Student requested equipment check.`
+      });
+      if (thesis.equipmentChecker) {
+        await sendNotificationEmail({
+          to: thesis.equipmentChecker,
+          subject: `Equipment Check Request: ${thesis.title}`,
+          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has requested an equipment check for the thesis: <b>${thesis.title}</b>.</p><p>Please log in to review the request.</p>`
+        });
+      }
+      await loadData();
+    } catch (err: any) {
+      console.error(err);
+      setErrorDialog("Failed to request equipment check: " + err.message);
+    }
+    setRequestingEquipmentCheck(false);
   };
 
   const handleCancelSubmission = async (activity: ThesisActivity) => {
@@ -508,7 +538,32 @@ export default function StudentDashboard() {
 
         {/* RIGHT COLUMN */}
         <div>
-          <div className={styles.card}>
+          {thesis.currentStage >= 3 && thesis.equipmentCheckStatus !== 'Approved' && (
+            <div className={styles.card} style={{ marginBottom: "20px" }}>
+              <h2 style={{ marginBottom: "20px" }}>Borrowed Equipment Check</h2>
+              <p style={{ fontSize: "0.9rem", marginBottom: "20px", color: "#7A7061" }}>
+                Before proceeding to the signing step, you must complete the equipment check.
+              </p>
+              {thesis.equipmentCheckStatus === 'Pending Request' && (
+                <button
+                  className={styles.btnPrimary}
+                  style={{ width: "100%", margin: 0, padding: "12px", fontSize: "1rem" }}
+                  onClick={handleRequestEquipmentCheck}
+                  disabled={requestingEquipmentCheck}
+                >
+                  {requestingEquipmentCheck ? "Requesting..." : "Request Equipment Check"}
+                </button>
+              )}
+              {thesis.equipmentCheckStatus === 'Requested' && (
+                <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", padding: "15px", borderRadius: "8px", color: "#1e3a8a", textAlign: "center", fontWeight: "bold" }}>
+                  Your equipment check request is pending approval.
+                </div>
+              )}
+            </div>
+          )}
+
+          {!(thesis.currentStage >= 3 && thesis.equipmentCheckStatus !== 'Approved') && (
+            <div className={styles.card} style={{ marginBottom: "20px" }}>
             <h2 style={{ marginBottom: "20px" }}>Submit Materials</h2>
             <p style={{ fontSize: "0.9rem", marginBottom: "20px", color: "#7A7061" }}>
               Provide links to your manuscript, video clips, or other external resources.
@@ -562,6 +617,7 @@ export default function StudentDashboard() {
               {submittingLinks ? "Submitting..." : "Submit Materials"}
             </button>
           </div>
+          )}
 
           <div className={styles.card}>
             <h2 style={{ marginBottom: "20px" }}>Assigned Lecturers</h2>

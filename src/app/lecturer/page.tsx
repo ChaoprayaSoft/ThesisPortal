@@ -149,7 +149,7 @@ export default function LecturerDashboard() {
 
   const triggerApprove = () => {
     if (!user?.email || !activeWorkspace?.thesis.id) return;
-    if (!validateLinksBeforeAction()) return;
+    if (activeWorkspace.role !== "Equipment Checker" && !validateLinksBeforeAction()) return;
     setConfirmDialog({ type: "Approve", message: `Are you sure you want to approve this thesis as ${activeWorkspace.role}?` });
   };
 
@@ -163,17 +163,20 @@ export default function LecturerDashboard() {
     if (!user?.email || !activeWorkspace?.thesis.id || !confirmDialog) return;
 
     // Validation
-    const validLinks = reviewLinks.filter(l => l.url.trim() !== "");
-    if (validLinks.length === 0) {
-      setConfirmDialog(null);
-      setErrorDialog("Please provide at least one valid URL for your review materials.");
-      return;
-    }
-    const invalidUrl = validLinks.find(l => !l.url.trim().startsWith("http"));
-    if (invalidUrl) {
-      setConfirmDialog(null);
-      setErrorDialog("URLs must start with http:// or https://");
-      return;
+    let validLinks: any[] = [];
+    if (activeWorkspace.role !== "Equipment Checker") {
+      validLinks = reviewLinks.filter(l => l.url.trim() !== "");
+      if (validLinks.length === 0) {
+        setConfirmDialog(null);
+        setErrorDialog("Please provide at least one valid URL for your review materials.");
+        return;
+      }
+      const invalidUrl = validLinks.find(l => !l.url.trim().startsWith("http"));
+      if (invalidUrl) {
+        setConfirmDialog(null);
+        setErrorDialog("URLs must start with http:// or https://");
+        return;
+      }
     }
 
     setActionLoading(activeWorkspace.thesis.id);
@@ -182,7 +185,29 @@ export default function LecturerDashboard() {
 
     try {
       if (actionType === "Approve") {
-        await approveThesis(activeWorkspace.thesis.id, user.email, activeWorkspace.role, activeWorkspace.thesis);
+        if (activeWorkspace.role === "Equipment Checker") {
+          const { approveEquipmentCheck } = await import("@/lib/db/theses");
+          await approveEquipmentCheck(activeWorkspace.thesis.id);
+          await logThesisActivity({
+            thesisId: activeWorkspace.thesis.id,
+            type: "Equipment Check Approved",
+            timestamp: Date.now(),
+            actorEmail: user.email,
+            actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
+            actorRole: "Equipment Checker",
+            description: "Lecturer approved equipment check."
+          });
+          if (activeWorkspace.thesis.studentUids?.length > 0) {
+            for (const sEmail of activeWorkspace.thesis.studentUids) {
+              await sendNotificationEmail({
+                to: sEmail,
+                subject: `Equipment Check Approved`,
+                html: `<p>Your equipment check for <b>${activeWorkspace.thesis.title}</b> has been approved.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to continue submitting your materials.</p>`
+              });
+            }
+          }
+        } else {
+          await approveThesis(activeWorkspace.thesis.id, user.email, activeWorkspace.role, activeWorkspace.thesis);
         await logThesisActivity({
           thesisId: activeWorkspace.thesis.id,
           type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Approved" : "Manuscript Approved",
@@ -202,6 +227,7 @@ export default function LecturerDashboard() {
               html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> has been approved by your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}).</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to view the updated status.</p>`
             });
           }
+        }
         }
       } else {
         await rejectThesis(activeWorkspace.thesis.id);
@@ -253,6 +279,10 @@ export default function LecturerDashboard() {
       }
     }
     if (t.lecturerUids.chairperson === email && (t.status === "Pending Chairperson" || t.status === "Pending Sign. Chairperson")) roles.push("Chairperson");
+    
+    // Add Equipment Checker Role
+    if (t.equipmentChecker === email && t.equipmentCheckStatus === "Requested") roles.push("Equipment Checker");
+    
     return roles as any[];
   };
 
@@ -722,7 +752,7 @@ export default function LecturerDashboard() {
               {/* Right Column: Review Tools & Deadlines */}
               <div className={styles.workspaceRight} style={activeWorkspace.role === "ViewOnly" ? { display: "none" } : {}}>
 
-                {activeWorkspace.role !== "ViewOnly" && (
+                {activeWorkspace.role !== "ViewOnly" && activeWorkspace.role !== "Equipment Checker" && (
                   <>
                     <h3 style={{ margin: "0 0 20px 0", color: "#4A4238" }}>Your Review</h3>
 
@@ -804,6 +834,21 @@ export default function LecturerDashboard() {
                       </p>
                     </div>
                   </>
+                )}
+
+                {activeWorkspace.role === "Equipment Checker" && (
+                  <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", alignItems: "center", textAlign: "center", background: "#fff", padding: "30px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
+                    <h3 style={{ margin: "0 0 15px 0", color: "#4A4238" }}>Equipment Check Request</h3>
+                    <p style={{ color: "#7A7061", marginBottom: "25px", fontSize: "0.95rem" }}>The student has requested an equipment check before proceeding to the signing step.</p>
+                    <button
+                      className={styles.btnPrimary}
+                      style={{ margin: 0, background: "#10b981", fontSize: "1rem", padding: "12px 24px", width: "100%" }}
+                      disabled={actionLoading === activeWorkspace.thesis.id}
+                      onClick={triggerApprove}
+                    >
+                      {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Approve Equipment Check"}
+                    </button>
+                  </div>
                 )}
               </div>
 

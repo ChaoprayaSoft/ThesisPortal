@@ -21,6 +21,8 @@ export interface ThesisData {
   committeeSignApprovals?: string[];
   pendingAbstract?: string;
   pendingScope?: string;
+  equipmentCheckStatus?: "Pending Request" | "Requested" | "Approved";
+  equipmentChecker?: string; // lecturer UID/email
   status: ThesisStatus;
   currentStage: number; // 0=Adv, 1=Comm, 2=Chair, 3=Sign.Adv, 4=Sign.Comm, 5=Sign.Chair, 6=Graduate
   createdAt: number;
@@ -68,7 +70,8 @@ export async function getThesesByLecturer(email: string) {
   return allTheses.filter(t => 
     t.lecturerUids.advisor === email || 
     t.lecturerUids.committees.includes(email) || 
-    t.lecturerUids.chairperson === email
+    t.lecturerUids.chairperson === email ||
+    t.equipmentChecker === email
   );
 }
 
@@ -90,7 +93,8 @@ export function subscribeToThesesByLecturer(email: string, callback: (theses: Th
     const filtered = allTheses.filter(t => 
       t.lecturerUids.advisor === email || 
       t.lecturerUids.committees.includes(email) || 
-      t.lecturerUids.chairperson === email
+      t.lecturerUids.chairperson === email ||
+      t.equipmentChecker === email
     );
     callback(filtered);
   });
@@ -176,6 +180,17 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
   } else if (baseRole === "Chairperson" && currentThesis.status === "Pending Chairperson") {
     newStatus = "Preparing";
     newStage = 3;
+    // Set equipment check to pending when transitioning to stage 3
+    if (currentThesis.equipmentChecker) {
+      await updateDoc(doc(db, "theses", thesisId), {
+        equipmentCheckStatus: "Pending Request"
+      });
+    } else {
+      // If no equipment checker was assigned, just default to Approved so they don't get stuck
+      await updateDoc(doc(db, "theses", thesisId), {
+        equipmentCheckStatus: "Approved"
+      });
+    }
   } else if (baseRole === "Advisor" && currentThesis.status === "Pending Sign. Advisor") {
     newStatus = "Preparing";
     newStage = 4;
@@ -258,4 +273,18 @@ export async function rejectTopicEdits(thesisId: string) {
 
 export async function deleteThesisActivity(activityId: string) {
   await deleteDoc(doc(db, "thesisActivities", activityId));
+}
+
+export async function requestEquipmentCheck(thesisId: string) {
+  await updateDoc(doc(db, "theses", thesisId), {
+    equipmentCheckStatus: "Requested",
+    statusUpdatedAt: Date.now()
+  });
+}
+
+export async function approveEquipmentCheck(thesisId: string) {
+  await updateDoc(doc(db, "theses", thesisId), {
+    equipmentCheckStatus: "Approved",
+    statusUpdatedAt: Date.now()
+  });
 }

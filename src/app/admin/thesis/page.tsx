@@ -24,6 +24,7 @@ export default function AdminThesisPage() {
   const [committees, setCommittees] = useState<string[]>([]);
   const [committeeToAdd, setCommitteeToAdd] = useState("");
   const [chairperson, setChairperson] = useState("");
+  const [equipmentChecker, setEquipmentChecker] = useState("");
   const [loading, setLoading] = useState(false);
 
   // Deadlines State
@@ -142,6 +143,7 @@ export default function AdminThesisPage() {
               committees,
               chairperson
             },
+            equipmentChecker,
             deadlines: {
               advisor: deadlineAdvisor ? new Date(deadlineAdvisor).getTime() : null,
               committee: deadlineCommittee ? new Date(deadlineCommittee).getTime() : null,
@@ -166,7 +168,7 @@ export default function AdminThesisPage() {
           setTitle(""); setAbstract(""); setScope("");
           setYear((new Date().getFullYear() + 543).toString()); setFieldOfStudy("");
           setSelectedGroup(""); setSelectedStudents([]); setStudentToAdd("");
-          setAdvisor(""); setCommittees([]); setChairperson("");
+          setAdvisor(""); setCommittees([]); setChairperson(""); setEquipmentChecker("");
           setDeadlineAdvisor(""); setDeadlineCommittee(""); setDeadlineChairperson("");
           setEditThesisId(null);
           setShowCreateForm(false);
@@ -397,6 +399,14 @@ export default function AdminThesisPage() {
               </select>
             </div>
 
+            <div className={styles.formGroup}>
+              <label>Equipment Checker (Optional)</label>
+              <select value={equipmentChecker} onChange={e => setEquipmentChecker(e.target.value)}>
+                <option value="">-- Select Equipment Checker --</option>
+                {lecturers.map(l => <option key={l.uid} value={l.email}>{l.name_th} ({l.email})</option>)}
+              </select>
+            </div>
+
             <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #ddd" }} />
             <h3 style={{ marginBottom: "20px" }}>Stage Deadlines (Optional)</h3>
 
@@ -587,6 +597,7 @@ export default function AdminThesisPage() {
                   setAdvisor(viewThesis.lecturerUids.advisor);
                   setCommittees(viewThesis.lecturerUids.committees);
                   setChairperson(viewThesis.lecturerUids.chairperson);
+                  setEquipmentChecker(viewThesis.equipmentChecker || "");
                   setDeadlineAdvisor(formatDatetimeLocal(viewThesis.deadlines?.advisor));
                   setDeadlineCommittee(formatDatetimeLocal(viewThesis.deadlines?.committee));
                   setDeadlineChairperson(formatDatetimeLocal(viewThesis.deadlines?.chairperson));
