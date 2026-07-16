@@ -11,27 +11,27 @@ export async function GET(request: Request) {
 
   try {
     const thesesSnapshot = await adminDb.collection("theses").get();
-    
+
     const now = Date.now();
     const FOUR_DAYS_MS = 4 * 24 * 60 * 60 * 1000;
-    
+
     let reminderCount = 0;
 
     for (const doc of thesesSnapshot.docs) {
       const thesis = doc.data();
-      
+
       if (!thesis.status || !thesis.status.startsWith("Pending")) {
         continue;
       }
-      
+
       const lastUpdate = thesis.statusUpdatedAt || thesis.createdAt || now;
       const timeSinceUpdate = now - lastUpdate;
-      
+
       if (timeSinceUpdate > FOUR_DAYS_MS) {
         // Send email based on who it is pending on
         let emailsToNotify: string[] = [];
         let role = "";
-        
+
         if (thesis.status === "Pending Advisor" && thesis.lecturerUids?.advisor) {
           emailsToNotify.push(thesis.lecturerUids.advisor);
           role = "Advisor";
@@ -45,14 +45,14 @@ export async function GET(request: Request) {
           emailsToNotify.push(thesis.lecturerUids.chairperson);
           role = "Chairperson";
         }
-        
+
         for (const email of emailsToNotify) {
           await sendNotificationEmail({
             to: email,
             subject: `Action Required: Thesis pending over 4 days`,
             html: `<p>Dear ${role},</p>
             <p>The thesis <b>"${thesis.title}"</b> has been waiting for your review for more than 4 days.</p>
-            <p>Please <a href="https://thesisportal.vercel.app">log in to the Thesis Portal</a> at your earliest convenience to review the submission.</p>`
+            <p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> at your earliest convenience to review the submission.</p>`
           });
           reminderCount++;
         }

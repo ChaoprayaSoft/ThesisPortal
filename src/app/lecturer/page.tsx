@@ -16,7 +16,7 @@ export default function LecturerDashboard() {
   const [groupMap, setGroupMap] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  
+
   // Search & filter for All Assigned Theses
   const [assignedSearch, setAssignedSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
