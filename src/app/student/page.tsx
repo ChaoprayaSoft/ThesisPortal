@@ -41,6 +41,8 @@ export default function StudentDashboard() {
   const [submittingLinks, setSubmittingLinks] = useState(false);
   const [errorDialog, setErrorDialog] = useState<string | null>(null);
   const [requestingEquipmentCheck, setRequestingEquipmentCheck] = useState(false);
+  const [showEquipmentCheckModal, setShowEquipmentCheckModal] = useState(false);
+  const [equipmentCheckMessage, setEquipmentCheckMessage] = useState("");
 
   // Lecturers Map
   const [lecturersMap, setLecturersMap] = useState<Record<string, UserData>>({});
@@ -256,6 +258,8 @@ export default function StudentDashboard() {
     setRequestingEquipmentCheck(true);
     try {
       await requestEquipmentCheck(thesis.id);
+      const advisorEmail = thesis.lecturerUids?.advisor;
+      const advisorName = advisorEmail ? (lecturersMap[advisorEmail]?.name_th || lecturersMap[advisorEmail]?.name_en || advisorEmail) : "Unknown";
       await logThesisActivity({
         thesisId: thesis.id,
         type: "Equipment Check Requested",
@@ -263,15 +267,17 @@ export default function StudentDashboard() {
         actorEmail: user.email,
         actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
         actorRole: "Student",
-        description: `Student requested equipment check.`
+        description: `Student requested equipment check for project "${thesis.title}" (Advisor: ${advisorName}).${equipmentCheckMessage.trim() ? `\n\nMessage: ${equipmentCheckMessage.trim()}` : ""}`
       });
       if (thesis.equipmentChecker) {
         await sendNotificationEmail({
           to: thesis.equipmentChecker,
           subject: `Equipment Check Request: ${thesis.title}`,
-          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has requested an equipment check for the thesis: <b>${thesis.title}</b>.</p><p>Please log in to review the request.</p>`
+          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has requested an equipment check for the thesis: <b>${thesis.title}</b>.</p>${equipmentCheckMessage.trim() ? `<p><b>Message:</b><br/>${equipmentCheckMessage.trim().replace(/\n/g, '<br/>')}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review the request.</p>`
         });
       }
+      setShowEquipmentCheckModal(false);
+      setEquipmentCheckMessage("");
       await loadData();
     } catch (err: any) {
       console.error(err);
@@ -351,14 +357,35 @@ export default function StudentDashboard() {
     <div>
       <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>My Workspace</h1>
-        <button 
-          onClick={() => setIsNoteModalOpen(true)}
-          className={styles.btnPrimary}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
-        >
-          <Bell size={18} />
-          Important Note
-        </button>
+        <div style={{ display: 'flex', gap: '10px' }}>
+          {thesis.equipmentChecker && (
+            <button
+              onClick={(!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? () => setShowEquipmentCheckModal(true) : undefined}
+              className={styles.btnPrimary}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '8px',
+                backgroundColor: thesis.equipmentCheckStatus === 'Approved' ? '#10b981' : (thesis.equipmentCheckStatus === 'Requested' ? '#3b82f6' : '#f59e0b'),
+                borderColor: thesis.equipmentCheckStatus === 'Approved' ? '#10b981' : (thesis.equipmentCheckStatus === 'Requested' ? '#3b82f6' : '#f59e0b'),
+                cursor: (!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? 'pointer' : 'default',
+              }}
+              disabled={requestingEquipmentCheck || (thesis.equipmentCheckStatus !== undefined && thesis.equipmentCheckStatus !== 'Pending Request')}
+            >
+              {requestingEquipmentCheck ? "Requesting..." : (
+                (!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? "Request Equipment Check" :
+                thesis.equipmentCheckStatus === 'Requested' ? "Equipment Check: Pending Approval" :
+                "Equipment Check: Approved"
+              )}
+            </button>
+          )}
+          <button 
+            onClick={() => setIsNoteModalOpen(true)}
+            className={styles.btnPrimary}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+          >
+            <Bell size={18} />
+            Important Note
+          </button>
+        </div>
       </div>
       
       <ImportantNoteModal 
@@ -366,6 +393,38 @@ export default function StudentDashboard() {
         onClose={() => setIsNoteModalOpen(false)} 
         fieldOfStudy={thesis.fieldOfStudy}
       />
+
+      {showEquipmentCheckModal && (
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "#fff", width: "450px", maxWidth: "100%", borderRadius: "12px", padding: "30px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)" }}>
+            <h2 style={{ margin: "0 0 15px 0", color: "#4A4238", fontSize: "1.4rem" }}>Request Equipment Check</h2>
+            <p style={{ color: "#7A7061", fontSize: "0.95rem", marginBottom: "20px" }}>
+              You are about to request an equipment check. You can optionally leave a message below.
+            </p>
+            <textarea
+              value={equipmentCheckMessage}
+              onChange={e => setEquipmentCheckMessage(e.target.value)}
+              placeholder="Leave a message (optional)"
+              style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "80px", fontFamily: "inherit", background: "#fff", marginBottom: "20px" }}
+            />
+            <div style={{ display: "flex", gap: "15px", justifyContent: "flex-end" }}>
+              <button
+                onClick={() => { setShowEquipmentCheckModal(false); setEquipmentCheckMessage(""); }}
+                style={{ padding: "10px 20px", borderRadius: "6px", background: "#EBE4D1", border: "none", color: "#4A4238", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRequestEquipmentCheck}
+                disabled={requestingEquipmentCheck}
+                style={{ padding: "10px 20px", borderRadius: "6px", background: "#10b981", border: "none", color: "#fff", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+              >
+                {requestingEquipmentCheck ? "Confirming..." : "Confirm"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className={`${styles.card} ${styles.workspaceHeader}`}>
         <div>
@@ -539,26 +598,12 @@ export default function StudentDashboard() {
         {/* RIGHT COLUMN */}
         <div>
           {thesis.currentStage >= 3 && thesis.equipmentCheckStatus !== 'Approved' && (
-            <div className={styles.card} style={{ marginBottom: "20px" }}>
-              <h2 style={{ marginBottom: "20px" }}>Borrowed Equipment Check</h2>
-              <p style={{ fontSize: "0.9rem", marginBottom: "20px", color: "#7A7061" }}>
-                Before proceeding to the signing step, you must complete the equipment check.
+            <div className={styles.card} style={{ marginBottom: "20px", textAlign: "center", padding: "40px 20px" }}>
+              <h3 style={{ color: "#7A7061", marginBottom: "10px" }}>Equipment Check Required</h3>
+              <p style={{ fontSize: "0.95rem", color: "#4A4238" }}>
+                You must complete your borrowed equipment check before proceeding. <br/>
+                Please use the button at the top of the page.
               </p>
-              {thesis.equipmentCheckStatus === 'Pending Request' && (
-                <button
-                  className={styles.btnPrimary}
-                  style={{ width: "100%", margin: 0, padding: "12px", fontSize: "1rem" }}
-                  onClick={handleRequestEquipmentCheck}
-                  disabled={requestingEquipmentCheck}
-                >
-                  {requestingEquipmentCheck ? "Requesting..." : "Request Equipment Check"}
-                </button>
-              )}
-              {thesis.equipmentCheckStatus === 'Requested' && (
-                <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", padding: "15px", borderRadius: "8px", color: "#1e3a8a", textAlign: "center", fontWeight: "bold" }}>
-                  Your equipment check request is pending approval.
-                </div>
-              )}
             </div>
           )}
 

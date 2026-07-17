@@ -155,8 +155,8 @@ export default function LecturerDashboard() {
 
   const triggerReject = () => {
     if (!user?.email || !activeWorkspace?.thesis.id) return;
-    if (!validateLinksBeforeAction()) return;
-    setConfirmDialog({ type: "Revise", message: "Are you sure you want to mark this thesis for revision? It will be returned to the student." });
+    if (activeWorkspace.role !== "Equipment Checker" && !validateLinksBeforeAction()) return;
+    setConfirmDialog({ type: "Revise", message: activeWorkspace.role === "Equipment Checker" ? "Are you sure you want to reject this equipment check request?" : "Are you sure you want to mark this thesis for revision? It will be returned to the student." });
   };
 
   const executeAction = async () => {
@@ -230,10 +230,33 @@ export default function LecturerDashboard() {
         }
         }
       } else {
-        await rejectThesis(activeWorkspace.thesis.id);
-        await logThesisActivity({
-          thesisId: activeWorkspace.thesis.id,
-          type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Refused" : "Revision Requested",
+        if (activeWorkspace.role === "Equipment Checker") {
+          const { rejectEquipmentCheck } = await import("@/lib/db/theses");
+          await rejectEquipmentCheck(activeWorkspace.thesis.id);
+          await logThesisActivity({
+            thesisId: activeWorkspace.thesis.id,
+            type: "Equipment Check Rejected",
+            timestamp: Date.now(),
+            actorEmail: user.email,
+            actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
+            actorRole: "Equipment Checker",
+            description: reviewComments.trim() || "Lecturer rejected equipment check."
+          });
+
+          if (activeWorkspace.thesis.studentUids?.length > 0) {
+            for (const sEmail of activeWorkspace.thesis.studentUids) {
+              await sendNotificationEmail({
+                to: sEmail,
+                subject: `Equipment Check Rejected`,
+                html: `<p>Your equipment check for <b>${activeWorkspace.thesis.title}</b> has been rejected.</p>${reviewComments ? `<p><b>Reason:</b> ${reviewComments}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review and re-request when ready.</p>`
+              });
+            }
+          }
+        } else {
+          await rejectThesis(activeWorkspace.thesis.id);
+          await logThesisActivity({
+            thesisId: activeWorkspace.thesis.id,
+            type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Refused" : "Revision Requested",
           timestamp: Date.now(),
           actorEmail: user.email,
           actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
@@ -251,6 +274,7 @@ export default function LecturerDashboard() {
               html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> requires revision. Your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}) has requested changes.</p>${reviewComments ? `<p><b>Comments:</b> ${reviewComments}</p>` : ""}${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to propose edits.</p>`
             });
           }
+        }
         }
       }
 
@@ -840,14 +864,35 @@ export default function LecturerDashboard() {
                   <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", alignItems: "center", textAlign: "center", background: "#fff", padding: "30px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
                     <h3 style={{ margin: "0 0 15px 0", color: "#4A4238" }}>Equipment Check Request</h3>
                     <p style={{ color: "#7A7061", marginBottom: "25px", fontSize: "0.95rem" }}>The student has requested an equipment check before proceeding to the signing step.</p>
-                    <button
-                      className={styles.btnPrimary}
-                      style={{ margin: 0, background: "#10b981", fontSize: "1rem", padding: "12px 24px", width: "100%" }}
-                      disabled={actionLoading === activeWorkspace.thesis.id}
-                      onClick={triggerApprove}
-                    >
-                      {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Approve Equipment Check"}
-                    </button>
+                    
+                    <div style={{ width: "100%", marginBottom: "20px", textAlign: "left" }}>
+                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "8px" }}>Reason / Comments</label>
+                      <textarea
+                        value={reviewComments}
+                        onChange={e => setReviewComments(e.target.value)}
+                        placeholder="Provide your feedback or reason for rejection here..."
+                        style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "100px", fontFamily: "inherit", background: "#fff" }}
+                      />
+                    </div>
+
+                    <div style={{ display: "flex", gap: "10px", width: "100%", flexWrap: "wrap" }}>
+                      <button
+                        className={styles.btnPrimary}
+                        style={{ flex: 1, margin: 0, background: "#10b981", fontSize: "1rem", padding: "12px 24px" }}
+                        disabled={actionLoading === activeWorkspace.thesis.id}
+                        onClick={triggerApprove}
+                      >
+                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Approve Equipment Check"}
+                      </button>
+                      <button
+                        className={styles.btnDanger}
+                        style={{ flex: 1, margin: 0, fontSize: "1rem", padding: "12px 24px", background: "#dc2626", color: "#fff" }}
+                        disabled={actionLoading === activeWorkspace.thesis.id}
+                        onClick={triggerReject}
+                      >
+                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Reject Check"}
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>

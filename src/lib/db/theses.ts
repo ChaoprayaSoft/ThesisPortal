@@ -288,3 +288,10 @@ export async function approveEquipmentCheck(thesisId: string) {
     statusUpdatedAt: Date.now()
   });
 }
+
+export async function rejectEquipmentCheck(thesisId: string) {
+  await updateDoc(doc(db, "theses", thesisId), {
+    equipmentCheckStatus: "Pending Request",
+    statusUpdatedAt: Date.now()
+  });
+}

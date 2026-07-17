@@ -27,6 +27,13 @@ export default function AdminThesisPage() {
   const [equipmentChecker, setEquipmentChecker] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // User Selection Modal State
+  const [showUserModal, setShowUserModal] = useState<{
+    type: "student" | "advisor" | "committee" | "chairperson" | "equipmentChecker",
+    isOpen: boolean
+  }>({ type: "student", isOpen: false });
+  const [userSearchQuery, setUserSearchQuery] = useState("");
+
   // Deadlines State
   const [deadlineAdvisor, setDeadlineAdvisor] = useState("");
   const [deadlineCommittee, setDeadlineCommittee] = useState("");
@@ -190,8 +197,85 @@ export default function AdminThesisPage() {
     return true;
   });
 
+  const renderUserModal = () => {
+    if (!showUserModal.isOpen) return null;
+
+    let list: any[] = [];
+    if (showUserModal.type === "student") {
+      list = currentGroup ? currentGroup.students.filter(s => !selectedStudents.includes(s.email)) : [];
+    } else if (showUserModal.type === "committee") {
+      list = lecturers.filter(l => !committees.includes(l.email));
+    } else {
+      list = lecturers;
+    }
+
+    const filteredList = list.filter(item => {
+      const search = userSearchQuery.toLowerCase();
+      if (showUserModal.type === "student") {
+        return item.name.toLowerCase().includes(search) || item.studentId.includes(search) || item.email.toLowerCase().includes(search);
+      } else {
+        return (item.name_th || "").toLowerCase().includes(search) || (item.name_en || "").toLowerCase().includes(search) || item.email.toLowerCase().includes(search);
+      }
+    });
+
+    const handleSelect = (email: string) => {
+      if (showUserModal.type === "student") {
+        setSelectedStudents([...selectedStudents, email]);
+      } else if (showUserModal.type === "advisor") {
+        setAdvisor(email);
+      } else if (showUserModal.type === "committee") {
+        setCommittees([...committees, email]);
+      } else if (showUserModal.type === "chairperson") {
+        setChairperson(email);
+      } else if (showUserModal.type === "equipmentChecker") {
+        setEquipmentChecker(email);
+      }
+      setShowUserModal({ ...showUserModal, isOpen: false });
+      setUserSearchQuery("");
+    };
+
+    return (
+      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1100, padding: "20px" }}>
+        <div style={{ background: "#fff", width: "500px", maxWidth: "100%", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", maxHeight: "80vh", boxShadow: "0 10px 25px rgba(0,0,0,0.2)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
+            <h3 style={{ margin: 0, color: "#4A4238" }}>
+              {showUserModal.type === "student" ? "Select Student" : `Select ${showUserModal.type.charAt(0).toUpperCase() + showUserModal.type.slice(1)}`}
+            </h3>
+            <button type="button" onClick={() => { setShowUserModal({ ...showUserModal, isOpen: false }); setUserSearchQuery(""); }} style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.2rem", color: "#64748b" }}>&times;</button>
+          </div>
+          <input
+            type="text"
+            placeholder="Search by name, ID, or email..."
+            value={userSearchQuery}
+            onChange={e => setUserSearchQuery(e.target.value)}
+            style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #ccc", marginBottom: "15px", fontSize: "1rem" }}
+            autoFocus
+          />
+          <div style={{ flex: 1, overflowY: "auto", border: "1px solid #eee", borderRadius: "6px" }}>
+            {filteredList.map(item => (
+              <div
+                key={item.email}
+                onClick={() => handleSelect(item.email)}
+                style={{ padding: "12px", borderBottom: "1px solid #eee", cursor: "pointer" }}
+              >
+                <div style={{ fontWeight: "bold", color: "#1e293b" }}>
+                  {showUserModal.type === "student" ? `${item.studentId} - ${item.name}` : `${item.name_th || item.name_en || item.email}`}
+                </div>
+                <div style={{ fontSize: "0.85rem", color: "#64748b" }}>{item.email}</div>
+              </div>
+            ))}
+            {filteredList.length === 0 && (
+              <div style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>No results found.</div>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div>
+      {renderUserModal()}
       <div className={styles.pageHeader}>
         <h1>Manage Theses</h1>
       </div>
@@ -265,29 +349,14 @@ export default function AdminThesisPage() {
               <div className={styles.formGroup}>
                 <label>Assign Students</label>
 
-                <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
-                  <select
-                    value={studentToAdd}
-                    onChange={e => setStudentToAdd(e.target.value)}
-                    style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}
-                  >
-                    <option value="">-- Select Student from Group --</option>
-                    {currentGroup.students
-                      .filter(s => !selectedStudents.includes(s.email))
-                      .map(s => <option key={s.email} value={s.email}>{s.studentId} - {s.name}</option>)}
-                  </select>
+                <div style={{ marginBottom: "15px" }}>
                   <button
                     type="button"
                     className={styles.btnPrimary}
-                    style={{ margin: 0, padding: "10px 20px" }}
-                    onClick={() => {
-                      if (studentToAdd) {
-                        setSelectedStudents([...selectedStudents, studentToAdd]);
-                        setStudentToAdd("");
-                      }
-                    }}
+                    style={{ margin: 0, padding: "10px 20px", display: "flex", alignItems: "center", gap: "8px", background: "#f8fafc", color: "#475569", border: "1px solid #cbd5e1" }}
+                    onClick={() => setShowUserModal({ type: "student", isOpen: true })}
                   >
-                    Add
+                    🔍 Search & Add Student
                   </button>
                 </div>
 
@@ -327,37 +396,22 @@ export default function AdminThesisPage() {
 
             <div className={styles.formGroup}>
               <label>Advisor</label>
-              <select value={advisor} onChange={e => setAdvisor(e.target.value)} required>
-                <option value="">-- Select Advisor --</option>
-                {lecturers.map(l => <option key={l.uid} value={l.email}>{l.name_th} ({l.email})</option>)}
-              </select>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <div style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #ccc", background: "#f8fafc", color: advisor ? "#0f172a" : "#94a3b8" }}>
+                  {advisor ? (() => {
+                    const l = lecturers.find(lec => lec.email === advisor);
+                    return l ? `${l.name_th} (${l.email})` : advisor;
+                  })() : "No Advisor Selected"}
+                </div>
+                <button type="button" className={styles.btnPrimary} style={{ margin: 0, padding: "10px 20px" }} onClick={() => setShowUserModal({ type: "advisor", isOpen: true })}>Search & Select</button>
+              </div>
             </div>
 
             <div className={styles.formGroup}>
               <label>Committees</label>
-              <div style={{ display: "flex", gap: "10px", marginBottom: "15px" }}>
-                <select
-                  value={committeeToAdd}
-                  onChange={e => setCommitteeToAdd(e.target.value)}
-                  style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}
-                >
-                  <option value="">-- Select Committee Member --</option>
-                  {lecturers
-                    .filter(l => !committees.includes(l.email))
-                    .map(l => <option key={l.uid} value={l.email}>{l.name_th} ({l.email})</option>)}
-                </select>
-                <button
-                  type="button"
-                  className={styles.btnPrimary}
-                  style={{ margin: 0, padding: "10px 20px" }}
-                  onClick={() => {
-                    if (committeeToAdd) {
-                      setCommittees([...committees, committeeToAdd]);
-                      setCommitteeToAdd("");
-                    }
-                  }}
-                >
-                  Add
+              <div style={{ marginBottom: "15px" }}>
+                <button type="button" className={styles.btnPrimary} style={{ margin: 0, padding: "10px 20px", display: "flex", alignItems: "center", gap: "8px", background: "#f8fafc", color: "#475569", border: "1px solid #cbd5e1" }} onClick={() => setShowUserModal({ type: "committee", isOpen: true })}>
+                  🔍 Search & Add Committee
                 </button>
               </div>
 
@@ -393,18 +447,28 @@ export default function AdminThesisPage() {
 
             <div className={styles.formGroup}>
               <label>Chairperson</label>
-              <select value={chairperson} onChange={e => setChairperson(e.target.value)} required>
-                <option value="">-- Select Chairperson --</option>
-                {lecturers.map(l => <option key={l.uid} value={l.email}>{l.name_th} ({l.email})</option>)}
-              </select>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <div style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #ccc", background: "#f8fafc", color: chairperson ? "#0f172a" : "#94a3b8" }}>
+                  {chairperson ? (() => {
+                    const l = lecturers.find(lec => lec.email === chairperson);
+                    return l ? `${l.name_th} (${l.email})` : chairperson;
+                  })() : "No Chairperson Selected"}
+                </div>
+                <button type="button" className={styles.btnPrimary} style={{ margin: 0, padding: "10px 20px" }} onClick={() => setShowUserModal({ type: "chairperson", isOpen: true })}>Search & Select</button>
+              </div>
             </div>
 
             <div className={styles.formGroup}>
               <label>Equipment Checker (Optional)</label>
-              <select value={equipmentChecker} onChange={e => setEquipmentChecker(e.target.value)}>
-                <option value="">-- Select Equipment Checker --</option>
-                {lecturers.map(l => <option key={l.uid} value={l.email}>{l.name_th} ({l.email})</option>)}
-              </select>
+              <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <div style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #ccc", background: "#f8fafc", color: equipmentChecker ? "#0f172a" : "#94a3b8" }}>
+                  {equipmentChecker ? (() => {
+                    const l = lecturers.find(lec => lec.email === equipmentChecker);
+                    return l ? `${l.name_th} (${l.email})` : equipmentChecker;
+                  })() : "No Equipment Checker Selected"}
+                </div>
+                <button type="button" className={styles.btnPrimary} style={{ margin: 0, padding: "10px 20px" }} onClick={() => setShowUserModal({ type: "equipmentChecker", isOpen: true })}>Search & Select</button>
+              </div>
             </div>
 
             <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #ddd" }} />
