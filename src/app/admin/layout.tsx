@@ -41,6 +41,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Link href="/admin/groups" className={styles.navLink}>Student Groups</Link>
           <Link href="/admin/thesis" className={styles.navLink}>Theses</Link>
           <Link href="/admin/note" className={styles.navLink}>Important Note</Link>
+          <Link href="/admin/comments" className={styles.navLink}>Comment Templates</Link>
           <div style={{ margin: "20px 0", borderBottom: "1px solid var(--border-color)" }}></div>
           <Link href="/lecturer" className={styles.navLink} style={{ color: "var(--text-muted)" }}>Lecturer Portal ↗</Link>
         </nav>

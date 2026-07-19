@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import styles from "./lecturer.module.css";
 import { getThesesByLecturer, subscribeToThesesByLecturer, approveThesis, rejectThesis, ThesisData, getThesisActivities, ThesisActivity, logThesisActivity, getDisplayStatus } from "@/lib/db/theses";
+import { getCommentTemplates } from "@/lib/db/settings";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import { getAllUsers } from "@/lib/db/users";
 import { getGroups } from "@/lib/db/groups";
@@ -46,6 +47,9 @@ export default function LecturerDashboard() {
   const [deadlineChairperson, setDeadlineChairperson] = useState("");
   const [savingDeadlines, setSavingDeadlines] = useState(false);
 
+  const [commentTemplates, setCommentTemplates] = useState<string[]>([]);
+  const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
+
   const formatDatetimeLocal = (ts?: number | null) => {
     if (!ts) return "";
     const d = new Date(ts);
@@ -78,6 +82,10 @@ export default function LecturerDashboard() {
         if (g.id) map[g.id] = g.name;
       });
       setGroupMap(map);
+    }).catch(console.error);
+
+    getCommentTemplates().then(templates => {
+      setCommentTemplates(templates);
     }).catch(console.error);
   }, []);
 
@@ -788,6 +796,34 @@ export default function LecturerDashboard() {
                         placeholder="Provide your feedback, requested revisions, or approval notes here..."
                         style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "150px", fontFamily: "inherit", background: "#fff" }}
                       />
+                      {commentTemplates.length > 0 && (
+                        <div style={{ marginTop: "10px", position: "relative" }}>
+                          <button
+                            onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)}
+                            style={{ background: "#EBE4D1", border: "1px solid #D6CEB8", color: "#4A4238", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", cursor: "pointer", fontWeight: "bold" }}
+                          >
+                            Insert Pre-defined Sentence ▾
+                          </button>
+                          {showTemplatesDropdown && (
+                            <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "5px", background: "#fff", border: "1px solid #D6CEB8", borderRadius: "6px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)", zIndex: 10, minWidth: "300px", maxHeight: "200px", overflowY: "auto" }}>
+                              {commentTemplates.map((template, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => {
+                                    setReviewComments(prev => prev ? `${prev}\n${template}` : template);
+                                    setShowTemplatesDropdown(false);
+                                  }}
+                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 15px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid #f1f5f9" : "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", color: "#4A4238" }}
+                                  onMouseOver={e => e.currentTarget.style.background = "#FDF9F1"}
+                                  onMouseOut={e => e.currentTarget.style.background = "transparent"}
+                                >
+                                  {template}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div style={{ marginBottom: "30px" }}>
@@ -873,6 +909,34 @@ export default function LecturerDashboard() {
                         placeholder="Provide your feedback or reason for rejection here..."
                         style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "100px", fontFamily: "inherit", background: "#fff" }}
                       />
+                      {commentTemplates.length > 0 && (
+                        <div style={{ marginTop: "10px", position: "relative" }}>
+                          <button
+                            onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)}
+                            style={{ background: "#EBE4D1", border: "1px solid #D6CEB8", color: "#4A4238", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", cursor: "pointer", fontWeight: "bold" }}
+                          >
+                            Insert Pre-defined Sentence ▾
+                          </button>
+                          {showTemplatesDropdown && (
+                            <div style={{ position: "absolute", bottom: "100%", left: 0, marginBottom: "5px", background: "#fff", border: "1px solid #D6CEB8", borderRadius: "6px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)", zIndex: 10, minWidth: "300px", maxHeight: "200px", overflowY: "auto" }}>
+                              {commentTemplates.map((template, idx) => (
+                                <button
+                                  key={idx}
+                                  onClick={() => {
+                                    setReviewComments(prev => prev ? `${prev}\n${template}` : template);
+                                    setShowTemplatesDropdown(false);
+                                  }}
+                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 15px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid #f1f5f9" : "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", color: "#4A4238" }}
+                                  onMouseOver={e => e.currentTarget.style.background = "#FDF9F1"}
+                                  onMouseOut={e => e.currentTarget.style.background = "transparent"}
+                                >
+                                  {template}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     <div style={{ display: "flex", gap: "10px", width: "100%", flexWrap: "wrap" }}>
