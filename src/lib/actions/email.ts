@@ -1,33 +1,37 @@
 "use server";
 
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
+
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 export async function sendNotificationEmail({ to, subject, html }: { to: string, subject: string, html: string }) {
   try {
-    if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    if (!process.env.RESEND_API_KEY) {
       console.log("Mock Email Sent to:", to);
       console.log("Subject:", subject);
       return { success: true, mocked: true };
     }
 
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
+    const fromName = process.env.EMAIL_FROM || "ThesisPortal Admin";
+    // We use onboarding@resend.dev because you are currently testing without a verified domain.
+    // Once you verify a domain, you can change EMAIL_FROM to "admin@yourdomain.com".
+    const fromAddress = `${fromName} <onboarding@resend.dev>`;
 
-    const info = await transporter.sendMail({
-      from: `"Thesis Portal Admin" <${process.env.EMAIL_USER}>`,
-      to: to,
+    const { data, error } = await resend.emails.send({
+      from: fromAddress,
+      to: [to],
       subject: subject,
       html: html,
     });
 
-    return { success: true, data: info };
+    if (error) {
+      console.error("Resend API Error:", error);
+      return { success: false, error: error.message };
+    }
+
+    return { success: true, data };
   } catch (error: any) {
-    console.error("Failed to send email via Nodemailer:", error);
+    console.error("Failed to send email via Resend:", error);
     return { success: false, error: error.message };
   }
 }
