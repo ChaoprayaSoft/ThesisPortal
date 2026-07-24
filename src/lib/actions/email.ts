@@ -13,9 +13,7 @@ export async function sendNotificationEmail({ to, subject, html }: { to: string,
     }
 
     const fromName = process.env.EMAIL_FROM || "ThesisPortal Admin";
-    // We use onboarding@resend.dev because you are currently testing without a verified domain.
-    // Once you verify a domain, you can change EMAIL_FROM to "admin@yourdomain.com".
-    const fromAddress = `${fromName} <onboarding@resend.dev>`;
+    const fromAddress = `${fromName} <admin@taradmoobann.com>`;
 
     const { data, error } = await resend.emails.send({
       from: fromAddress,
