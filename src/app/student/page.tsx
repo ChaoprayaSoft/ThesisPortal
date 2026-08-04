@@ -355,9 +355,9 @@ export default function StudentDashboard() {
 
   return (
     <div>
-      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>My Workspace</h1>
-        <div style={{ display: 'flex', gap: '10px' }}>
+      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+        <h1 style={{ margin: 0 }}>My Workspace</h1>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
           {thesis.equipmentChecker && (
             <button
               onClick={(!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? () => setShowEquipmentCheckModal(true) : undefined}
@@ -367,6 +367,7 @@ export default function StudentDashboard() {
                 backgroundColor: thesis.equipmentCheckStatus === 'Approved' ? '#10b981' : (thesis.equipmentCheckStatus === 'Requested' ? '#3b82f6' : '#f59e0b'),
                 borderColor: thesis.equipmentCheckStatus === 'Approved' ? '#10b981' : (thesis.equipmentCheckStatus === 'Requested' ? '#3b82f6' : '#f59e0b'),
                 cursor: (!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? 'pointer' : 'default',
+                margin: 0
               }}
               disabled={requestingEquipmentCheck || (thesis.equipmentCheckStatus !== undefined && thesis.equipmentCheckStatus !== 'Pending Request')}
             >
@@ -380,7 +381,7 @@ export default function StudentDashboard() {
           <button 
             onClick={() => setIsNoteModalOpen(true)}
             className={styles.btnPrimary}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--danger-color)', borderColor: 'var(--danger-color)' }}
+            style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--danger-color)', borderColor: 'var(--danger-color)', margin: 0 }}
           >
             <Bell size={18} />
             Important Note
