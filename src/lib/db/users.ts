@@ -49,9 +49,8 @@ export async function getAllUsers() {
 export async function deleteUserByEmail(email: string) {
   const q = query(collection(db, "users"), where("email", "==", email));
   const snapshot = await getDocs(q);
-  snapshot.forEach(async (d) => {
-    await deleteDoc(d.ref);
-  });
+  const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
+  await Promise.all(deletePromises);
 }
 
 export async function updateUser(id: string, data: Partial<UserData>) {

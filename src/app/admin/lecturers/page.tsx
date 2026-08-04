@@ -79,13 +79,15 @@ export default function LecturersPage() {
   };
 
   const saveEdit = async (lecturer: any) => {
+    if (!lecturer) return;
     setConfirmAction({
       message: `Are you sure you want to save changes for ${editData.name_th}?`,
       onConfirm: async () => {
         try {
           await updateUser(lecturer.id, editData);
           setEditingId(null);
-          loadLecturers();
+          // Update the local state directly to reflect changes immediately
+          setLecturers(prev => prev.map(l => l.id === lecturer.id ? { ...l, ...editData } : l));
         } catch (err) {
           alert("Error saving edits");
         }
@@ -230,54 +232,65 @@ export default function LecturersPage() {
                 return matchesSearch && matchesField;
               })
               .map(l => (
-              <tr key={l.id}>
-                {editingId === l.id ? (
-                  <>
-                    <td><input type="text" value={editData.name_th} onChange={e => setEditData({...editData, name_th: e.target.value})} style={{width: "100%", padding: "4px"}}/></td>
-                    <td><input type="text" value={editData.name_en} onChange={e => setEditData({...editData, name_en: e.target.value})} style={{width: "100%", padding: "4px"}}/></td>
-                    <td>
-                      <select 
-                        value={editData.fieldOfStudy} 
-                        onChange={e => setEditData({...editData, fieldOfStudy: e.target.value})} 
-                        style={{width: "100%", padding: "4px"}}
-                      >
-                        <option value="">-- Select --</option>
-                        <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
-                        <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
-                        <option value="แขนงวิชาเครื่องมือวัดและควบคุม">แขนงวิชาเครื่องมือวัดและควบคุม</option>
-                        <option value="แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย">แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย</option>
-                        <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
-                        <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
-                      </select>
-                    </td>
-                    <td><input type="text" value={editData.email} onChange={e => setEditData({...editData, email: e.target.value})} style={{width: "100%", padding: "4px"}}/></td>
-                    <td>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button onClick={() => saveEdit(l)} className={styles.btnPrimary} style={{ padding: "4px 12px", fontSize: "0.8rem", margin: 0 }}>Save</button>
-                        <button onClick={() => setEditingId(null)} style={{ background: "none", border: "none", textDecoration: "underline", cursor: "pointer", fontSize: "0.8rem" }}>Cancel</button>
-                      </div>
-                    </td>
-                  </>
-                ) : (
-                  <>
-                    <td>{l.name_th}</td>
-                    <td>{l.name_en || "-"}</td>
-                    <td>{l.fieldOfStudy || "-"}</td>
-                    <td style={{ wordBreak: "break-all" }}>{l.email}</td>
-                    <td>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button onClick={() => startEdit(l)} style={{ background: "none", border: "1px solid #ccc", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}>Edit</button>
-                        <button onClick={() => handleDelete(l)} style={{ background: "none", border: "1px solid #dc2626", color: "#dc2626", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}>Delete</button>
-                      </div>
-                    </td>
-                  </>
-                )}
-              </tr>
+                <tr key={l.id}>
+                  <td>{l.name_th}</td>
+                  <td>{l.name_en || "-"}</td>
+                  <td>{l.fieldOfStudy || "-"}</td>
+                  <td style={{ wordBreak: "break-all" }}>{l.email}</td>
+                  <td>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button onClick={() => startEdit(l)} style={{ background: "none", border: "1px solid #ccc", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}>Edit</button>
+                      <button onClick={() => handleDelete(l)} style={{ background: "none", border: "1px solid #dc2626", color: "#dc2626", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}>Delete</button>
+                    </div>
+                  </td>
+                </tr>
             ))}
             </tbody>
           </table>
         </div>
       </div>
+
+      {/* Edit Modal */}
+      {editingId && (
+        <div className={styles.modalOverlay} style={{ zIndex: 1000 }}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "500px" }}>
+            <h2 style={{ marginTop: 0, marginBottom: "20px" }}>Edit Lecturer</h2>
+            <form onSubmit={(e) => { e.preventDefault(); saveEdit(lecturers.find(l => l.id === editingId)); }}>
+              <div className={styles.formGroup}>
+                <label>Name (Thai)</label>
+                <input type="text" value={editData.name_th} onChange={e => setEditData({...editData, name_th: e.target.value})} required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Name (English)</label>
+                <input type="text" value={editData.name_en} onChange={e => setEditData({...editData, name_en: e.target.value})} required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Field of Study (Optional)</label>
+                <select 
+                  value={editData.fieldOfStudy} 
+                  onChange={e => setEditData({...editData, fieldOfStudy: e.target.value})}
+                >
+                  <option value="">-- Select Field of Study --</option>
+                  <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
+                  <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
+                  <option value="แขนงวิชาเครื่องมือวัดและควบคุม">แขนงวิชาเครื่องมือวัดและควบคุม</option>
+                  <option value="แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย">แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย</option>
+                  <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
+                  <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
+                </select>
+              </div>
+              <div className={styles.formGroup}>
+                <label>Email</label>
+                <input type="email" value={editData.email} onChange={e => setEditData({...editData, email: e.target.value})} required />
+              </div>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
+                <button type="button" className={styles.btnPrimary} style={{ margin: 0, background: "#ccc", color: "#000", border: "1px solid #ccc" }} onClick={() => setEditingId(null)}>Cancel</button>
+                <button type="submit" className={styles.btnPrimary} style={{ margin: 0 }}>Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Confirmation Modal */}
       {confirmAction && (
