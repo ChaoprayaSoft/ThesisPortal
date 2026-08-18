@@ -609,12 +609,12 @@ export default function AdminThesisPage() {
               <table className={`${styles.table} ${styles.thesisTable}`}>
                 <thead>
                 <tr>
-                  <th style={{ width: "25%" }}>Title</th>
-                  <th style={{ width: "15%" }}>Group</th>
-                  <th style={{ width: "10%" }}>Year</th>
+                  <th style={{ width: "20%" }}>Title</th>
+                  <th style={{ width: "12%" }}>Group</th>
+                  <th style={{ width: "8%" }}>Year</th>
                   <th style={{ width: "15%" }}>Field</th>
-                  <th style={{ width: "15%" }}>Status</th>
-                  <th style={{ width: "20%" }}>Actions</th>
+                  <th style={{ width: "22%" }}>Status</th>
+                  <th style={{ width: "23%" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -630,7 +630,7 @@ export default function AdminThesisPage() {
                       <td data-label="Year">{t.year || "-"}</td>
                       <td data-label="Field">{t.fieldOfStudy || "-"}</td>
                       <td data-label="Status">
-                        <span style={{ padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                        <span style={{ display: "inline-block", padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem" }}>
                           {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
                         </span>
                         {t.status === "Graduate" && t.graduateComment && (
