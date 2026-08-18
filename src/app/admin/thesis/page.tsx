@@ -599,6 +599,21 @@ export default function AdminThesisPage() {
             <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
             <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
           </select>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", border: "1px solid #ccc", borderRadius: "4px", background: "#fff", flex: "0 1 auto", fontSize: "0.9rem", color: "#64748b" }}>
+            <span>Show</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              style={{ border: "none", background: "transparent", outline: "none", cursor: "pointer", fontWeight: "bold", color: "#1e293b" }}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+            </select>
+            <span>per page</span>
+          </div>
         </div>
 
         {totalItems === 0 ? (
@@ -696,21 +711,7 @@ export default function AdminThesisPage() {
               </table>
             </div>
             {totalItems > 0 && (
-              <div className={styles.paginationContainer}>
-                <div className={styles.paginationLimit}>
-                  <span>Show</span>
-                  <select
-                    value={itemsPerPage}
-                    onChange={(e) => {
-                      setItemsPerPage(Number(e.target.value));
-                      setCurrentPage(1);
-                    }}
-                  >
-                    <option value={10}>10</option>
-                    <option value={20}>20</option>
-                  </select>
-                  <span>items per page</span>
-                </div>
+              <div className={styles.paginationContainer} style={{ justifyContent: "flex-end" }}>
                 <div className={styles.paginationControls}>
                   <span className={styles.paginationInfo}>
                     Showing {startIndex + 1}-{endIndex} of {totalItems} (Page {activePage} of {totalPages})
