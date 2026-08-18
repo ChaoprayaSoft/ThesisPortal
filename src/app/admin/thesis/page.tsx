@@ -2,14 +2,25 @@
 
 import { useState, useEffect } from "react";
 import styles from "../admin.module.css";
+import { useAuth } from "@/components/AuthProvider";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { getGroups, StudentGroup } from "@/lib/db/groups";
-import { createThesis, getAllTheses, deleteThesis, updateThesis, getDisplayStatus, getThesisActivities } from "@/lib/db/theses";
+import { createThesis, getAllTheses, deleteThesis, updateThesis, getDisplayStatus, getThesisActivities, logThesisActivity } from "@/lib/db/theses";
 
 export default function AdminThesisPage() {
+  const { user, dbUser } = useAuth();
   const [lecturers, setLecturers] = useState<UserData[]>([]);
   const [groups, setGroups] = useState<StudentGroup[]>([]);
   const [theses, setTheses] = useState<any[]>([]);
+
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
+
+  // Graduation State
+  const [showGraduateModal, setShowGraduateModal] = useState(false);
+  const [graduateThesisId, setGraduateThesisId] = useState<string | null>(null);
+  const [graduateReason, setGraduateReason] = useState("");
 
   // Form State
   const [title, setTitle] = useState("");
@@ -196,6 +207,55 @@ export default function AdminThesisPage() {
     if (searchTitle && !t.title.toLowerCase().includes(searchTitle.toLowerCase())) return false;
     return true;
   });
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filterGroup, filterStatus, filterYear, filterField, searchTitle]);
+
+  const totalItems = filteredTheses.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+  const activePage = Math.min(currentPage, totalPages);
+  const startIndex = (activePage - 1) * itemsPerPage;
+  const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
+  const paginatedTheses = filteredTheses.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleGraduateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!graduateThesisId) return;
+
+    setLoading(true);
+    try {
+      const targetThesis = theses.find(t => t.id === graduateThesisId);
+      const thesisTitle = targetThesis ? targetThesis.title : "Thesis";
+
+      await updateThesis(graduateThesisId, {
+        status: "Graduate",
+        currentStage: 6,
+        graduateComment: graduateReason,
+        statusUpdatedAt: Date.now()
+      });
+
+      await logThesisActivity({
+        thesisId: graduateThesisId,
+        type: "Status Override",
+        timestamp: Date.now(),
+        actorEmail: user?.email || "admin@thesisportal.com",
+        actorName: dbUser?.name_th || dbUser?.name_en || user?.email || "Administrator",
+        actorRole: "Admin",
+        description: `Admin forced status to Graduate. Reason: ${graduateReason}`
+      });
+
+      setInfoMessage(`Successfully marked "${thesisTitle}" as Graduate.`);
+      setShowGraduateModal(false);
+      setGraduateThesisId(null);
+      setGraduateReason("");
+      loadTheses();
+    } catch (err: any) {
+      setInfoMessage("Error marking thesis as Graduate: " + err.message);
+    }
+    setLoading(false);
+  };
 
   const renderUserModal = () => {
     if (!showUserModal.isOpen) return null;
@@ -541,77 +601,139 @@ export default function AdminThesisPage() {
           </select>
         </div>
 
-        {filteredTheses.length === 0 ? (
+        {totalItems === 0 ? (
           <p style={{ color: "#666", textAlign: "center", padding: "20px" }}>No theses found matching your criteria.</p>
         ) : (
-          <div className={styles.tableResponsive}>
-            <table className={styles.table} style={{ tableLayout: "fixed", width: "100%", minWidth: "900px" }}>
-              <thead>
-              <tr>
-                <th style={{ width: "25%" }}>Title</th>
-                <th style={{ width: "15%" }}>Group</th>
-                <th style={{ width: "10%" }}>Year</th>
-                <th style={{ width: "15%" }}>Field</th>
-                <th style={{ width: "15%" }}>Status</th>
-                <th style={{ width: "20%" }}>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredTheses.map((t) => {
-                const groupName = groups.find(g => g.id === t.groupId)?.name || "Unknown Group";
-                return (
-                  <tr key={t.id}>
-                    <td style={{ wordBreak: "break-all" }}>
-                      <strong>{t.title}</strong>
-                      {getDeadlineDisplay(t)}
-                    </td>
-                    <td>{groupName}</td>
-                    <td>{t.year || "-"}</td>
-                    <td>{t.fieldOfStudy || "-"}</td>
-                    <td><span style={{ padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span></td>
-                    <td>
-                      <div style={{ display: "flex", gap: "8px" }}>
-                        <button
-                          onClick={async () => {
-                            setViewThesis(t);
-                            setLoadingActivities(true);
-                            try {
-                              const acts = await getThesisActivities(t.id);
-                              setThesisActivities(acts);
-                            } catch (err) {
-                              console.error(err);
-                            }
-                            setLoadingActivities(false);
-                          }}
-                          style={{ background: "none", border: "1px solid #3b82f6", color: "#3b82f6", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
-                        >
-                          View Detail
-                        </button>
-                        <button
-                          onClick={() => {
-                            setConfirmAction({
-                              message: `Are you sure you want to completely delete the thesis "${t.title}"?`,
-                              onConfirm: async () => {
-                                try {
-                                  await deleteThesis(t.id);
-                                  loadTheses();
-                                } catch (err) {
-                                  setInfoMessage("Error deleting thesis");
-                                }
+          <div>
+            <div className={styles.tableResponsive}>
+              <table className={`${styles.table} ${styles.thesisTable}`}>
+                <thead>
+                <tr>
+                  <th style={{ width: "25%" }}>Title</th>
+                  <th style={{ width: "15%" }}>Group</th>
+                  <th style={{ width: "10%" }}>Year</th>
+                  <th style={{ width: "15%" }}>Field</th>
+                  <th style={{ width: "15%" }}>Status</th>
+                  <th style={{ width: "20%" }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {paginatedTheses.map((t) => {
+                  const groupName = groups.find(g => g.id === t.groupId)?.name || "Unknown Group";
+                  return (
+                    <tr key={t.id}>
+                      <td data-label="Title" style={{ wordBreak: "break-all" }}>
+                        <strong>{t.title}</strong>
+                        {getDeadlineDisplay(t)}
+                      </td>
+                      <td data-label="Group">{groupName}</td>
+                      <td data-label="Year">{t.year || "-"}</td>
+                      <td data-label="Field">{t.fieldOfStudy || "-"}</td>
+                      <td data-label="Status">
+                        <span style={{ padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem", whiteSpace: "nowrap" }}>
+                          {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
+                        </span>
+                        {t.status === "Graduate" && t.graduateComment && (
+                          <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: "6px", wordBreak: "break-word" }}>
+                            Reason: {t.graduateComment}
+                          </div>
+                        )}
+                      </td>
+                      <td data-label="Actions">
+                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                          <button
+                            onClick={async () => {
+                              setViewThesis(t);
+                              setLoadingActivities(true);
+                              try {
+                                const acts = await getThesisActivities(t.id);
+                                setThesisActivities(acts);
+                              } catch (err) {
+                                console.error(err);
                               }
-                            });
-                          }}
-                          style={{ background: "none", border: "1px solid #dc2626", color: "#dc2626", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              </tbody>
-            </table>
+                              setLoadingActivities(false);
+                            }}
+                            style={{ background: "none", border: "1px solid #3b82f6", color: "#3b82f6", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
+                          >
+                            View Detail
+                          </button>
+                          {t.status !== "Graduate" && (
+                            <button
+                              onClick={() => {
+                                setGraduateThesisId(t.id);
+                                setGraduateReason("");
+                                setShowGraduateModal(true);
+                              }}
+                              style={{ background: "none", border: "1px solid #10b981", color: "#10b981", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
+                            >
+                              Graduate
+                            </button>
+                          )}
+                          <button
+                            onClick={() => {
+                              setConfirmAction({
+                                message: `Are you sure you want to completely delete the thesis "${t.title}"?`,
+                                onConfirm: async () => {
+                                  try {
+                                    await deleteThesis(t.id);
+                                    loadTheses();
+                                  } catch (err) {
+                                    setInfoMessage("Error deleting thesis");
+                                  }
+                                }
+                              });
+                            }}
+                            style={{ background: "none", border: "1px solid #dc2626", color: "#dc2626", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+                </tbody>
+              </table>
+            </div>
+            {totalItems > 0 && (
+              <div className={styles.paginationContainer}>
+                <div className={styles.paginationLimit}>
+                  <span>Show</span>
+                  <select
+                    value={itemsPerPage}
+                    onChange={(e) => {
+                      setItemsPerPage(Number(e.target.value));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value={10}>10</option>
+                    <option value={20}>20</option>
+                  </select>
+                  <span>items per page</span>
+                </div>
+                <div className={styles.paginationControls}>
+                  <span className={styles.paginationInfo}>
+                    Showing {startIndex + 1}-{endIndex} of {totalItems} (Page {activePage} of {totalPages})
+                  </span>
+                  <button
+                    className={styles.paginationBtn}
+                    onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                    disabled={activePage === 1}
+                    aria-label="Previous Page"
+                  >
+                    &larr; Prev
+                  </button>
+                  <button
+                    className={styles.paginationBtn}
+                    onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                    disabled={activePage === totalPages}
+                    aria-label="Next Page"
+                  >
+                    Next &rarr;
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -765,6 +887,61 @@ export default function AdminThesisPage() {
             </div>
 
 
+          </div>
+        </div>
+      )}
+
+      {/* Graduate Modal */}
+      {showGraduateModal && (
+        <div className={styles.modalOverlay} style={{ zIndex: 1150 }}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "500px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #eee", paddingBottom: "10px", marginBottom: "20px" }}>
+              <h2 style={{ margin: 0 }}>Mark Thesis as Graduate</h2>
+              <button
+                type="button"
+                onClick={() => { setShowGraduateModal(false); setGraduateThesisId(null); setGraduateReason(""); }}
+                style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.5rem", color: "#64748b" }}
+              >
+                &times;
+              </button>
+            </div>
+            
+            <form onSubmit={handleGraduateSubmit}>
+              <p style={{ marginBottom: "15px", color: "#475569" }}>
+                Are you sure you want to graduate this thesis? This will override all remaining approval stages and change the status directly to <strong>Graduate</strong>.
+              </p>
+              
+              <div className={styles.formGroup}>
+                <label>Reason / Comment</label>
+                <textarea
+                  rows={4}
+                  value={graduateReason}
+                  onChange={(e) => setGraduateReason(e.target.value)}
+                  placeholder="Enter the graduation reason or comment..."
+                  required
+                  style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}
+                />
+              </div>
+              
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
+                <button
+                  type="button"
+                  className={styles.btnPrimary}
+                  style={{ margin: 0, background: "#64748b", color: "#fff" }}
+                  onClick={() => { setShowGraduateModal(false); setGraduateThesisId(null); setGraduateReason(""); }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className={styles.btnPrimary}
+                  style={{ margin: 0, background: "#10b981" }}
+                  disabled={loading}
+                >
+                  {loading ? "Processing..." : "Confirm Graduation"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

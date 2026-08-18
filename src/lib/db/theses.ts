@@ -32,6 +32,7 @@ export interface ThesisData {
     committee?: number | null;
     chairperson?: number | null;
   };
+  graduateComment?: string;
 }
 
 export interface ThesisActivity {
