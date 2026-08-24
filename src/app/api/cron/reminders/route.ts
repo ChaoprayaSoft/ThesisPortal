@@ -32,6 +32,13 @@ export async function GET(request: Request) {
 
     for (const doc of thesesSnapshot.docs) {
       const thesis = doc.data() as ThesisData;
+
+      // Skip if student has not first submitted to the advisor yet (still in Preparing state at Stage 0)
+      const hasFirstSubmitted = !(thesis.currentStage === 0 && thesis.status === "Preparing");
+      if (!hasFirstSubmitted) {
+        continue;
+      }
+
       const lastUpdate = thesis.statusUpdatedAt || thesis.createdAt || now;
       const timeSinceUpdate = now - lastUpdate;
 
