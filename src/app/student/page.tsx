@@ -358,7 +358,7 @@ export default function StudentDashboard() {
       <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <h1 style={{ margin: 0 }}>My Workspace</h1>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          {thesis.equipmentChecker && (
+          {thesis.equipmentChecker && thesis.currentStage >= 3 && (
             <button
               onClick={(!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? () => setShowEquipmentCheckModal(true) : undefined}
               className={styles.btnPrimary}
