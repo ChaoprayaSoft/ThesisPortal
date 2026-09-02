@@ -1147,6 +1147,7 @@ export default function LecturerDashboard() {
         isOpen={isNoteModalOpen} 
         onClose={() => setIsNoteModalOpen(false)} 
         fieldOfStudy={selectedNoteField}
+        showFieldSelect={true}
       />
 
     </div>

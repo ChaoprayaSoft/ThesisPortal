@@ -16,9 +16,15 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   fieldOfStudy?: string;
+  showFieldSelect?: boolean;
 }
 
-export default function ImportantNoteModal({ isOpen, onClose, fieldOfStudy }: Props) {
+export default function ImportantNoteModal({
+  isOpen,
+  onClose,
+  fieldOfStudy,
+  showFieldSelect = false,
+}: Props) {
   const [selectedField, setSelectedField] = useState<string>(fieldOfStudy || DEFAULT_FIELDS_OF_STUDY[0]);
   const [content, setContent] = useState<string>("");
   const [loading, setLoading] = useState(true);
@@ -31,14 +37,20 @@ export default function ImportantNoteModal({ isOpen, onClose, fieldOfStudy }: Pr
   }, [fieldOfStudy]);
 
   useEffect(() => {
-    if (isOpen && selectedField) {
-      setLoading(true);
-      getImportantNote(selectedField).then((note) => {
-        setContent(note);
+    if (isOpen) {
+      const fieldToFetch = showFieldSelect ? selectedField : (fieldOfStudy || "");
+      if (fieldToFetch) {
+        setLoading(true);
+        getImportantNote(fieldToFetch).then((note) => {
+          setContent(note);
+          setLoading(false);
+        });
+      } else {
+        setContent("");
         setLoading(false);
-      });
+      }
     }
-  }, [isOpen, selectedField]);
+  }, [isOpen, showFieldSelect, selectedField, fieldOfStudy]);
 
   if (!isOpen) return null;
 
@@ -59,21 +71,23 @@ export default function ImportantNoteModal({ isOpen, onClose, fieldOfStudy }: Pr
           </button>
         </div>
 
-        <div className={styles.fieldBar}>
-          <label htmlFor="important-note-field-select">Field of Study:</label>
-          <select
-            id="important-note-field-select"
-            className={styles.fieldSelect}
-            value={selectedField}
-            onChange={(e) => setSelectedField(e.target.value)}
-          >
-            {fieldOptions.map((field) => (
-              <option key={field} value={field}>
-                {field}
-              </option>
-            ))}
-          </select>
-        </div>
+        {showFieldSelect && (
+          <div className={styles.fieldBar}>
+            <label htmlFor="important-note-field-select">Field of Study:</label>
+            <select
+              id="important-note-field-select"
+              className={styles.fieldSelect}
+              value={selectedField}
+              onChange={(e) => setSelectedField(e.target.value)}
+            >
+              {fieldOptions.map((field) => (
+                <option key={field} value={field}>
+                  {field}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div className={styles.content}>
           {loading ? (
@@ -81,7 +95,11 @@ export default function ImportantNoteModal({ isOpen, onClose, fieldOfStudy }: Pr
           ) : content ? (
             <div dangerouslySetInnerHTML={{ __html: content }} />
           ) : (
-            <div className={styles.emptyState}>No important notes for this field of study at this time.</div>
+            <div className={styles.emptyState}>
+              {showFieldSelect
+                ? "No important notes for this field of study at this time."
+                : "No important notes at this time."}
+            </div>
           )}
         </div>
       </div>
