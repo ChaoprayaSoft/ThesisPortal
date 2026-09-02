@@ -8,7 +8,8 @@ import { getCommentTemplates } from "@/lib/db/settings";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import { getAllUsers } from "@/lib/db/users";
 import { getGroups } from "@/lib/db/groups";
-import { ExternalLink, Plus, X } from "lucide-react";
+import { Bell, ExternalLink, Plus, X } from "lucide-react";
+import ImportantNoteModal from "@/components/ImportantNoteModal";
 
 export default function LecturerDashboard() {
   const { user, dbUser } = useAuth();
@@ -49,6 +50,10 @@ export default function LecturerDashboard() {
 
   const [commentTemplates, setCommentTemplates] = useState<string[]>([]);
   const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
+
+  // Important Note Modal State
+  const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [selectedNoteField, setSelectedNoteField] = useState<string>("");
 
   const formatDatetimeLocal = (ts?: number | null) => {
     if (!ts) return "";
@@ -443,8 +448,19 @@ export default function LecturerDashboard() {
 
   return (
     <div>
-      <div className={styles.pageHeader}>
-        <h1>My Assigned Theses</h1>
+      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
+        <h1 style={{ margin: 0 }}>My Assigned Theses</h1>
+        <button 
+          onClick={() => {
+            setSelectedNoteField(dbUser?.fieldOfStudy || (theses.find(t => t.fieldOfStudy)?.fieldOfStudy) || "");
+            setIsNoteModalOpen(true);
+          }}
+          className={styles.btnPrimary}
+          style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--danger-color)', borderColor: 'var(--danger-color)', margin: 0 }}
+        >
+          <Bell size={18} />
+          Important Note
+        </button>
       </div>
 
 
@@ -680,10 +696,23 @@ export default function LecturerDashboard() {
                   <strong>{activeWorkspace.thesis.title}</strong> • {activeWorkspace.role === "ViewOnly" ? "Viewing Details" : `Reviewing as: ${activeWorkspace.role}`}
                 </div>
               </div>
-              <button
-                onClick={() => setActiveWorkspace(null)}
-                style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer", color: "#4A4238" }}
-              >&times;</button>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <button
+                  onClick={() => {
+                    setSelectedNoteField(activeWorkspace.thesis.fieldOfStudy || dbUser?.fieldOfStudy || "");
+                    setIsNoteModalOpen(true);
+                  }}
+                  className={styles.btnPrimary}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "var(--danger-color)", borderColor: "var(--danger-color)", margin: 0, padding: "8px 14px", fontSize: "0.85rem" }}
+                >
+                  <Bell size={16} />
+                  Important Note
+                </button>
+                <button
+                  onClick={() => setActiveWorkspace(null)}
+                  style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer", color: "#4A4238" }}
+                >&times;</button>
+              </div>
             </div>
 
             {/* Modal Body */}
@@ -1112,6 +1141,13 @@ export default function LecturerDashboard() {
           </div>
         </div>
       )}
+
+      {/* Important Note Modal */}
+      <ImportantNoteModal 
+        isOpen={isNoteModalOpen} 
+        onClose={() => setIsNoteModalOpen(false)} 
+        fieldOfStudy={selectedNoteField}
+      />
 
     </div>
   );
