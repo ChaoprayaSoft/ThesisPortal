@@ -1,10 +1,15 @@
+/* ═══════════════════════════════════════════════════════════
+   ImportantNoteModal — Purple/Violet Theme
+   ═══════════════════════════════════════════════════════════ */
+
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(30, 27, 75, 0.45);
+  backdrop-filter: blur(5px);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -14,38 +19,41 @@
 
 .modal {
   background-color: var(--bg-card);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-xl);
   width: 90%;
-  max-width: 620px;
+  max-width: 640px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-  animation: slideUp 0.3s ease-out;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.28s ease-out;
   overflow: hidden;
+  border: 1px solid var(--border-color);
 }
 
 .header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 20px;
-  border-bottom: 1px solid var(--border-color);
-  background-color: var(--danger-color);
+  padding: 16px 22px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  background: linear-gradient(135deg, var(--primary-color), #6d28d9);
   color: white;
 }
 
 .header h2 {
   margin: 0;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: -0.2px;
 }
 
 .fieldBar {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 20px;
-  background-color: var(--bg-app, #f8fafc);
+  padding: 10px 22px;
+  background-color: var(--primary-lighter);
   border-bottom: 1px solid var(--border-color);
   font-size: 0.9rem;
 }
@@ -59,8 +67,8 @@
 .fieldSelect {
   flex: 1;
   padding: 6px 10px;
-  border-radius: var(--radius-sm, 6px);
-  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  border: 1.5px solid var(--border-strong);
   background-color: #ffffff;
   color: var(--text-main);
   font-size: 0.9rem;
@@ -71,60 +79,65 @@
 
 .fieldSelect:focus {
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-lighter);
 }
 
 .closeBtn {
   background: none;
   border: none;
-  color: white;
+  color: rgba(255, 255, 255, 0.85);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px;
+  padding: 6px;
   border-radius: 50%;
   transition: background-color 0.2s;
 }
 
 .closeBtn:hover {
   background-color: rgba(255, 255, 255, 0.2);
+  color: white;
 }
 
 .content {
-  padding: 20px;
+  padding: 24px 22px;
   overflow-y: auto;
   flex-grow: 1;
   color: var(--text-main);
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
-.content :global(h1) { font-size: 1.5rem; margin-bottom: 10px; }
-.content :global(h2) { font-size: 1.3rem; margin-bottom: 10px; }
-.content :global(p) { margin-bottom: 10px; }
+.content :global(h1) { font-size: 1.5rem; margin-bottom: 12px; color: var(--text-main); }
+.content :global(h2) { font-size: 1.2rem; margin-bottom: 10px; color: var(--text-main); }
+.content :global(p)  { margin-bottom: 10px; }
 .content :global(ul) { list-style-type: disc; padding-left: 20px; margin-bottom: 10px; }
 .content :global(ol) { list-style-type: decimal; padding-left: 20px; margin-bottom: 10px; }
-.content :global(a) { color: var(--primary-color); text-decoration: underline; }
+.content :global(a)  { color: var(--primary-color); text-decoration: underline; }
 .content :global(blockquote) {
-  border-left: 3px solid var(--border-color);
-  padding-left: 10px;
+  border-left: 3px solid var(--border-strong);
+  padding-left: 12px;
   margin-left: 0;
   color: var(--text-muted);
+  background: var(--primary-lighter);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  padding: 8px 12px;
 }
 
 .emptyState {
   text-align: center;
   color: var(--text-muted);
-  padding: 40px 20px;
+  padding: 48px 20px;
 }
 
 @keyframes fadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
 @keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from { transform: translateY(18px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
 }
 
 @media (max-width: 600px) {

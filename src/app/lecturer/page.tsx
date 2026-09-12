@@ -470,7 +470,7 @@ export default function LecturerDashboard() {
         <p>Theses that are currently waiting for your review and approval.</p>
 
         {theses.filter(t => getActionableRoles(t, user?.email || "").length > 0).length === 0 ? (
-          <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>No theses are currently waiting for your approval.</p>
+          <p style={{ marginTop: "20px", fontStyle: "italic", color: "var(--text-light)" }}>No theses are currently waiting for your approval.</p>
         ) : (
           <div className={styles.tableResponsive}>
             <table className={styles.table} style={{ marginTop: "20px", minWidth: "800px" }}>
@@ -492,18 +492,18 @@ export default function LecturerDashboard() {
                     <tr key={t.id}>
                       <td>
                         <strong>{t.title}</strong>
-                        <div style={{ fontSize: "0.85rem", color: "#7A7061", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                        <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
                         {getDeadlineDisplay(t)}
                       </td>
                       <td>{t.year || "-"}</td>
                       <td>
-                        <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
+                        <span style={{ padding: "4px 10px", background: "var(--primary-lighter)", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", border: "1px solid var(--border-strong)", whiteSpace: "nowrap", color: "var(--primary-color)", fontWeight: 500 }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
                       </td>
                       <td>{roles.join(", ")}</td>
                       <td>
                         <button
                           className={styles.btnPrimary}
-                          style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#3b82f6" }}
+                          style={{ margin: 0, padding: "6px 14px", fontSize: "0.85rem" }}
                           onClick={() => openWorkspace(t, roles[0])}
                         >
                           Open Workspace
@@ -523,7 +523,7 @@ export default function LecturerDashboard() {
         <p>Theses where the student has proposed changes to the Abstract or Scope.</p>
 
         {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).length === 0 ? (
-          <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>No pending Abstract & Scope edits.</p>
+          <p style={{ marginTop: "20px", fontStyle: "italic", color: "var(--text-light)" }}>No pending Abstract & Scope edits.</p>
         ) : (
           <div className={styles.tableResponsive}>
             <table className={styles.table} style={{ marginTop: "20px", minWidth: "800px" }}>
@@ -540,7 +540,7 @@ export default function LecturerDashboard() {
                   <tr key={`topic-${t.id}`}>
                     <td>
                       <strong>{t.title}</strong>
-                      <div style={{ fontSize: "0.85rem", color: "#7A7061", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                      <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
                     </td>
                     <td>{t.year || "-"}</td>
                     <td>
@@ -568,7 +568,7 @@ export default function LecturerDashboard() {
         <p>All theses where you are listed as an Advisor, Committee member, or Chairperson.</p>
 
         {theses.length === 0 ? (
-          <p style={{ marginTop: "20px", fontStyle: "italic", color: "#C6BFA5" }}>You have no assigned theses.</p>
+          <p style={{ marginTop: "20px", fontStyle: "italic", color: "var(--text-light)" }}>You have no assigned theses.</p>
         ) : (
           <>
             <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "15px", marginBottom: "15px" }}>
@@ -577,12 +577,12 @@ export default function LecturerDashboard() {
                 placeholder="Search title, group, year..."
                 value={assignedSearch}
                 onChange={e => setAssignedSearch(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #D6CEB8", background: "#fff", color: "#4A4238", width: "300px", maxWidth: "100%" }}
+                style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", background: "#fff", color: "var(--text-main)", width: "300px", maxWidth: "100%", fontFamily: "inherit", outline: "none" }}
               />
               <select
                 value={roleFilter}
                 onChange={e => setRoleFilter(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #D6CEB8", background: "#fff", color: "#4A4238", width: "200px" }}
+                style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", background: "#fff", color: "var(--text-main)", width: "200px", fontFamily: "inherit", outline: "none" }}
               >
                 <option value="">All Roles</option>
                 <option value="Advisor">Advisor</option>
@@ -640,19 +640,19 @@ export default function LecturerDashboard() {
                           <td style={{ wordBreak: "break-all" }}>
                             <strong>{t.title}</strong>
                             {getDeadlineDisplay(t)}
-                            <div style={{ fontSize: "0.85rem", color: "#7A7061", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                            <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
                           </td>
                           <td>{groupName}</td>
                           <td>{t.year || "-"}</td>
                           <td>
-                            <span style={{ padding: "4px 8px", background: "#FDF9F1", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #D6CEB8", whiteSpace: "nowrap" }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
+                            <span style={{ padding: "4px 10px", background: "var(--primary-lighter)", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", border: "1px solid var(--border-strong)", whiteSpace: "nowrap", color: "var(--primary-color)", fontWeight: 500 }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
                           </td>
                           <td>{myRoles.join(", ")}</td>
                           <td>
                             <div style={{ display: "flex", gap: "8px" }}>
                               <button
                                 className={styles.btnPrimary}
-                                style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f1f5f9", color: "#334155", border: "1px solid #cbd5e1" }}
+                                style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "var(--border-color)", color: "var(--text-main)", border: "1.5px solid var(--border-color)" }}
                                 onClick={() => openWorkspace(t, "ViewOnly")}
                               >
                                 View Details
@@ -685,14 +685,14 @@ export default function LecturerDashboard() {
 
       {/* Workspace Modal */}
       {activeWorkspace && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1100, padding: "20px" }}>
-          <div style={{ background: "#FDF9F1", width: "1200px", maxWidth: "100%", height: "90vh", borderRadius: "12px", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.1)" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1100, padding: "20px" }}>
+          <div style={{ background: "var(--bg-card)", width: "1200px", maxWidth: "100%", height: "90vh", borderRadius: "var(--radius-xl)", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--shadow-lg)" }}>
 
             {/* Modal Header */}
-            <div style={{ padding: "20px 30px", borderBottom: "1px solid #D6CEB8", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EBE4D1" }}>
+            <div style={{ padding: "18px 28px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(135deg, var(--primary-color), #6d28d9)", color: "#fff" }}>
               <div>
-                <h2 style={{ margin: 0, color: "#4A4238", fontSize: "1.4rem" }}>Review Workspace</h2>
-                <div style={{ fontSize: "0.9rem", color: "#7A7061", marginTop: "5px" }}>
+                <h2 style={{ margin: 0, color: "#fff", fontSize: "1.25rem", fontWeight: 700 }}>Review Workspace</h2>
+                <div style={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.8)", marginTop: "4px" }}>
                   <strong>{activeWorkspace.thesis.title}</strong> • {activeWorkspace.role === "ViewOnly" ? "Viewing Details" : `Reviewing as: ${activeWorkspace.role}`}
                 </div>
               </div>
@@ -710,7 +710,7 @@ export default function LecturerDashboard() {
                 </button>
                 <button
                   onClick={() => setActiveWorkspace(null)}
-                  style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer", color: "#4A4238" }}
+                  style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "50%", width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", cursor: "pointer", color: "#fff" }}
                 >&times;</button>
               </div>
             </div>
@@ -722,40 +722,40 @@ export default function LecturerDashboard() {
               <div className={activeWorkspace.role === "ViewOnly" ? styles.workspaceFull : styles.workspaceLeft} style={activeWorkspace.role === "ViewOnly" ? { width: "100%", borderRight: "none", padding: "30px", overflowY: "auto" } : {}}>
                 {activeWorkspace.role === "ViewOnly" && (
                   <div style={{ marginBottom: "40px" }}>
-                    <h3 style={{ margin: "0 0 15px 0", color: "#4A4238", borderBottom: "1px solid #D6CEB8", paddingBottom: "10px" }}>Thesis Details</h3>
+                    <h3 style={{ margin: "0 0 15px 0", color: "var(--text-main)", borderBottom: "1px solid var(--border-color)", paddingBottom: "10px", fontWeight: 700 }}>Thesis Details</h3>
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginBottom: "20px" }}>
                       <div style={{ flex: "1 1 250px" }}>
-                        <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase" }}>Title</strong>
-                        <div style={{ color: "#4A4238", fontWeight: "bold", fontSize: "1.05rem" }}>{activeWorkspace.thesis.title}</div>
+                        <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "4px" }}>Title</strong>
+                        <div style={{ color: "var(--text-main)", fontWeight: 700, fontSize: "1.05rem" }}>{activeWorkspace.thesis.title}</div>
                       </div>
                       <div style={{ flex: "1 1 250px" }}>
-                        <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase" }}>Status</strong>
-                        <div style={{ color: "#4A4238", fontWeight: "bold" }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {getDisplayStatus(activeWorkspace.thesis)}</div>
+                        <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "4px" }}>Status</strong>
+                        <div style={{ color: "var(--primary-color)", fontWeight: 700 }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {getDisplayStatus(activeWorkspace.thesis)}</div>
                       </div>
                     </div>
 
                     <div style={{ marginBottom: "20px" }}>
-                      <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Abstract</strong>
-                      <div style={{ color: "#4A4238", whiteSpace: "pre-wrap", background: "#fff", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8" }}>{activeWorkspace.thesis.abstract || "No abstract provided."}</div>
+                      <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "6px" }}>Abstract</strong>
+                      <div style={{ color: "var(--text-main)", whiteSpace: "pre-wrap", background: "var(--primary-lighter)", padding: "14px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", lineHeight: 1.65 }}>{activeWorkspace.thesis.abstract || "No abstract provided."}</div>
                     </div>
 
                     <div style={{ marginBottom: "20px" }}>
-                      <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Scope</strong>
-                      <div style={{ color: "#4A4238", whiteSpace: "pre-wrap", background: "#fff", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8" }}>{activeWorkspace.thesis.scope || "No scope provided."}</div>
+                      <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "6px" }}>Scope</strong>
+                      <div style={{ color: "var(--text-main)", whiteSpace: "pre-wrap", background: "var(--primary-lighter)", padding: "14px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", lineHeight: 1.65 }}>{activeWorkspace.thesis.scope || "No scope provided."}</div>
                     </div>
 
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
                       <div style={{ flex: "1 1 250px", minWidth: 0 }}>
-                        <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Members (Students)</strong>
+                        <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "6px" }}>Members (Students)</strong>
                         {activeWorkspace.thesis.studentUids?.length > 0 ? (
-                          <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238", wordBreak: "break-all" }}>
+                          <ul style={{ margin: 0, paddingLeft: "20px", color: "var(--text-main)", wordBreak: "break-all" }}>
                             {activeWorkspace.thesis.studentUids.map(uid => <li key={uid}>{userMap[uid] || uid}</li>)}
                           </ul>
-                        ) : <div style={{ color: "#4A4238" }}>None</div>}
+                        ) : <div style={{ color: "var(--text-muted)" }}>None</div>}
                       </div>
                       <div style={{ flex: "1 1 250px", minWidth: 0 }}>
-                        <strong style={{ display: "block", color: "#7A7061", fontSize: "0.85rem", textTransform: "uppercase", marginBottom: "5px" }}>Committees & Advisors</strong>
-                        <ul style={{ margin: 0, paddingLeft: "20px", color: "#4A4238", wordBreak: "break-word" }}>
+                        <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "6px" }}>Committees & Advisors</strong>
+                        <ul style={{ margin: 0, paddingLeft: "20px", color: "var(--text-main)", wordBreak: "break-word" }}>
                           <li><strong>Chairperson:</strong> {userMap[activeWorkspace.thesis.lecturerUids.chairperson] || activeWorkspace.thesis.lecturerUids.chairperson || "None"}</li>
                           {activeWorkspace.thesis.lecturerUids.committees?.length > 0 ? (
                             <li><strong>Committees:</strong>
@@ -771,33 +771,33 @@ export default function LecturerDashboard() {
                   </div>
                 )}
 
-                <h3 style={{ margin: "0 0 20px 0", color: "#4A4238", borderBottom: activeWorkspace.role === "ViewOnly" ? "1px solid #D6CEB8" : "none", paddingBottom: activeWorkspace.role === "ViewOnly" ? "10px" : "0" }}>Submission History</h3>
+                <h3 style={{ margin: "0 0 20px 0", color: "var(--text-main)", fontWeight: 700, borderBottom: activeWorkspace.role === "ViewOnly" ? "1px solid var(--border-color)" : "none", paddingBottom: activeWorkspace.role === "ViewOnly" ? "10px" : "0" }}>Submission History</h3>
 
                 {activities.length === 0 ? (
-                  <p style={{ color: "#7A7061", fontStyle: "italic" }}>No activity recorded yet.</p>
+                  <p style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No activity recorded yet.</p>
                 ) : (
                   <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
                     {activities.map(act => (
-                      <div key={act.id} style={{ background: "#FDF9F1", padding: "15px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
+                      <div key={act.id} style={{ background: "var(--primary-lighter)", padding: "15px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                          <strong style={{ color: "#4A4238" }}>{act.type}</strong>
-                          <span style={{ fontSize: "0.8rem", color: "#7A7061" }}>{new Date(act.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                          <strong style={{ color: "var(--text-main)" }}>{act.type}</strong>
+                          <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{new Date(act.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                        <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem", color: "#4A4238" }}>{act.description}</p>
+                        <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem", color: "var(--text-main)" }}>{act.description}</p>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.85rem", flexDirection: "column", gap: "10px" }}>
-                          <span style={{ color: "#7A7061", wordBreak: "break-word" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
+                          <span style={{ color: "var(--text-muted)", wordBreak: "break-word" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
 
                           {act.documentUrl && (
-                            <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "5px" }}>
+                            <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "5px" }}>
                               <ExternalLink size={14} /> Download {act.documentName || "Document"}
                             </a>
                           )}
 
                           {act.links && act.links.length > 0 && (
                             <div style={{ display: "flex", flexDirection: "column", gap: "5px", width: "100%", marginTop: "5px" }}>
-                              <strong style={{ color: "#4A4238" }}>Submitted Links:</strong>
+                              <strong style={{ color: "var(--text-main)" }}>Submitted Links:</strong>
                               {act.links.map((link, idx) => (
-                                <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px", background: "#fff", padding: "6px 12px", borderRadius: "6px", border: "1px solid #D6CEB8", width: "fit-content", maxWidth: "100%", wordBreak: "break-all" }}>
+                                <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px", background: "#fff", padding: "6px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", width: "fit-content", maxWidth: "100%", wordBreak: "break-all" }}>
                                   <ExternalLink size={14} /> <span>{link.type}</span>
                                 </a>
                               ))}
@@ -815,26 +815,26 @@ export default function LecturerDashboard() {
 
                 {activeWorkspace.role !== "ViewOnly" && activeWorkspace.role !== "Equipment Checker" && (
                   <>
-                    <h3 style={{ margin: "0 0 20px 0", color: "#4A4238" }}>Your Review</h3>
+                    <h3 style={{ margin: "0 0 20px 0", color: "var(--text-main)", fontWeight: 700 }}>Your Review</h3>
 
                     <div style={{ marginBottom: "20px" }}>
-                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "8px" }}>Review Comments / Notes</label>
+                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>Review Comments / Notes</label>
                       <textarea
                         value={reviewComments}
                         onChange={e => setReviewComments(e.target.value)}
                         placeholder="Provide your feedback, requested revisions, or approval notes here..."
-                        style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "150px", fontFamily: "inherit", background: "#fff" }}
+                        style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", minHeight: "150px", fontFamily: "inherit", background: "#fff", outline: "none", color: "var(--text-main)" }}
                       />
                       {commentTemplates.length > 0 && (
                         <div style={{ marginTop: "10px", position: "relative" }}>
                           <button
                             onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)}
-                            style={{ background: "#EBE4D1", border: "1px solid #D6CEB8", color: "#4A4238", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", cursor: "pointer", fontWeight: "bold" }}
+                            style={{ background: "var(--primary-lighter)", border: "1.5px solid var(--border-strong)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}
                           >
                             Insert Pre-defined Sentence ▾
                           </button>
                           {showTemplatesDropdown && (
-                            <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "5px", background: "#fff", border: "1px solid #D6CEB8", borderRadius: "6px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)", zIndex: 10, minWidth: "300px", maxHeight: "200px", overflowY: "auto" }}>
+                            <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "5px", background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-md)", zIndex: 10, minWidth: "300px", maxHeight: "200px", overflowY: "auto" }}>
                               {commentTemplates.map((template, idx) => (
                                 <button
                                   key={idx}
@@ -842,8 +842,8 @@ export default function LecturerDashboard() {
                                     setReviewComments(prev => prev ? `${prev}\n${template}` : template);
                                     setShowTemplatesDropdown(false);
                                   }}
-                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 15px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid #f1f5f9" : "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", color: "#4A4238" }}
-                                  onMouseOver={e => e.currentTarget.style.background = "#FDF9F1"}
+                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 15px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid var(--border-color)" : "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", color: "var(--text-main)", fontFamily: "inherit" }}
+                                  onMouseOver={e => e.currentTarget.style.background = "var(--primary-lighter)"}
                                   onMouseOut={e => e.currentTarget.style.background = "transparent"}
                                 >
                                   {template}
@@ -856,16 +856,16 @@ export default function LecturerDashboard() {
                     </div>
 
                     <div style={{ marginBottom: "30px" }}>
-                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "8px" }}>Attach Materials (Required)</label>
-                      <p style={{ fontSize: "0.85rem", color: "#7A7061", marginBottom: "10px", marginTop: 0 }}>You must provide at least one link to your marked-up manuscript or external references.</p>
+                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>Attach Materials (Required)</label>
+                      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "10px", marginTop: 0 }}>You must provide at least one link to your marked-up manuscript or external references.</p>
 
                       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                         {reviewLinks.map((link, idx) => (
-                          <div key={idx} style={{ display: "flex", gap: "8px", alignItems: "center", background: "#fff", padding: "10px", borderRadius: "6px", border: "1px dashed #D6CEB8" }}>
+                          <div key={idx} style={{ display: "flex", gap: "8px", alignItems: "center", background: "#fff", padding: "10px", borderRadius: "var(--radius-md)", border: "1.5px dashed var(--border-strong)" }}>
                             <select
                               value={link.type}
                               onChange={e => handleLinkChange(idx, "type", e.target.value)}
-                              style={{ padding: "8px", borderRadius: "4px", border: "1px solid #C6BFA5", background: "#FDF9F1", fontSize: "0.85rem" }}
+                              style={{ padding: "8px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", background: "var(--primary-lighter)", fontSize: "0.85rem", fontFamily: "inherit", color: "var(--text-main)", outline: "none" }}
                             >
                               <option value="Marked-up Manuscript">Marked-up Manuscript</option>
                               <option value="Reference Link">Reference Link</option>
@@ -876,7 +876,7 @@ export default function LecturerDashboard() {
                               placeholder="https://..."
                               value={link.url}
                               onChange={e => handleLinkChange(idx, "url", e.target.value)}
-                              style={{ flex: 1, padding: "8px", borderRadius: "4px", border: "1px solid #C6BFA5", fontSize: "0.85rem" }}
+                              style={{ flex: 1, padding: "8px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", fontSize: "0.85rem", outline: "none", fontFamily: "inherit" }}
                             />
                             {reviewLinks.length > 1 && (
                               <button
@@ -892,7 +892,7 @@ export default function LecturerDashboard() {
 
                         <button
                           onClick={handleAddLink}
-                          style={{ alignSelf: "flex-start", background: "#EBE4D1", border: "1px solid #D6CEB8", color: "#4A4238", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "5px", cursor: "pointer", fontWeight: "bold" }}
+                          style={{ alignSelf: "flex-start", background: "var(--primary-lighter)", border: "1.5px solid var(--border-strong)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "5px", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}
                         >
                           <Plus size={14} /> Add another link
                         </button>
@@ -918,7 +918,7 @@ export default function LecturerDashboard() {
                           {actionLoading === activeWorkspace.thesis.id ? "Processing..." : (activeWorkspace.thesis.currentStage >= 3 ? "Refuse Signature / Request Revision" : "Request Revision")}
                         </button>
                       </div>
-                      <p style={{ fontSize: "0.8rem", color: "#7A7061", marginTop: "10px", textAlign: "center" }}>
+                      <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "10px", textAlign: "center" }}>
                         Both actions will send your comments and attached file back to the student.
                       </p>
                     </div>
@@ -926,28 +926,28 @@ export default function LecturerDashboard() {
                 )}
 
                 {activeWorkspace.role === "Equipment Checker" && (
-                  <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", alignItems: "center", textAlign: "center", background: "#fff", padding: "30px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
-                    <h3 style={{ margin: "0 0 15px 0", color: "#4A4238" }}>Equipment Check Request</h3>
-                    <p style={{ color: "#7A7061", marginBottom: "25px", fontSize: "0.95rem" }}>The student has requested an equipment check before proceeding to the signing step.</p>
+                  <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", alignItems: "center", textAlign: "center", background: "#fff", padding: "30px", borderRadius: "var(--radius-lg)", border: "1px solid var(--border-color)" }}>
+                    <h3 style={{ margin: "0 0 15px 0", color: "var(--text-main)", fontWeight: 700 }}>Equipment Check Request</h3>
+                    <p style={{ color: "var(--text-muted)", marginBottom: "25px", fontSize: "0.95rem" }}>The student has requested an equipment check before proceeding to the signing step.</p>
                     
                     <div style={{ width: "100%", marginBottom: "20px", textAlign: "left" }}>
-                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "8px" }}>Reason / Comments</label>
+                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>Reason / Comments</label>
                       <textarea
                         value={reviewComments}
                         onChange={e => setReviewComments(e.target.value)}
                         placeholder="Provide your feedback or reason for rejection here..."
-                        style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "100px", fontFamily: "inherit", background: "#fff" }}
+                        style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", minHeight: "100px", fontFamily: "inherit", background: "#fff", outline: "none", color: "var(--text-main)" }}
                       />
                       {commentTemplates.length > 0 && (
                         <div style={{ marginTop: "10px", position: "relative" }}>
                           <button
                             onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)}
-                            style={{ background: "#EBE4D1", border: "1px solid #D6CEB8", color: "#4A4238", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", cursor: "pointer", fontWeight: "bold" }}
+                            style={{ background: "var(--primary-lighter)", border: "1.5px solid var(--border-strong)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}
                           >
                             Insert Pre-defined Sentence ▾
                           </button>
                           {showTemplatesDropdown && (
-                            <div style={{ position: "absolute", bottom: "100%", left: 0, marginBottom: "5px", background: "#fff", border: "1px solid #D6CEB8", borderRadius: "6px", boxShadow: "0 4px 6px rgba(0,0,0,0.1)", zIndex: 10, minWidth: "300px", maxHeight: "200px", overflowY: "auto" }}>
+                            <div style={{ position: "absolute", bottom: "100%", left: 0, marginBottom: "5px", background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-md)", zIndex: 10, minWidth: "300px", maxHeight: "200px", overflowY: "auto" }}>
                               {commentTemplates.map((template, idx) => (
                                 <button
                                   key={idx}
@@ -955,8 +955,8 @@ export default function LecturerDashboard() {
                                     setReviewComments(prev => prev ? `${prev}\n${template}` : template);
                                     setShowTemplatesDropdown(false);
                                   }}
-                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 15px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid #f1f5f9" : "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", color: "#4A4238" }}
-                                  onMouseOver={e => e.currentTarget.style.background = "#FDF9F1"}
+                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 15px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid var(--border-color)" : "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", color: "var(--text-main)", fontFamily: "inherit" }}
+                                  onMouseOver={e => e.currentTarget.style.background = "var(--primary-lighter)"}
                                   onMouseOut={e => e.currentTarget.style.background = "transparent"}
                                 >
                                   {template}
@@ -997,22 +997,22 @@ export default function LecturerDashboard() {
 
       {/* Custom Confirm Modal */}
       {confirmDialog && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#fff", width: "450px", maxWidth: "100%", borderRadius: "12px", padding: "30px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)", textAlign: "center" }}>
-            <h2 style={{ margin: "0 0 15px 0", color: "#4A4238", fontSize: "1.5rem" }}>Confirm {confirmDialog.type}</h2>
-            <p style={{ color: "#7A7061", fontSize: "1.05rem", marginBottom: "30px", lineHeight: "1.5" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "#fff", width: "450px", maxWidth: "100%", borderRadius: "var(--radius-xl)", padding: "32px", boxShadow: "var(--shadow-lg)", textAlign: "center" }}>
+            <h2 style={{ margin: "0 0 15px 0", color: "var(--text-main)", fontSize: "1.4rem", fontWeight: 700 }}>Confirm {confirmDialog.type}</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "1rem", marginBottom: "28px", lineHeight: "1.6" }}>
               {confirmDialog.message}
             </p>
-            <div style={{ display: "flex", gap: "15px", justifyContent: "center" }}>
+            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
               <button
                 onClick={() => setConfirmDialog(null)}
-                style={{ flex: 1, padding: "12px", borderRadius: "6px", background: "#EBE4D1", border: "none", color: "#4A4238", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+                style={{ flex: 1, padding: "12px", borderRadius: "var(--radius-md)", background: "var(--border-color)", border: "none", color: "var(--text-main)", fontSize: "1rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
               >
                 Cancel
               </button>
               <button
                 onClick={executeAction}
-                style={{ flex: 1, padding: "12px", borderRadius: "6px", background: confirmDialog.type === "Approve" ? "#10b981" : "#dc2626", border: "none", color: "#fff", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+                style={{ flex: 1, padding: "12px", borderRadius: "var(--radius-md)", background: confirmDialog.type === "Approve" ? "#10b981" : "#dc2626", border: "none", color: "#fff", fontSize: "1rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
               >
                 Confirm {confirmDialog.type}
               </button>
@@ -1023,33 +1023,33 @@ export default function LecturerDashboard() {
 
       {/* Manage Deadlines Modal */}
       {deadlineModalThesis && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#fff", width: "450px", maxWidth: "100%", borderRadius: "12px", padding: "30px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)" }}>
-            <h2 style={{ margin: "0 0 20px 0", color: "#334155", fontSize: "1.4rem" }}>Manage Deadlines</h2>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "#fff", width: "460px", maxWidth: "100%", borderRadius: "var(--radius-xl)", padding: "32px", boxShadow: "var(--shadow-lg)" }}>
+            <h2 style={{ margin: "0 0 20px 0", color: "var(--text-main)", fontSize: "1.3rem", fontWeight: 700 }}>Manage Deadlines</h2>
             <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "#475569", marginBottom: "4px" }}>Advisor Review Deadline</label>
-                <input type="datetime-local" value={deadlineAdvisor} onChange={e => setDeadlineAdvisor(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
+                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "5px", fontWeight: 500 }}>Advisor Review Deadline</label>
+                <input type="datetime-local" value={deadlineAdvisor} onChange={e => setDeadlineAdvisor(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none" }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "#475569", marginBottom: "4px" }}>Committee Review Deadline</label>
-                <input type="datetime-local" value={deadlineCommittee} onChange={e => setDeadlineCommittee(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
+                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "5px", fontWeight: 500 }}>Committee Review Deadline</label>
+                <input type="datetime-local" value={deadlineCommittee} onChange={e => setDeadlineCommittee(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none" }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "#475569", marginBottom: "4px" }}>Chairperson Review Deadline</label>
-                <input type="datetime-local" value={deadlineChairperson} onChange={e => setDeadlineChairperson(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "6px", border: "1px solid #cbd5e1" }} />
+                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "5px", fontWeight: 500 }}>Chairperson Review Deadline</label>
+                <input type="datetime-local" value={deadlineChairperson} onChange={e => setDeadlineChairperson(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none" }} />
               </div>
               <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
                 <button
                   onClick={() => setDeadlineModalThesis(null)}
-                  style={{ flex: 1, padding: "12px", borderRadius: "6px", background: "#f1f5f9", border: "none", color: "#475569", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+                  style={{ flex: 1, padding: "12px", borderRadius: "var(--radius-md)", background: "var(--border-color)", border: "none", color: "var(--text-main)", fontSize: "1rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveDeadlines}
                   disabled={savingDeadlines}
-                  style={{ flex: 1, padding: "12px", borderRadius: "6px", background: "#3b82f6", border: "none", color: "#fff", fontSize: "1rem", fontWeight: "bold", cursor: "pointer", opacity: savingDeadlines ? 0.7 : 1 }}
+                  style={{ flex: 1, padding: "12px", borderRadius: "var(--radius-md)", background: "var(--primary-color)", border: "none", color: "#fff", fontSize: "1rem", fontWeight: 600, cursor: "pointer", opacity: savingDeadlines ? 0.7 : 1, fontFamily: "inherit" }}
                 >
                   {savingDeadlines ? "Saving..." : "Save Deadlines"}
                 </button>
@@ -1061,15 +1061,15 @@ export default function LecturerDashboard() {
 
       {/* Error Modal */}
       {errorDialog && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#fff", width: "400px", maxWidth: "100%", borderRadius: "12px", padding: "30px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)", textAlign: "center" }}>
-            <h2 style={{ margin: "0 0 15px 0", color: "#dc2626", fontSize: "1.5rem" }}>Notice</h2>
-            <p style={{ color: "#4A4238", fontSize: "1.05rem", marginBottom: "30px", lineHeight: "1.5" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "#fff", width: "420px", maxWidth: "100%", borderRadius: "var(--radius-xl)", padding: "32px", boxShadow: "var(--shadow-lg)", textAlign: "center" }}>
+            <h2 style={{ margin: "0 0 15px 0", color: "var(--danger-color)", fontSize: "1.4rem", fontWeight: 700 }}>Notice</h2>
+            <p style={{ color: "var(--text-main)", fontSize: "1rem", marginBottom: "28px", lineHeight: "1.6" }}>
               {errorDialog}
             </p>
             <button
               onClick={() => setErrorDialog(null)}
-              style={{ width: "100%", padding: "12px", borderRadius: "6px", background: "#EBE4D1", border: "none", color: "#4A4238", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+              style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)", background: "var(--primary-color)", border: "none", color: "#fff", fontSize: "1rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
             >
               Okay
             </button>
@@ -1079,47 +1079,47 @@ export default function LecturerDashboard() {
 
       {/* Abstract & Scope Edit Review Modal */}
       {topicReviewThesis && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#FDF9F1", width: "900px", maxWidth: "100%", maxHeight: "90vh", borderRadius: "12px", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "var(--bg-card)", width: "900px", maxWidth: "100%", maxHeight: "90vh", borderRadius: "var(--radius-xl)", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--shadow-lg)" }}>
 
-            <div style={{ padding: "20px 30px", borderBottom: "1px solid #D6CEB8", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#EBE4D1" }}>
+            <div style={{ padding: "18px 28px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(135deg, var(--primary-color), #6d28d9)" }}>
               <div>
-                <h2 style={{ margin: 0, color: "#4A4238", fontSize: "1.4rem" }}>Review Abstract & Scope Edits</h2>
-                <div style={{ fontSize: "0.9rem", color: "#7A7061", marginTop: "5px" }}>
+                <h2 style={{ margin: 0, color: "#fff", fontSize: "1.25rem", fontWeight: 700 }}>Review Abstract & Scope Edits</h2>
+                <div style={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.8)", marginTop: "4px" }}>
                   <strong>{topicReviewThesis.title}</strong>
                 </div>
               </div>
               <button
                 onClick={() => setTopicReviewThesis(null)}
-                style={{ background: "none", border: "none", fontSize: "1.5rem", cursor: "pointer", color: "#4A4238" }}
+                style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "50%", width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", cursor: "pointer", color: "#fff" }}
               >&times;</button>
             </div>
 
             <div style={{ padding: "30px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "20px" }}>
               <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-                <div style={{ flex: "1 1 300px", background: "#fff", padding: "15px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "#64748b", fontSize: "1rem" }}>Current Abstract</h3>
-                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "#334155", margin: 0 }}>{topicReviewThesis.abstract || "No abstract provided."}</p>
+                <div style={{ flex: "1 1 300px", background: "#fff", padding: "16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "var(--text-muted)", fontSize: "0.95rem", fontWeight: 600 }}>Current Abstract</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "var(--text-main)", margin: 0, lineHeight: 1.65 }}>{topicReviewThesis.abstract || "No abstract provided."}</p>
                 </div>
-                <div style={{ flex: "1 1 300px", background: "#fff", padding: "15px", borderRadius: "8px", border: "2px solid #fcd34d" }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "#92400e", fontSize: "1rem" }}>Proposed Abstract</h3>
-                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "#334155", margin: 0 }}>{topicReviewThesis.pendingAbstract || "No abstract provided."}</p>
+                <div style={{ flex: "1 1 300px", background: "var(--primary-lighter)", padding: "16px", borderRadius: "var(--radius-md)", border: "2px solid var(--primary-color)" }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "var(--primary-color)", fontSize: "0.95rem", fontWeight: 600 }}>Proposed Abstract</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "var(--text-main)", margin: 0, lineHeight: 1.65 }}>{topicReviewThesis.pendingAbstract || "No abstract provided."}</p>
                 </div>
               </div>
 
               <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-                <div style={{ flex: "1 1 300px", background: "#fff", padding: "15px", borderRadius: "8px", border: "1px solid #e2e8f0" }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "#64748b", fontSize: "1rem" }}>Current Scope</h3>
-                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "#334155", margin: 0 }}>{topicReviewThesis.scope || "No scope provided."}</p>
+                <div style={{ flex: "1 1 300px", background: "#fff", padding: "16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "var(--text-muted)", fontSize: "0.95rem", fontWeight: 600 }}>Current Scope</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "var(--text-main)", margin: 0, lineHeight: 1.65 }}>{topicReviewThesis.scope || "No scope provided."}</p>
                 </div>
-                <div style={{ flex: "1 1 300px", background: "#fff", padding: "15px", borderRadius: "8px", border: "2px solid #fcd34d" }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "#92400e", fontSize: "1rem" }}>Proposed Scope</h3>
-                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "#334155", margin: 0 }}>{topicReviewThesis.pendingScope || "No scope provided."}</p>
+                <div style={{ flex: "1 1 300px", background: "var(--primary-lighter)", padding: "16px", borderRadius: "var(--radius-md)", border: "2px solid var(--primary-color)" }}>
+                  <h3 style={{ margin: "0 0 10px 0", color: "var(--primary-color)", fontSize: "0.95rem", fontWeight: 600 }}>Proposed Scope</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "var(--text-main)", margin: 0, lineHeight: 1.65 }}>{topicReviewThesis.pendingScope || "No scope provided."}</p>
                 </div>
               </div>
             </div>
 
-            <div style={{ padding: "20px 30px", borderTop: "1px solid #D6CEB8", display: "flex", justifyContent: "flex-end", gap: "15px", background: "#f8fafc" }}>
+            <div style={{ padding: "18px 28px", borderTop: "1px solid var(--border-color)", display: "flex", justifyContent: "flex-end", gap: "12px", background: "var(--primary-lighter)" }}>
               <button
                 className={styles.btnDanger}
                 style={{ margin: 0, padding: "10px 20px" }}

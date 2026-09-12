@@ -32,7 +32,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       <aside className={`${styles.sidebar} ${isSidebarOpen ? styles.sidebarOpen : ""}`}>
         <div className={styles.sidebarHeader} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <h2>Admin Portal</h2>
+          <h2 style={{ color: "var(--primary-color)", fontSize: "1.1rem", fontWeight: 700, letterSpacing: "-0.2px" }}>Admin Portal</h2>
           <button className={styles.hamburgerBtn} onClick={() => setIsSidebarOpen(false)}>&times;</button>
         </div>
         <nav className={styles.nav} onClick={() => setIsSidebarOpen(false)}>
@@ -64,8 +64,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "15px" }}>
             <div className={styles.userInfo}>
-              <div style={{ fontWeight: "bold", color: "var(--text-main)", fontSize: "0.95rem" }}>{dbUser?.name_th || user?.email}</div>
-              <div style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>Administrator</div>
+              <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "0.9rem" }}>{dbUser?.name_th || user?.email}</div>
+              <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", letterSpacing: "0.2px" }}>Administrator</div>
             </div>
             <ProfileIcon dbUser={dbUser} user={user} defaultLetter="A" />
             <button 

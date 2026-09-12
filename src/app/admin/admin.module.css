@@ -1,18 +1,22 @@
+/* ═══════════════════════════════════════════════════════════
+   Admin Module — Purple/Violet Theme
+   ═══════════════════════════════════════════════════════════ */
+
 .layout {
   display: flex;
   min-height: calc(100vh - 61px);
   background: var(--bg-app);
-  font-family: 'Inter', sans-serif;
+  font-family: 'Sarabun', 'Inter', sans-serif;
   color: var(--text-main);
   position: relative;
   overflow: hidden;
 }
 
-/* Hide blobs for this minimalist beige theme */
 .blob1, .blob2 {
   display: none;
 }
 
+/* ── Sidebar ─────────────────────────────────────────────── */
 .sidebar {
   width: 260px;
   background: var(--bg-sidebar);
@@ -22,11 +26,12 @@
   border-right: 1px solid var(--border-color);
   z-index: 1050;
   position: fixed;
-  top: 61px; /* Below any top global nav if exists, or 0 */
+  top: 61px;
   bottom: 0;
   left: 0;
   transform: translateX(-100%);
   transition: transform 0.3s ease;
+  box-shadow: var(--shadow-md);
 }
 
 .sidebarOpen {
@@ -38,50 +43,66 @@
   border: none;
   font-size: 1.5rem;
   cursor: pointer;
-  color: #4A4238;
+  color: var(--text-main);
   padding: 8px;
   margin-right: 15px;
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s;
+}
+
+.hamburgerBtn:hover {
+  background: var(--primary-lighter);
+  color: var(--primary-color);
 }
 
 .sidebarHeader {
-  padding: 0 30px 40px;
+  padding: 0 24px 32px;
 }
 
 .sidebarHeader h2 {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   font-weight: 700;
   margin: 0;
-  color: #4A4238;
-  letter-spacing: -0.5px;
+  color: var(--primary-color);
+  letter-spacing: -0.3px;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  padding: 0 15px;
+  gap: 4px;
+  padding: 0 12px;
 }
 
 .navLink {
-  padding: 12px 20px;
+  padding: 10px 16px;
   color: var(--text-muted);
   text-decoration: none;
-  font-size: 0.95rem;
+  font-size: 0.925rem;
   font-weight: 500;
   border-radius: var(--radius-md);
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 
 .navLink:hover {
   color: var(--primary-color);
-  background: var(--primary-light);
+  background: var(--primary-lighter);
 }
 
+.navLink:global(.active),
+.navLink[aria-current="page"] {
+  color: var(--primary-color);
+  background: var(--primary-light);
+  font-weight: 600;
+}
+
+/* ── Main Content ────────────────────────────────────────── */
 .mainContent {
   flex: 1;
   overflow-y: auto;
@@ -99,208 +120,18 @@
   font-weight: 500;
 }
 
-.pageHeader {
-  margin-bottom: 40px;
-}
-
-.pageHeader h1 {
-  font-size: 2.5rem;
-  font-weight: 800;
-  color: var(--text-main);
-  margin: 0;
-  letter-spacing: -1px;
-}
-
-.gradientText {
-  color: #4A4238; /* Removed gradient for this minimal theme */
-}
-
-.card {
-  background: var(--bg-card);
-  padding: 40px;
-  border: 1px solid var(--border-color);
-  border-radius: 12px;
-  margin-bottom: 40px;
-}
-
-.card:hover {
-  /* Removed hover effect for flat minimal look */
-}
-
-.card h2 {
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: var(--text-main);
-  margin-top: 0;
-  margin-bottom: 30px;
-  letter-spacing: -0.5px;
-}
-
-.card p {
-  color: var(--text-muted);
-  line-height: 1.6;
-  font-size: 0.95rem;
-}
-
-.formGroup {
-  margin-bottom: 24px;
-}
-
-.formGroup label {
-  display: block;
-  margin-bottom: 8px;
-  font-weight: 600;
-  color: var(--text-main);
-  font-size: 0.85rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.formGroup input, 
-.formGroup select, 
-.formGroup textarea {
-  width: 100%;
-  padding: 12px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  font-size: 1rem;
-  color: var(--text-main);
-  background: var(--bg-card);
-  transition: all 0.2s ease;
-  font-family: inherit;
-}
-
-.formGroup input:focus, 
-.formGroup select:focus, 
-.formGroup textarea:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px var(--primary-light);
-}
-
-.btnPrimary {
-  background: var(--primary-color);
-  color: #ffffff;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 10px;
-}
-
-.btnPrimary:hover:not(:disabled) {
-  background: var(--primary-hover);
-}
-
-.btnPrimary:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.btnPrimary:disabled {
-  background: #cbd5e1;
-  color: #ffffff;
-  cursor: not-allowed;
-  box-shadow: none;
-  transform: none;
-}
-
-/* Minimalist Table Styling */
-.table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-.table th {
-  color: var(--text-muted);
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.8rem;
-  letter-spacing: 0.5px;
-  padding: 16px 20px;
-  text-align: left;
-  border-bottom: 2px solid var(--border-color);
-}
-
-.table td {
-  padding: 16px 20px;
-  color: var(--text-main);
-  font-size: 0.95rem;
-  border-bottom: 1px solid var(--border-color);
-  transition: background 0.2s ease;
-}
-
-.table tr:hover td {
-  background: var(--bg-app);
-}
-
-.modalOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(4px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1100;
-}
-.modalContent { background: var(--bg-card); padding: 40px; border-radius: var(--radius-lg); width: 900px; max-width: 95vw; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
-.modalClose { float: right; cursor: pointer; font-size: 1.5rem; background: none; border: none; color: var(--text-muted); transition: color 0.2s ease; }
-.modalClose:hover { color: var(--danger-color); }
-
-.tooltipContainer {
-  position: relative;
-  display: inline-block;
-}
-.tooltipContent {
-  visibility: hidden;
-  width: max-content;
-  max-width: 300px;
-  background-color: #4A4238;
-  color: #fff;
-  text-align: left;
-  border-radius: 8px;
-  padding: 12px;
-  position: absolute;
-  z-index: 50;
-  bottom: 125%;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  transition: opacity 0.2s;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  font-size: 0.85rem;
-  font-weight: normal;
-  pointer-events: none;
-}
-.tooltipContent::after {
-  content: "";
-  position: absolute;
-  top: 100%;
-  left: 50%;
-  margin-left: -5px;
-  border-width: 5px;
-  border-style: solid;
-  border-color: #4A4238 transparent transparent transparent;
-}
-.tooltipContainer:hover .tooltipContent {
-  visibility: visible;
-  opacity: 1;
-}
-
-/* Responsiveness for Admin Portal */
+/* ── Top Header ──────────────────────────────────────────── */
 .topHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 15px 40px;
-  background: var(--bg-app);
+  padding: 12px 32px;
+  background: var(--bg-card);
   border-bottom: 1px solid var(--border-color);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .userInfo {
@@ -310,55 +141,273 @@
 
 .logoutBtn {
   background: none;
-  border: 1px solid var(--primary-color);
+  border: 1.5px solid var(--primary-color);
   color: var(--primary-color);
-  padding: 6px 12px;
-  border-radius: 4px;
+  padding: 6px 14px;
+  border-radius: var(--radius-md);
   cursor: pointer;
   font-size: 0.85rem;
-  margin-left: 15px;
-  font-weight: bold;
+  margin-left: 12px;
+  font-weight: 600;
+  transition: all 0.18s;
+  font-family: inherit;
 }
 
+.logoutBtn:hover {
+  background: var(--primary-lighter);
+}
+
+/* ── Page Layout ─────────────────────────────────────────── */
 .pageContainer {
-  padding: 40px;
+  padding: 36px 40px;
 }
 
-.tableResponsive {
-  overflow-x: auto;
+.pageHeader {
+  margin-bottom: 32px;
+}
+
+.pageHeader h1 {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--text-main);
+  margin: 0;
+  letter-spacing: -0.5px;
+}
+
+.gradientText {
+  background: linear-gradient(135deg, var(--primary-color), #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Cards ───────────────────────────────────────────────── */
+.card {
+  background: var(--bg-card);
+  padding: 32px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  margin-bottom: 28px;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 0.2s ease;
+}
+
+.card:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.card h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  margin-top: 0;
+  margin-bottom: 24px;
+  letter-spacing: -0.3px;
+}
+
+.card p {
+  color: var(--text-muted);
+  line-height: 1.65;
+  font-size: 0.95rem;
+}
+
+/* ── Forms ───────────────────────────────────────────────── */
+.formGroup {
+  margin-bottom: 20px;
+}
+
+.formGroup label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: var(--text-main);
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+}
+
+.formGroup input,
+.formGroup select,
+.formGroup textarea {
   width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  color: var(--text-main);
+  background: var(--bg-card);
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-@media (max-width: 768px) {
-  .topHeader {
-    padding: 15px 20px;
-  }
-  .userInfo {
-    display: none;
-  }
-  .logoutBtn {
-    margin-left: 10px;
-    padding: 6px 10px;
-  }
-  .pageContainer {
-    padding: 20px;
-  }
-  .pageHeader h1 {
-    font-size: 2rem;
-  }
-  .card {
-    padding: 20px;
-  }
-  .sidebar {
-    width: 280px;
-    box-shadow: 2px 0 10px rgba(0,0,0,0.1);
-  }
-  .modalContent {
-    padding: 20px;
-  }
+.formGroup input:focus,
+.formGroup select:focus,
+.formGroup textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-lighter);
 }
 
-/* Custom styles for pagination and responsive tables */
+/* ── Buttons ─────────────────────────────────────────────── */
+.btnPrimary {
+  background: var(--primary-color);
+  color: #ffffff;
+  border: none;
+  padding: 10px 22px;
+  border-radius: var(--radius-md);
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-top: 8px;
+  font-family: inherit;
+  letter-spacing: 0.1px;
+}
+
+.btnPrimary:hover:not(:disabled) {
+  background: var(--primary-hover);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+  transform: translateY(-1px);
+}
+
+.btnPrimary:active:not(:disabled) {
+  transform: translateY(0);
+  box-shadow: none;
+}
+
+.btnPrimary:disabled {
+  background: #c4b5fd;
+  color: #ffffff;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* ── Tables ──────────────────────────────────────────────── */
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th {
+  color: var(--text-muted);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.4px;
+  padding: 14px 18px;
+  text-align: left;
+  border-bottom: 2px solid var(--border-color);
+  background: #fafaff;
+}
+
+.table td {
+  padding: 14px 18px;
+  color: var(--text-main);
+  font-size: 0.925rem;
+  border-bottom: 1px solid var(--border-color);
+  transition: background 0.15s ease;
+}
+
+.table tr:hover td {
+  background: var(--primary-lighter);
+}
+
+/* ── Modals ──────────────────────────────────────────────── */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(30, 27, 75, 0.5);
+  backdrop-filter: blur(6px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1100;
+  animation: fadeIn 0.2s ease;
+}
+
+.modalContent {
+  background: var(--bg-card);
+  padding: 36px;
+  border-radius: var(--radius-xl);
+  width: 900px;
+  max-width: 95vw;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  animation: slideUp 0.25s ease;
+}
+
+.modalClose {
+  float: right;
+  cursor: pointer;
+  font-size: 1.5rem;
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  transition: color 0.2s ease;
+}
+
+.modalClose:hover {
+  color: var(--danger-color);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(16px); opacity: 0; }
+  to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* ── Tooltip ─────────────────────────────────────────────── */
+.tooltipContainer {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltipContent {
+  visibility: hidden;
+  width: max-content;
+  max-width: 300px;
+  background-color: var(--text-main);
+  color: #fff;
+  text-align: left;
+  border-radius: 8px;
+  padding: 10px 12px;
+  position: absolute;
+  z-index: 50;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 0.85rem;
+  font-weight: normal;
+  pointer-events: none;
+}
+
+.tooltipContent::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: var(--text-main) transparent transparent transparent;
+}
+
+.tooltipContainer:hover .tooltipContent {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* ── Thesis Table (paginated) ────────────────────────────── */
 .thesisTable {
   width: 100%;
   border-collapse: collapse;
@@ -371,16 +420,16 @@
   }
 }
 
-/* Pagination Styling */
+/* ── Pagination ──────────────────────────────────────────── */
 .paginationContainer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-top: 24px;
+  margin-top: 20px;
   padding-top: 16px;
   border-top: 1px solid var(--border-color);
   flex-wrap: wrap;
-  gap: 16px;
+  gap: 14px;
 }
 
 .paginationLimit {
@@ -388,56 +437,86 @@
   align-items: center;
   gap: 8px;
   color: var(--text-muted);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
 }
 
 .paginationLimit select {
-  padding: 6px 12px;
-  border: 1px solid var(--border-color);
-  border-radius: 4px;
+  padding: 5px 10px;
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-sm);
   background: var(--bg-card);
   color: var(--text-main);
   cursor: pointer;
   outline: none;
+  font-family: inherit;
 }
 
 .paginationControls {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .paginationBtn {
   background: var(--bg-card);
-  border: 1px solid var(--border-color);
+  border: 1.5px solid var(--border-color);
   color: var(--text-main);
-  padding: 8px 16px;
-  border-radius: 4px;
+  padding: 6px 14px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 500;
-  transition: all 0.2s ease;
+  transition: all 0.18s ease;
+  font-family: inherit;
 }
 
 .paginationBtn:hover:not(:disabled) {
   border-color: var(--primary-color);
   color: var(--primary-color);
+  background: var(--primary-lighter);
 }
 
 .paginationBtn:disabled {
-  opacity: 0.5;
+  opacity: 0.45;
   cursor: not-allowed;
 }
 
 .paginationInfo {
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   color: var(--text-muted);
 }
 
+/* ── Responsive ──────────────────────────────────────────── */
 @media (max-width: 768px) {
+  .topHeader {
+    padding: 12px 16px;
+  }
+  .userInfo {
+    display: none;
+  }
+  .logoutBtn {
+    margin-left: 8px;
+    padding: 5px 10px;
+  }
+  .pageContainer {
+    padding: 20px;
+  }
+  .pageHeader h1 {
+    font-size: 1.6rem;
+  }
+  .card {
+    padding: 20px;
+  }
+  .sidebar {
+    width: 280px;
+    box-shadow: var(--shadow-lg);
+  }
+  .modalContent {
+    padding: 20px;
+  }
   .thesisTable {
     display: block;
     width: 100%;
@@ -446,8 +525,8 @@
   .thesisTable thead {
     display: none;
   }
-  .thesisTable tbody, 
-  .thesisTable tr, 
+  .thesisTable tbody,
+  .thesisTable tr,
   .thesisTable td {
     display: block;
     width: 100%;
@@ -455,15 +534,15 @@
   .thesisTable tr {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 8px;
-    margin-bottom: 16px;
+    border-radius: var(--radius-md);
+    margin-bottom: 14px;
     padding: 16px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-sm);
   }
   .thesisTable td {
     border: none;
     border-bottom: 1px dashed var(--border-color);
-    padding: 12px 0;
+    padding: 10px 0;
     text-align: right;
     position: relative;
     padding-left: 45%;
@@ -481,7 +560,7 @@
     text-align: left;
     font-weight: 600;
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
