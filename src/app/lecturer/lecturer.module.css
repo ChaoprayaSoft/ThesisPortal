@@ -149,6 +149,38 @@
   font-size: 0.92rem;
 }
 
+.actionGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.actionGrid .card {
+  margin-bottom: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.cardEmpty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 16px;
+  color: var(--text-light);
+  font-style: italic;
+  font-size: 0.92rem;
+  text-align: center;
+}
+
+@media (max-width: 960px) {
+  .actionGrid {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
 /* ── Buttons ─────────────────────────────────────────────── */
 .btnPrimary {
   background: var(--primary-color);

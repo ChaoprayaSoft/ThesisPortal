@@ -493,114 +493,117 @@ export default function LecturerDashboard() {
         </button>
       </div>
 
-      {/* Action Required Card */}
-      <div className={styles.card}>
-        <h2>Action Required ({theses.filter(t => getActionableRoles(t, user?.email || "").length > 0).length})</h2>
-        <p>Theses that are actively waiting for your approval or signature.</p>
+      {/* Top Action Grid: Action Required & Topic Proposals */}
+      <div className={styles.actionGrid}>
+        {/* Action Required Card */}
+        <div className={styles.card}>
+          <h2>Action Required ({theses.filter(t => getActionableRoles(t, user?.email || "").length > 0).length})</h2>
+          <p>Theses that are actively waiting for your approval or signature.</p>
 
-        {theses.filter(t => getActionableRoles(t, user?.email || "").length > 0).length === 0 ? (
-          <div style={{ padding: "28px 0", textAlign: "center", color: "var(--text-light)", fontStyle: "italic", fontSize: "0.92rem" }}>
-            🎉 No theses are currently waiting for your approval.
-          </div>
-        ) : (
-          <div className={styles.tableResponsive} style={{ marginTop: "16px" }}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th style={{ width: "38%" }}>Thesis Project</th>
-                  <th style={{ width: "12%" }}>Year</th>
-                  <th style={{ width: "20%" }}>Status</th>
-                  <th style={{ width: "15%" }}>Role Required</th>
-                  <th style={{ width: "15%" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {theses.map(t => {
-                  const roles = getActionableRoles(t, user?.email || "");
-                  if (roles.length === 0) return null;
+          {theses.filter(t => getActionableRoles(t, user?.email || "").length > 0).length === 0 ? (
+            <div className={styles.cardEmpty}>
+              🎉 No theses are currently waiting for your approval.
+            </div>
+          ) : (
+            <div className={styles.tableResponsive} style={{ marginTop: "16px" }}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={{ width: "38%" }}>Thesis Project</th>
+                    <th style={{ width: "12%" }}>Year</th>
+                    <th style={{ width: "20%" }}>Status</th>
+                    <th style={{ width: "15%" }}>Role Required</th>
+                    <th style={{ width: "15%" }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {theses.map(t => {
+                    const roles = getActionableRoles(t, user?.email || "");
+                    if (roles.length === 0) return null;
 
-                  return (
-                    <tr key={t.id}>
+                    return (
+                      <tr key={t.id}>
+                        <td>
+                          <strong style={{ color: "var(--text-main)", fontSize: "0.92rem" }}>{t.title}</strong>
+                          <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "2px" }}>{t.fieldOfStudy || "No Field"}</div>
+                          {getDeadlineDisplay(t)}
+                        </td>
+                        <td>{t.year || "-"}</td>
+                        <td>
+                          <span style={{ padding: "3px 10px", background: "var(--primary-light)", borderRadius: "var(--radius-full)", fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                            {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
+                          </span>
+                        </td>
+                        <td>
+                          <span style={{ fontWeight: 600, color: "var(--text-main)", fontSize: "0.88rem" }}>{roles.join(", ")}</span>
+                        </td>
+                        <td>
+                          <button
+                            className={styles.btnPrimary}
+                            style={{ padding: "6px 14px", fontSize: "0.82rem" }}
+                            onClick={() => openWorkspace(t, roles[0])}
+                          >
+                            Review
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Abstract & Scope Proposals Card */}
+        <div className={styles.card}>
+          <h2>Abstract & Scope Edit Proposals</h2>
+          <p>Theses where the student group has submitted proposed changes to the project abstract or scope.</p>
+
+          {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).length === 0 ? (
+            <div className={styles.cardEmpty}>
+              No pending topic edit requests.
+            </div>
+          ) : (
+            <div className={styles.tableResponsive} style={{ marginTop: "16px" }}>
+              <table className={styles.table}>
+                <thead>
+                  <tr>
+                    <th style={{ width: "45%" }}>Thesis Project</th>
+                    <th style={{ width: "15%" }}>Year</th>
+                    <th style={{ width: "22%" }}>Status</th>
+                    <th style={{ width: "18%" }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).map(t => (
+                    <tr key={`topic-${t.id}`}>
                       <td>
                         <strong style={{ color: "var(--text-main)", fontSize: "0.92rem" }}>{t.title}</strong>
                         <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "2px" }}>{t.fieldOfStudy || "No Field"}</div>
-                        {getDeadlineDisplay(t)}
                       </td>
                       <td>{t.year || "-"}</td>
                       <td>
-                        <span style={{ padding: "3px 10px", background: "var(--primary-light)", borderRadius: "var(--radius-full)", fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                          {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
+                        <span style={{ padding: "3px 10px", background: "var(--warning-bg)", color: "var(--warning-text)", borderRadius: "var(--radius-full)", fontSize: "0.78rem", border: "1px solid var(--warning-border)", fontWeight: 600 }}>
+                          Pending Topic Changes
                         </span>
                       </td>
                       <td>
-                        <span style={{ fontWeight: 600, color: "var(--text-main)", fontSize: "0.88rem" }}>{roles.join(", ")}</span>
-                      </td>
-                      <td>
                         <button
-                          className={styles.btnPrimary}
-                          style={{ padding: "6px 14px", fontSize: "0.82rem" }}
-                          onClick={() => openWorkspace(t, roles[0])}
+                          className={styles.btnSecondary}
+                          style={{ padding: "5px 12px", fontSize: "0.82rem" }}
+                          onClick={() => setTopicReviewThesis(t)}
                         >
-                          Review
+                          <FileEdit size={14} /> Review Edits
                         </button>
                       </td>
                     </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Abstract & Scope Proposals Card */}
-      <div className={styles.card}>
-        <h2>Abstract & Scope Edit Proposals</h2>
-        <p>Theses where the student group has submitted proposed changes to the project abstract or scope.</p>
-
-        {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).length === 0 ? (
-          <div style={{ padding: "20px 0", textAlign: "center", color: "var(--text-light)", fontStyle: "italic", fontSize: "0.9rem" }}>
-            No pending topic edit requests.
-          </div>
-        ) : (
-          <div className={styles.tableResponsive} style={{ marginTop: "16px" }}>
-            <table className={styles.table}>
-              <thead>
-                <tr>
-                  <th style={{ width: "45%" }}>Thesis Project</th>
-                  <th style={{ width: "15%" }}>Year</th>
-                  <th style={{ width: "22%" }}>Status</th>
-                  <th style={{ width: "18%" }}>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).map(t => (
-                  <tr key={`topic-${t.id}`}>
-                    <td>
-                      <strong style={{ color: "var(--text-main)", fontSize: "0.92rem" }}>{t.title}</strong>
-                      <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "2px" }}>{t.fieldOfStudy || "No Field"}</div>
-                    </td>
-                    <td>{t.year || "-"}</td>
-                    <td>
-                      <span style={{ padding: "3px 10px", background: "var(--warning-bg)", color: "var(--warning-text)", borderRadius: "var(--radius-full)", fontSize: "0.78rem", border: "1px solid var(--warning-border)", fontWeight: 600 }}>
-                        Pending Topic Changes
-                      </span>
-                    </td>
-                    <td>
-                      <button
-                        className={styles.btnSecondary}
-                        style={{ padding: "5px 12px", fontSize: "0.82rem" }}
-                        onClick={() => setTopicReviewThesis(t)}
-                      >
-                        <FileEdit size={14} /> Review Edits
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* All Assigned Theses Card */}
