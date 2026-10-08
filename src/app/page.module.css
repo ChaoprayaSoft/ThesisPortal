@@ -76,13 +76,13 @@
   font-size: 1.05rem;
   font-weight: 600;
   transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 14px rgba(14, 73, 89, 0.2);
 }
 
 .primaryButton:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+  box-shadow: 0 6px 20px rgba(14, 73, 89, 0.3);
 }
 
 .arrow {

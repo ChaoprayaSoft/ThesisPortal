@@ -1,56 +1,60 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* ── Modern Pastel & Minimal Design System ──────────────────────── */
-  --bg-app:          #f8f9fd;          /* Clean, luminous pastel porcelain canvas */
+  /* ── 5 Solid Color Palette Design System ──────────────────────── */
+  --bg-app:          #f7f9fa;          /* Crisp, clean canvas */
   --bg-card:         #ffffff;          /* Pure white card surface */
   --bg-sidebar:      #ffffff;
-  --bg-subtle:       #f1f5f9;
+  --bg-subtle:       #eff3f5;
 
-  /* Primary — Soft Pastel Indigo / Periwinkle */
-  --primary-color:   #6366f1;
-  --primary-hover:   #4f46e5;
-  --primary-light:   #eef2ff;          /* Delicate periwinkle wash */
-  --primary-lighter: #f8faff;
-  --primary-border:  #c7d2fe;
-  --primary-glow:    rgba(99, 102, 241, 0.12);
+  /* Color 1: Deep Ocean Teal (#0e4959) — Primary & Brand Accent */
+  --primary-color:   #0e4959;
+  --primary-hover:   #08333e;
+  --primary-light:   #e6f1f3;          /* Soft ocean wash */
+  --primary-lighter: #f2f8f9;
+  --primary-border:  #aed1d7;
+  --primary-glow:    rgba(14, 73, 89, 0.12);
 
   /* Text & Typography */
-  --text-main:       #1e293b;          /* Refined deep slate */
-  --text-muted:      #64748b;          /* Soft slate */
-  --text-light:      #94a3b8;          /* Light slate */
+  --text-main:       #152930;          /* Deep slate petrol */
+  --text-muted:      #4f6d7a;          /* Slate steel */
+  --text-light:      #819ba6;          /* Light steel */
 
   /* Borders */
-  --border-color:    #e2e8f0;          /* Subtle pastel slate border */
-  --border-subtle:   #f1f5f9;
-  --border-strong:   #cbd5e1;
+  --border-color:    #dce5e9;          /* Refined slate border */
+  --border-subtle:   #eff3f5;
+  --border-strong:   #c3d4db;
 
-  /* Pastel Semantic / Status Colors */
-  --success-color:   #10b981;
-  --success-bg:      #ecfdf5;          /* Pastel mint */
-  --success-text:    #047857;
-  --success-border:  #a7f3d0;
+  /* Color 5: Aqua Seafoam Teal (#48a9a6) — Success, Graduated, Info */
+  --success-color:   #48a9a6;
+  --success-bg:      #edf8f8;          /* Seafoam wash */
+  --success-text:    #19615f;
+  --success-border:  #aee0de;
 
-  --warning-color:   #f59e0b;
-  --warning-bg:      #fffbeb;          /* Pastel honey/peach */
-  --warning-text:    #b45309;
-  --warning-border:  #fde68a;
+  --info-color:      #48a9a6;
+  --info-bg:         #edf8f8;
+  --info-text:       #19615f;
+  --info-border:     #aee0de;
 
-  --danger-color:    #f43f5e;
-  --danger-hover:    #e11d48;
-  --danger-bg:       #fff1f2;          /* Pastel blush/rose */
-  --danger-text:     #be123c;
-  --danger-border:   #fecdd3;
+  /* Color 3: Mustard Gold (#e5a812) — Warning, Pending, Deadlines */
+  --warning-color:   #e5a812;
+  --warning-hover:   #cb9208;
+  --warning-bg:      #fef8eb;          /* Golden wash */
+  --warning-text:    #825b00;
+  --warning-border:  #f8de9a;
 
-  --info-color:      #0ea5e9;
-  --info-bg:         #f0f9ff;          /* Pastel sky */
-  --info-text:       #0369a1;
-  --info-border:     #bae6fd;
+  /* Color 2: Coral Terracotta (#e0534c) — Danger, Revise, Action Alerts */
+  --danger-color:    #e0534c;
+  --danger-hover:    #cb3d36;
+  --danger-bg:       #fdf0ee;          /* Coral blush wash */
+  --danger-text:     #962823;
+  --danger-border:   #f8c2bf;
 
-  --purple-color:    #8b5cf6;
-  --purple-bg:       #faf5ff;          /* Pastel lilac */
-  --purple-text:     #6d28d9;
-  --purple-border:   #ddd6fe;
+  /* Color 4: Slate Steel Teal (#4f6d7a) — Secondary, Committee, Panels */
+  --purple-color:    #4f6d7a;
+  --purple-bg:       #eef3f5;          /* Steel wash */
+  --purple-text:     #2a3e47;
+  --purple-border:   #c3d4db;
 
   /* Shadows (Diffused, soft, premium) */
   --shadow-sm:       0 1px 2px 0 rgba(15, 23, 42, 0.04);

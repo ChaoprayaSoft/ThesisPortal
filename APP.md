@@ -30,15 +30,14 @@
 
 ThesisPortal features an elegant, modern, and minimal **Pastel Design System** built on custom CSS variables, glassmorphism, and responsive CSS modules:
 
-### 1. Curated Pastel Palette
+### 1. Curated 5 Solid Color Palette
 | Role / Semantic | Color Name | Hex Token | Light Tint Token | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
-| **Primary** | Periwinkle / Iris | `#6366f1` | `#eef2ff` | Advisor review, primary CTAs, active highlights |
-| **Secondary** | Lilac / Purple | `#8b5cf6` | `#faf5ff` | Committee review, secondary panels |
-| **Success** | Mint / Emerald | `#10b981` | `#ecfdf5` | Approvals, Graduated status, completed milestones |
-| **Warning** | Honey / Peach | `#f59e0b` | `#fffbeb` | Pending actions, deadline countdown warnings |
-| **Danger** | Rose / Blush | `#f43f5e` | `#fff1f2` | Revisions required, overdue alerts, deletions |
-| **Info** | Sky Blue | `#0ea5e9` | `#f0f9ff` | Chairperson reviews, informational notices |
+| **Primary / Brand** | Deep Ocean Teal | `#0e4959` | `#e6f1f3` | Primary CTAs, active highlights, page headers |
+| **Success / Info** | Aqua Seafoam Teal | `#48a9a6` | `#edf8f8` | Approvals, Graduated status, completed milestones |
+| **Warning / Pending** | Mustard Gold | `#e5a812` | `#fef8eb` | Pending reviews, deadline countdown warnings |
+| **Danger / Revise** | Coral Terracotta | `#e0534c` | `#fdf0ee` | Revisions required, overdue alerts, deletions |
+| **Secondary / Panels** | Slate Steel Teal | `#4f6d7a` | `#eef3f5` | Committee badges, auxiliary panels, secondary borders |
 
 ### 2. Typography & Surfaces
 * **Font Family**: Google Fonts `Plus Jakarta Sans`, supplemented with `Sarabun` for bilingual Thai/English legibility.
