@@ -1,70 +1,72 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* ── Exact 5 Solid Color Palette Design System ────────────────── */
-  /* Palette: #82bab3 (Sage Teal), #514330 (Warm Umber), #0e2c42 (Navy Midnight), #ee5656 (Coral Red), #e7bf40 (Mustard Gold) */
-  --bg-app:          #f6f8f9;          /* Crisp canvas */
-  --bg-card:         #ffffff;          /* Pure white card surface */
+  /* ── Colorful Solid, Eye-Friendly Design System ────────────────── */
+  --bg-app:          #f8fafc;          /* Soft slate canvas (reduces glare & eye fatigue) */
+  --bg-card:         #ffffff;          /* Crisp white card surface */
   --bg-sidebar:      #ffffff;
-  --bg-subtle:       #edf2f5;
+  --bg-subtle:       #f1f5f9;          /* Neutral slate wash */
 
-  /* Color 3: Deep Navy Midnight (#0e2c42) — Primary & Brand Accent */
-  --primary-color:   #0e2c42;
-  --primary-hover:   #071c2b;
-  --primary-light:   #e6f0f5;          /* Soft navy wash */
-  --primary-lighter: #f0f6f9;
-  --primary-border:  #9ec1d4;
-  --primary-glow:    rgba(14, 44, 66, 0.15);
-  --btn-primary-text: #ffffff;         /* Crisp white text for deep navy background */
+  /* Primary & Brand Accent — Royal Blue / Electric Indigo */
+  --primary-color:   #2563eb;
+  --primary-hover:   #1d4ed8;
+  --primary-light:   #eff6ff;          /* Soft sky wash */
+  --primary-lighter: #f8faff;
+  --primary-border:  #bfdbfe;
+  --primary-glow:    rgba(37, 99, 235, 0.16);
+  --btn-primary-text: #ffffff;
 
   /* Text & Typography */
-  --text-main:       #0e2c42;          /* Deep Navy Midnight */
-  --text-muted:      #514330;          /* Warm Umber */
-  --text-light:      #7c7062;          /* Muted Umber */
+  --text-main:       #0f172a;          /* Slate 900 (High-contrast, crisp legibility) */
+  --text-muted:      #475569;          /* Slate 600 */
+  --text-light:      #94a3b8;          /* Slate 400 */
 
   /* Borders */
-  --border-color:    #dce4e8;          /* Refined slate border */
-  --border-subtle:   #edf2f5;
-  --border-strong:   #b8cad2;
+  --border-color:    #e2e8f0;          /* Subtle clean slate border */
+  --border-subtle:   #f1f5f9;
+  --border-strong:   #cbd5e1;
 
-  /* Color 1: Sage Teal (#82bab3) — Success, Graduated, Info */
-  --success-color:   #82bab3;
-  --success-hover:   #6ea69f;
-  --success-bg:      #f0f7f6;          /* Sage wash */
-  --success-text:    #2d6b63;
-  --success-border:  #b8ded9;
+  /* Success / Graduated — Vibrant Mint & Emerald */
+  --success-color:   #10b981;
+  --success-hover:   #059669;
+  --success-bg:      #ecfdf5;          /* Emerald wash */
+  --success-text:    #065f46;
+  --success-border:  #a7f3d0;
 
-  --info-color:      #82bab3;
-  --info-bg:         #f0f7f6;
-  --info-text:       #2d6b63;
-  --info-border:     #b8ded9;
+  /* Info / Highlights — Vibrant Sky Cyan */
+  --info-color:      #0284c7;
+  --info-hover:      #0369a1;
+  --info-bg:         #f0f9ff;          /* Sky wash */
+  --info-text:       #075985;
+  --info-border:     #bae6fd;
 
-  /* Color 5: Mustard Gold (#e7bf40) — Warning, Pending, Deadlines */
-  --warning-color:   #e7bf40;
-  --warning-hover:   #d4a92c;
-  --warning-bg:      #fdfaf0;          /* Golden wash */
-  --warning-text:    #82660f;
-  --warning-border:  #f6e3a4;
+  /* Warning / Deadlines — Warm Amber & Honey Gold */
+  --warning-color:   #f59e0b;
+  --warning-hover:   #d97706;
+  --warning-bg:      #fffbeb;          /* Honey wash */
+  --warning-text:    #92400e;
+  --warning-border:  #fde68a;
 
-  /* Color 4: Coral Red (#ee5656) — Danger, Revise, Alerts */
-  --danger-color:    #ee5656;
-  --danger-hover:    #d94242;
-  --danger-bg:       #fdf1f1;          /* Coral blush wash */
-  --danger-text:     #a82727;
-  --danger-border:   #f8bebe;
+  /* Danger / Revisions — Soft Ruby Coral */
+  --danger-color:    #ef4444;
+  --danger-hover:    #dc2626;
+  --danger-bg:       #fef2f2;          /* Coral wash */
+  --danger-text:     #991b1b;
+  --danger-border:   #fecaca;
 
-  /* Color 2: Warm Umber (#514330) — Secondary, Committee, Panels */
-  --purple-color:    #514330;
-  --purple-bg:       #f5f3f0;          /* Umber wash */
-  --purple-text:     #514330;
-  --purple-border:   #d6cfc7;
+  /* Purple / Committee & Faculty Panels — Royal Iris Violet */
+  --purple-color:    #7c3aed;
+  --purple-hover:    #6d28d9;
+  --purple-bg:       #f5f3ff;          /* Violet wash */
+  --purple-text:     #5b21b6;
+  --purple-border:   #ddd6fe;
 
-  /* Shadows (Diffused, soft, premium) */
-  --shadow-sm:       0 1px 2px 0 rgba(15, 23, 42, 0.04);
-  --shadow-card:     0 2px 10px -2px rgba(99, 102, 241, 0.04), 0 1px 3px 0 rgba(15, 23, 42, 0.03);
-  --shadow-md:       0 8px 24px -4px rgba(99, 102, 241, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
-  --shadow-lg:       0 16px 36px -6px rgba(99, 102, 241, 0.10), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
-  --shadow-modal:    0 24px 48px -12px rgba(15, 23, 42, 0.15);
+  /* Shadows (Diffused, soft, modern) */
+  --shadow-sm:       0 1px 2px 0 rgba(15, 23, 42, 0.05);
+  --shadow-card:     0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px -1px rgba(15, 23, 42, 0.04);
+  --shadow-md:       0 4px 12px -2px rgba(15, 23, 42, 0.07), 0 2px 4px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg:       0 10px 24px -4px rgba(15, 23, 42, 0.09), 0 4px 8px -2px rgba(15, 23, 42, 0.04);
+  --shadow-modal:    0 20px 40px -8px rgba(15, 23, 42, 0.16);
 
   /* Border Radii */
   --radius-sm:       8px;

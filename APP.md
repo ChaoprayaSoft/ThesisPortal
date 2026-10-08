@@ -28,19 +28,21 @@
 
 ## 🎨 Design System & UI Architecture
 
-ThesisPortal features an elegant, modern, and minimal **Pastel Design System** built on custom CSS variables, glassmorphism, and responsive CSS modules:
+ThesisPortal features a modern, vibrant, and eye-friendly **Chromatic Solid Design System** built on curated solid color tokens, soft slate surfaces, and responsive CSS modules:
 
-### 1. Curated 5 Solid Color Palette
+### 1. Curated Solid Color Palette
 | Role / Semantic | Color Name | Hex Token | Light Tint Token | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
-| **Primary & Brand** | Deep Navy Midnight | `#0e2c42` | `#e6f0f5` | Primary brand accent, main CTAs (`.btnPrimary`), active highlights |
-| **Warning & Deadlines** | Mustard Gold | `#e7bf40` | `#fdfaf0` | Pending reviews, countdown timers, deadline alerts |
-| **Success & Info** | Sage Teal | `#82bab3` | `#f0f7f6` | Approvals, Graduated status, completed milestones |
-| **Danger & Revise** | Coral Red | `#ee5656` | `#fdf1f1` | Revisions required, overdue alerts, deletions |
-| **Secondary & Panels** | Warm Umber | `#514330` | `#f5f3f0` | Committee badges, auxiliary panels, secondary borders |
+| **Primary & Brand** | Royal Blue / Electric Indigo | `#2563eb` | `#eff6ff` | Primary brand accent, main CTAs (`.btnPrimary`), active nav highlights |
+| **Success & Graduated** | Vibrant Mint & Emerald | `#10b981` | `#ecfdf5` | Approvals, Graduated status, completed milestones |
+| **Warning & Deadlines** | Warm Amber & Honey | `#f59e0b` | `#fffbeb` | Pending reviews, countdown timers, deadline alerts |
+| **Danger & Revise** | Soft Ruby Coral | `#ef4444` | `#fef2f2` | Revisions required, overdue alerts, deletions |
+| **Info & Highlights** | Vibrant Sky Cyan | `#0284c7` | `#f0f9ff` | Stage progression, chairperson reviews, informational chips |
+| **Committee & Faculty** | Royal Iris Violet | `#7c3aed` | `#f5f3ff` | Committee badges, faculty panels, secondary borders |
 
 ### 2. Typography & Surfaces
 * **Font Family**: Google Fonts `Plus Jakarta Sans`, supplemented with `Sarabun` for bilingual Thai/English legibility.
+* **Canvas Surface**: Gentle Slate (`#f8fafc`) to eliminate stark white glare and reduce eye fatigue.
 * **Elevation**: Soft diffused drop shadows (`--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--shadow-modal`) avoiding harsh dark borders.
 * **Component Styling**: Reusable CSS classes (`.card`, `.btnPrimary`, `.btnSecondary`, `.badge`, `.tableResponsive`, `.modalOverlay`, `.modalContent`, `.modalClose`).
 * **Dedicated Modals**: Full-screen backdrop detail popups for both Lecturer (`/lecturer`) and Student (`/student`) workspaces for deep inspection of metadata, rosters, deadlines, and activity trails.

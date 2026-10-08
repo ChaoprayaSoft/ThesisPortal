@@ -387,12 +387,12 @@
   justify-content: center;
   gap: 8px;
   font-family: inherit;
-  box-shadow: 0 2px 8px rgba(14, 44, 66, 0.20);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.20);
 }
 
 .btnPrimary:hover:not(:disabled) {
   background: var(--primary-hover);
-  box-shadow: 0 4px 14px rgba(14, 44, 66, 0.30);
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.30);
   transform: translateY(-1px);
 }
 
