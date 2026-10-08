@@ -7,21 +7,44 @@
 ## 📑 Table of Contents
 1. [Overview & Core Value](#-overview--core-value)
 2. [Technology Stack](#-technology-stack)
-3. [System Architecture](#-system-architecture)
-4. [User Roles & Access Control](#-user-roles--access-control)
-5. [Complete Thesis Lifecycle & Stage Machine](#-complete-thesis-lifecycle--stage-machine)
-6. [Data Models & Schema Reference](#-data-models--schema-reference)
-7. [Core Modules & Features](#-core-modules--features)
-   - [7.1 Authentication & Session Management](#71-authentication--session-management)
-   - [7.2 Student Portal](#72-student-portal)
-   - [7.3 Lecturer Review Portal](#73-lecturer-review-portal)
-   - [7.4 Admin Management Suite](#74-admin-management-suite)
-   - [7.5 Automated Reminder Engine (Cron)](#75-automated-reminder-engine-cron)
-   - [7.6 Field-Specific Important Notes](#76-field-specific-important-notes)
-   - [7.7 Excel Student Import Engine](#77-excel-student-import-engine)
-8. [API & Server Endpoints](#-api--server-endpoints)
-9. [Environment Configuration](#-environment-configuration)
-10. [Local Development & Deployment](#-local-development--deployment)
+3. [Design System & UI Architecture](#-design-system--ui-architecture)
+4. [System Architecture](#-system-architecture)
+5. [User Roles & Access Control](#-user-roles--access-control)
+6. [Complete Thesis Lifecycle & Stage Machine](#-complete-thesis-lifecycle--stage-machine)
+7. [Data Models & Schema Reference](#-data-models--schema-reference)
+8. [Core Modules & Features](#-core-modules--features)
+   - [8.1 Authentication & Session Management](#81-authentication--session-management)
+   - [8.2 Student Portal](#82-student-portal)
+   - [8.3 Lecturer Review Portal](#83-lecturer-review-portal)
+   - [8.4 Admin Management Suite](#84-admin-management-suite)
+   - [8.5 Automated Reminder Engine (Cron)](#85-automated-reminder-engine-cron)
+   - [8.6 Field-Specific Important Notes](#86-field-specific-important-notes)
+   - [8.7 Excel Student Import Engine](#87-excel-student-import-engine)
+9. [API & Server Endpoints](#-api--server-endpoints)
+10. [Environment Configuration](#-environment-configuration)
+11. [Local Development & Deployment](#-local-development--deployment)
+
+---
+
+## 🎨 Design System & UI Architecture
+
+ThesisPortal features an elegant, modern, and minimal **Pastel Design System** built on custom CSS variables, glassmorphism, and responsive CSS modules:
+
+### 1. Curated Pastel Palette
+| Role / Semantic | Color Name | Hex Token | Light Tint Token | Purpose |
+| :--- | :--- | :--- | :--- | :--- |
+| **Primary** | Periwinkle / Iris | `#6366f1` | `#eef2ff` | Advisor review, primary CTAs, active highlights |
+| **Secondary** | Lilac / Purple | `#8b5cf6` | `#faf5ff` | Committee review, secondary panels |
+| **Success** | Mint / Emerald | `#10b981` | `#ecfdf5` | Approvals, Graduated status, completed milestones |
+| **Warning** | Honey / Peach | `#f59e0b` | `#fffbeb` | Pending actions, deadline countdown warnings |
+| **Danger** | Rose / Blush | `#f43f5e` | `#fff1f2` | Revisions required, overdue alerts, deletions |
+| **Info** | Sky Blue | `#0ea5e9` | `#f0f9ff` | Chairperson reviews, informational notices |
+
+### 2. Typography & Surfaces
+* **Font Family**: Google Fonts `Plus Jakarta Sans`, supplemented with `Sarabun` for bilingual Thai/English legibility.
+* **Elevation**: Soft diffused drop shadows (`--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--shadow-card`) avoiding harsh dark borders.
+* **Glassmorphism**: Translucent card backdrops with `backdrop-filter: blur(12px)` and `--border-color: rgba(226, 232, 240, 0.8)`.
+* **Component Styling**: Reusable CSS classes (`.card`, `.btnPrimary`, `.btnSecondary`, `.badge`, `.tableResponsive`, `.modalOverlay`, `.modalContent`).
 
 ---
 
