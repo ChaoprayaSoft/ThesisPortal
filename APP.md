@@ -33,17 +33,17 @@ ThesisPortal features an elegant, modern, and minimal **Pastel Design System** b
 ### 1. Curated 5 Solid Color Palette
 | Role / Semantic | Color Name | Hex Token | Light Tint Token | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
-| **Primary / Brand** | Deep Ocean Teal | `#0e4959` | `#e6f1f3` | Primary CTAs, active highlights, page headers |
-| **Success / Info** | Aqua Seafoam Teal | `#48a9a6` | `#edf8f8` | Approvals, Graduated status, completed milestones |
-| **Warning / Pending** | Mustard Gold | `#e5a812` | `#fef8eb` | Pending reviews, deadline countdown warnings |
-| **Danger / Revise** | Coral Terracotta | `#e0534c` | `#fdf0ee` | Revisions required, overdue alerts, deletions |
-| **Secondary / Panels** | Slate Steel Teal | `#4f6d7a` | `#eef3f5` | Committee badges, auxiliary panels, secondary borders |
+| **Primary & Brand** | Mustard Gold | `#e7bf40` | `#fdfaf0` | Primary brand accent, main CTAs (`.btnPrimary`), active highlights |
+| **Contrast & Text** | Deep Navy Midnight | `#0e2c42` | `#edf2f5` | Main body typography, dark contrasts, modal headers |
+| **Success & Info** | Sage Teal | `#82bab3` | `#f0f7f6` | Approvals, Graduated status, completed milestones |
+| **Danger & Revise** | Coral Red | `#ee5656` | `#fdf1f1` | Revisions required, overdue alerts, deletions |
+| **Secondary & Panels** | Warm Umber | `#514330` | `#f5f3f0` | Committee badges, auxiliary panels, secondary borders |
 
 ### 2. Typography & Surfaces
 * **Font Family**: Google Fonts `Plus Jakarta Sans`, supplemented with `Sarabun` for bilingual Thai/English legibility.
-* **Elevation**: Soft diffused drop shadows (`--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--shadow-card`) avoiding harsh dark borders.
-* **Glassmorphism**: Translucent card backdrops with `backdrop-filter: blur(12px)` and `--border-color: rgba(226, 232, 240, 0.8)`.
-* **Component Styling**: Reusable CSS classes (`.card`, `.btnPrimary`, `.btnSecondary`, `.badge`, `.tableResponsive`, `.modalOverlay`, `.modalContent`).
+* **Elevation**: Soft diffused drop shadows (`--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--shadow-modal`) avoiding harsh dark borders.
+* **Component Styling**: Reusable CSS classes (`.card`, `.btnPrimary`, `.btnSecondary`, `.badge`, `.tableResponsive`, `.modalOverlay`, `.modalContent`, `.modalClose`).
+* **Dedicated Modals**: Full-screen backdrop detail popups for both Lecturer (`/lecturer`) and Student (`/student`) workspaces for deep inspection of metadata, rosters, deadlines, and activity trails.
 
 ---
 

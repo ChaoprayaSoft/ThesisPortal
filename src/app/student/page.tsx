@@ -19,7 +19,7 @@ import {
 import { getLecturers, UserData } from "@/lib/db/users";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
-import { Plus, X, ExternalLink, Bell, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Wrench, FileText } from "lucide-react";
+import { Plus, X, ExternalLink, Bell, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Wrench, FileText, BookOpen, Layers, Users } from "lucide-react";
 import ImportantNoteModal from "@/components/ImportantNoteModal";
 
 const getStageLabel = (stage: number) => {
@@ -41,6 +41,7 @@ export default function StudentDashboard() {
   const [activities, setActivities] = useState<ThesisActivity[]>([]);
   const [loading, setLoading] = useState(true);
   const [isNoteModalOpen, setIsNoteModalOpen] = useState(false);
+  const [showDetailModal, setShowDetailModal] = useState(false);
 
   // Edit State
   const [isEditing, setIsEditing] = useState(false);
@@ -382,6 +383,14 @@ export default function StudentDashboard() {
       <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
         <h1 style={{ margin: 0 }}>My Workspace</h1>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+          <button 
+            onClick={() => setShowDetailModal(true)}
+            className={styles.btnSecondary}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <FileText size={16} />
+            Thesis Details
+          </button>
           {thesis.equipmentChecker && thesis.currentStage >= 3 && (
             <button
               onClick={(!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? () => setShowEquipmentCheckModal(true) : undefined}
@@ -780,6 +789,201 @@ export default function StudentDashboard() {
             >
               Okay
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Student Thesis Detail Modal */}
+      {showDetailModal && thesis && (
+        <div className={styles.modalOverlay} onClick={() => setShowDetailModal(false)}>
+          <div 
+            className={styles.modalContent} 
+            onClick={e => e.stopPropagation()} 
+            style={{ width: "960px", maxHeight: "90vh", display: "flex", flexDirection: "column", padding: "0" }}
+          >
+            {/* Modal Header */}
+            <div style={{ padding: "20px 26px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--primary-light)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "4px 12px", borderRadius: "var(--radius-full)", fontSize: "0.82rem", fontWeight: 700, color: "var(--primary-color)", border: "1px solid var(--primary-border)" }}>
+                  {getStageIcon(thesis.currentStage)} {getDisplayStatus(thesis)}
+                </span>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>
+                  Academic Year: {thesis.year || "-"}
+                </span>
+              </div>
+              <button 
+                className={styles.modalClose} 
+                onClick={() => setShowDetailModal(false)}
+                style={{ fontSize: "1.4rem" }}
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Modal Scrollable Body */}
+            <div style={{ padding: "24px 28px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "22px" }}>
+              <div>
+                <h2 style={{ fontSize: "1.35rem", fontWeight: 800, color: "var(--text-main)", margin: "0 0 6px 0", letterSpacing: "-0.02em" }}>
+                  {thesis.title}
+                </h2>
+                <div style={{ fontSize: "0.88rem", color: "var(--text-muted)" }}>
+                  Field of Study: <strong style={{ color: "var(--text-main)" }}>{thesis.fieldOfStudy || "Not Specified"}</strong>
+                </div>
+              </div>
+
+              {/* Deadlines Overview */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "12px" }}>
+                <div style={{ background: "var(--bg-subtle)", padding: "12px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-light)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "4px", display: "flex", alignItems: "center", gap: "5px" }}>
+                    <Clock size={13} /> Advisor Stage Deadline
+                  </div>
+                  <div style={{ fontSize: "0.88rem", fontWeight: 600, color: thesis.deadlines?.advisor ? "var(--text-main)" : "var(--text-light)" }}>
+                    {thesis.deadlines?.advisor ? new Date(thesis.deadlines.advisor).toLocaleString('th-TH') : "Not set"}
+                  </div>
+                </div>
+
+                <div style={{ background: "var(--bg-subtle)", padding: "12px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-light)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "4px", display: "flex", alignItems: "center", gap: "5px" }}>
+                    <Clock size={13} /> Committee Stage Deadline
+                  </div>
+                  <div style={{ fontSize: "0.88rem", fontWeight: 600, color: thesis.deadlines?.committee ? "var(--text-main)" : "var(--text-light)" }}>
+                    {thesis.deadlines?.committee ? new Date(thesis.deadlines.committee).toLocaleString('th-TH') : "Not set"}
+                  </div>
+                </div>
+
+                <div style={{ background: "var(--bg-subtle)", padding: "12px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                  <div style={{ fontSize: "0.72rem", color: "var(--text-light)", textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.05em", marginBottom: "4px", display: "flex", alignItems: "center", gap: "5px" }}>
+                    <Clock size={13} /> Chairperson Stage Deadline
+                  </div>
+                  <div style={{ fontSize: "0.88rem", fontWeight: 600, color: thesis.deadlines?.chairperson ? "var(--text-main)" : "var(--text-light)" }}>
+                    {thesis.deadlines?.chairperson ? new Date(thesis.deadlines.chairperson).toLocaleString('th-TH') : "Not set"}
+                  </div>
+                </div>
+              </div>
+
+              {/* Abstract & Scope */}
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "16px" }}>
+                <div style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                  <h3 style={{ margin: "0 0 8px 0", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                    <BookOpen size={14} /> Abstract
+                  </h3>
+                  <div style={{ color: "var(--text-main)", fontSize: "0.88rem", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                    {thesis.pendingAbstract || thesis.abstract || "No abstract provided."}
+                  </div>
+                </div>
+
+                <div style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                  <h3 style={{ margin: "0 0 8px 0", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                    <Layers size={14} /> Scope
+                  </h3>
+                  <div style={{ color: "var(--text-main)", fontSize: "0.88rem", lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+                    {thesis.pendingScope || thesis.scope || "No scope provided."}
+                  </div>
+                </div>
+              </div>
+
+              {/* Committee Panel */}
+              <div style={{ background: "#ffffff", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                <h3 style={{ margin: "0 0 12px 0", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <ShieldCheck size={14} /> Assigned Faculty Panel
+                </h3>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "14px" }}>
+                  <div>
+                    <span style={{ fontSize: "0.72rem", color: "var(--text-light)", textTransform: "uppercase", fontWeight: 700, display: "block" }}>Advisor</span>
+                    <span style={{ color: "var(--text-main)", fontWeight: 600, fontSize: "0.9rem" }}>
+                      {lecturersMap[thesis.lecturerUids.advisor]?.name_en || lecturersMap[thesis.lecturerUids.advisor]?.name_th || thesis.lecturerUids.advisor || "None"}
+                    </span>
+                    <span style={{ display: "block", fontSize: "0.78rem", color: "var(--text-light)" }}>{thesis.lecturerUids.advisor}</span>
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: "0.72rem", color: "var(--text-light)", textTransform: "uppercase", fontWeight: 700, display: "block" }}>Committee</span>
+                    {thesis.lecturerUids.committees.length > 0 ? (
+                      <div style={{ display: "flex", flexDirection: "column", gap: "3px", marginTop: "2px" }}>
+                        {thesis.lecturerUids.committees.map((c, i) => (
+                          <span key={c} style={{ color: "var(--text-main)", fontWeight: 600, fontSize: "0.88rem" }}>
+                            #{i + 1} {lecturersMap[c]?.name_en || lecturersMap[c]?.name_th || c}
+                          </span>
+                        ))}
+                      </div>
+                    ) : (
+                      <span style={{ color: "var(--text-light)", fontSize: "0.88rem" }}>None</span>
+                    )}
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: "0.72rem", color: "var(--text-light)", textTransform: "uppercase", fontWeight: 700, display: "block" }}>Chairperson</span>
+                    <span style={{ color: "var(--text-main)", fontWeight: 600, fontSize: "0.9rem" }}>
+                      {lecturersMap[thesis.lecturerUids.chairperson]?.name_en || lecturersMap[thesis.lecturerUids.chairperson]?.name_th || thesis.lecturerUids.chairperson || "None"}
+                    </span>
+                    <span style={{ display: "block", fontSize: "0.78rem", color: "var(--text-light)" }}>{thesis.lecturerUids.chairperson}</span>
+                  </div>
+
+                  {thesis.equipmentChecker && (
+                    <div>
+                      <span style={{ fontSize: "0.72rem", color: "var(--text-light)", textTransform: "uppercase", fontWeight: 700, display: "block" }}>Equipment Inspector</span>
+                      <span style={{ color: "var(--text-main)", fontWeight: 600, fontSize: "0.9rem" }}>
+                        {lecturersMap[thesis.equipmentChecker]?.name_en || lecturersMap[thesis.equipmentChecker]?.name_th || thesis.equipmentChecker}
+                      </span>
+                      <span style={{ display: "block", fontSize: "0.78rem", color: "var(--text-light)" }}>Status: {thesis.equipmentCheckStatus || "Pending Request"}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Activity & History Log */}
+              <div>
+                <h3 style={{ margin: "0 0 12px 0", fontSize: "0.85rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", fontWeight: 700, display: "flex", alignItems: "center", gap: "6px" }}>
+                  <FileText size={14} /> Activity & Submission History
+                </h3>
+                {activities.length === 0 ? (
+                  <div style={{ padding: "20px", background: "var(--bg-subtle)", borderRadius: "var(--radius-md)", textAlign: "center", color: "var(--text-light)", fontSize: "0.88rem" }}>
+                    No recorded activities yet.
+                  </div>
+                ) : (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", maxHeight: "280px", overflowY: "auto" }}>
+                    {activities.map(act => (
+                      <div key={act.id} style={{ background: "var(--bg-subtle)", padding: "12px 16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px", flexWrap: "wrap", gap: "6px" }}>
+                          <strong style={{ color: "var(--text-main)", fontSize: "0.88rem" }}>{act.type}</strong>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-light)" }}>
+                            {new Date(act.timestamp).toLocaleString('th-TH')}
+                          </span>
+                        </div>
+                        <p style={{ margin: "0 0 6px 0", fontSize: "0.85rem", color: "var(--text-main)", lineHeight: 1.5 }}>{act.description}</p>
+                        <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "8px" }}>
+                          <span>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
+                          {act.documentUrl && (
+                            <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: 700, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                              <ExternalLink size={12} /> View Document
+                            </a>
+                          )}
+                        </div>
+                        {act.links && act.links.length > 0 && (
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "8px" }}>
+                            {act.links.map((link, idx) => (
+                              <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px", background: "#ffffff", padding: "3px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "0.78rem" }}>
+                                <ExternalLink size={11} /> {link.type}
+                              </a>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div style={{ padding: "16px 28px", borderTop: "1px solid var(--border-color)", display: "flex", justifyContent: "flex-end", gap: "12px", background: "#ffffff", borderBottomLeftRadius: "var(--radius-xl)", borderBottomRightRadius: "var(--radius-xl)" }}>
+              <button 
+                className={styles.btnSecondary} 
+                onClick={() => setShowDetailModal(false)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

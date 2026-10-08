@@ -8,13 +8,14 @@
   --bg-sidebar:      #ffffff;
   --bg-subtle:       #edf2f5;
 
-  /* Color 3: Deep Navy Midnight (#0e2c42) — Primary & Brand Accent */
-  --primary-color:   #0e2c42;
-  --primary-hover:   #071c2b;
-  --primary-light:   #e6f0f5;          /* Soft navy wash */
-  --primary-lighter: #f0f6f9;
-  --primary-border:  #9ec1d4;
-  --primary-glow:    rgba(14, 44, 66, 0.12);
+  /* Color 5: Mustard Gold (#e7bf40) — Primary & Brand Accent */
+  --primary-color:   #e7bf40;
+  --primary-hover:   #d4a92c;
+  --primary-light:   #fdfaf0;          /* Soft mustard gold wash */
+  --primary-lighter: #fefcf5;
+  --primary-border:  #f6e3a4;
+  --primary-glow:    rgba(231, 191, 64, 0.22);
+  --btn-primary-text: #0e2c42;         /* Deep Navy Midnight for strong button contrast */
 
   /* Text & Typography */
   --text-main:       #0e2c42;          /* Deep Navy Midnight */
