@@ -25,14 +25,14 @@ export default function LecturersPage() {
   // Confirmation Modal
   const [confirmAction, setConfirmAction] = useState<{ message: string, onConfirm: () => void } | null>(null);
 
-  useEffect(() => {
-    loadLecturers();
-  }, []);
-
   const loadLecturers = async () => {
     const data = await getLecturers();
     setLecturers(data);
   };
+
+  useEffect(() => {
+    loadLecturers();
+  }, []);
 
   const handleAddLecturer = async (e: React.FormEvent) => {
     e.preventDefault();

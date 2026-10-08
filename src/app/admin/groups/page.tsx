@@ -35,14 +35,14 @@ export default function GroupsPage() {
   // Confirmation Modal
   const [confirmAction, setConfirmAction] = useState<{ message: string, onConfirm: () => void } | null>(null);
 
-  useEffect(() => {
-    loadGroups();
-  }, []);
-
   const loadGroups = async () => {
     const data = await getGroups();
     setGroups(data);
   };
+
+  useEffect(() => {
+    loadGroups();
+  }, []);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
