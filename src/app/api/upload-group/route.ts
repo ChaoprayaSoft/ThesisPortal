@@ -49,21 +49,24 @@ export async function POST(request: Request) {
       students
     });
 
-    // Also pre-register these students as Users so they can log in
-    const batch = adminDb.batch();
-    for (const student of students) {
-      // Use email as doc ID or query. To be safe, we generate a doc and store email.
-      const userRef = adminDb.collection('users').doc();
-      batch.set(userRef, {
-        uid: userRef.id,
-        email: student.email,
-        name_th: student.name,
-        name_en: '',
-        role: 'Student',
-        createdAt: Date.now()
-      });
+    // Also pre-register these students as Users so they can log in safely in batches of 400
+    const BATCH_SIZE = 400;
+    for (let i = 0; i < students.length; i += BATCH_SIZE) {
+      const chunk = students.slice(i, i + BATCH_SIZE);
+      const batch = adminDb.batch();
+      for (const student of chunk) {
+        const userRef = adminDb.collection('users').doc();
+        batch.set(userRef, {
+          uid: userRef.id,
+          email: student.email.trim(),
+          name_th: student.name.trim(),
+          name_en: (student.name_en || '').trim(),
+          role: 'Student',
+          createdAt: Date.now()
+        });
+      }
+      await batch.commit();
     }
-    await batch.commit();
 
     return NextResponse.json({ success: true, groupId: groupRef.id, studentCount: students.length });
   } catch (error: any) {

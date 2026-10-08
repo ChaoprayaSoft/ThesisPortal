@@ -1,5 +1,5 @@
 import { db } from "../firebase";
-import { collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc } from "firebase/firestore";
+import { collection, doc, setDoc, getDoc, getDocs, query, where, updateDoc, deleteDoc, writeBatch } from "firebase/firestore";
 
 export type UserRole = "Admin" | "Lecturer" | "Student";
 
@@ -16,9 +16,6 @@ export interface UserData {
 }
 
 export async function createUser(userData: UserData) {
-  // Using email as document ID or we can generate one. 
-  // Wait, if it's pre-registered, we use email as doc ID or let them sign in and trigger a cloud function.
-  // Actually, easiest is storing pre-registered users in 'users' with their email.
   const userRef = doc(collection(db, "users"));
   userData.uid = userRef.id;
   userData.createdAt = Date.now();
@@ -27,7 +24,7 @@ export async function createUser(userData: UserData) {
 }
 
 export async function getUserByEmail(email: string) {
-  const q = query(collection(db, "users"), where("email", "==", email));
+  const q = query(collection(db, "users"), where("email", "==", email.trim()));
   const snapshot = await getDocs(q);
   if (!snapshot.empty) {
     return { id: snapshot.docs[0].id, ...snapshot.docs[0].data() } as unknown as UserData;
@@ -47,28 +44,31 @@ export async function getAllUsers() {
 }
 
 export async function deleteUserByEmail(email: string) {
-  const q = query(collection(db, "users"), where("email", "==", email));
+  const cleanEmail = email.trim();
+  const q = query(collection(db, "users"), where("email", "==", cleanEmail));
   const snapshot = await getDocs(q);
-  const deletePromises = snapshot.docs.map(d => deleteDoc(d.ref));
-  await Promise.all(deletePromises);
+  if (snapshot.empty) return;
+  
+  const batch = writeBatch(db);
+  snapshot.docs.forEach(d => {
+    batch.delete(d.ref);
+  });
+  await batch.commit();
 }
 
 export async function updateUser(id: string, data: Partial<UserData>) {
-  console.log("Updating user with ID:", id, "Data:", data);
   await updateDoc(doc(db, "users", id), data);
-  console.log("User updated successfully!");
 }
 
 export async function updateUserByEmail(oldEmail: string, data: Partial<UserData>) {
-  console.log("Updating user by email:", oldEmail, "Data:", data);
   const cleanEmail = oldEmail.trim();
   const q = query(collection(db, "users"), where("email", "==", cleanEmail));
   const snapshot = await getDocs(q);
-  console.log("Found matching user documents:", snapshot.docs.length);
-  
-  for (const d of snapshot.docs) {
-    console.log("Updating doc ID:", d.id);
-    await updateDoc(d.ref, data);
-  }
-  console.log("Email update complete!");
+  if (snapshot.empty) return;
+
+  const batch = writeBatch(db);
+  snapshot.docs.forEach(d => {
+    batch.update(d.ref, data);
+  });
+  await batch.commit();
 }

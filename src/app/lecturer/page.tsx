@@ -8,6 +8,11 @@ import {
   subscribeToThesesByLecturer, 
   approveThesis, 
   rejectThesis, 
+  updateThesis,
+  approveEquipmentCheck,
+  rejectEquipmentCheck,
+  approveTopicEdits,
+  rejectTopicEdits,
   ThesisData, 
   getThesisActivities, 
   ThesisActivity, 
@@ -226,7 +231,6 @@ export default function LecturerDashboard() {
     try {
       if (actionType === "Approve") {
         if (activeWorkspace.role === "Equipment Checker") {
-          const { approveEquipmentCheck } = await import("@/lib/db/theses");
           await approveEquipmentCheck(activeWorkspace.thesis.id);
           await logThesisActivity({
             thesisId: activeWorkspace.thesis.id,
@@ -271,7 +275,6 @@ export default function LecturerDashboard() {
         }
       } else {
         if (activeWorkspace.role === "Equipment Checker") {
-          const { rejectEquipmentCheck } = await import("@/lib/db/theses");
           await rejectEquipmentCheck(activeWorkspace.thesis.id);
           await logThesisActivity({
             thesisId: activeWorkspace.thesis.id,
@@ -350,7 +353,6 @@ export default function LecturerDashboard() {
     if (!deadlineModalThesis?.id) return;
     setSavingDeadlines(true);
     try {
-      const { updateThesis } = await import("@/lib/db/theses");
       const dData = {
         advisor: deadlineAdvisor ? new Date(deadlineAdvisor).getTime() : null,
         committee: deadlineCommittee ? new Date(deadlineCommittee).getTime() : null,
@@ -362,7 +364,6 @@ export default function LecturerDashboard() {
         setActiveWorkspace(prev => prev ? { ...prev, thesis: { ...prev.thesis, deadlines: dData } } : null);
       }
       setDeadlineModalThesis(null);
-      await loadData();
     } catch (err) {
       alert("Failed to update deadlines.");
     }
@@ -373,7 +374,6 @@ export default function LecturerDashboard() {
     if (!topicReviewThesis || !topicReviewThesis.id || !user?.email) return;
     setTopicReviewActionLoading(true);
     try {
-      const { approveTopicEdits } = await import("@/lib/db/theses");
       await approveTopicEdits(topicReviewThesis.id, topicReviewThesis.pendingAbstract || "", topicReviewThesis.pendingScope || "");
 
       await logThesisActivity({
@@ -396,7 +396,6 @@ export default function LecturerDashboard() {
         }
       }
       setTopicReviewThesis(null);
-      await loadData();
     } catch (err: any) {
       alert(`Failed to approve edits: ${err.message}`);
     }
@@ -407,7 +406,6 @@ export default function LecturerDashboard() {
     if (!topicReviewThesis || !topicReviewThesis.id || !user?.email) return;
     setTopicReviewActionLoading(true);
     try {
-      const { rejectTopicEdits } = await import("@/lib/db/theses");
       await rejectTopicEdits(topicReviewThesis.id);
 
       await logThesisActivity({
@@ -430,7 +428,6 @@ export default function LecturerDashboard() {
         }
       }
       setTopicReviewThesis(null);
-      await loadData();
     } catch (err: any) {
       alert(`Failed to reject edits: ${err.message}`);
     }

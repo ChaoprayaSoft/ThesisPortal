@@ -8,6 +8,7 @@ import {
   updateThesis, 
   logThesisActivity, 
   getThesisActivities, 
+  subscribeToThesisActivities,
   ThesisData, 
   ThesisActivity, 
   updateThesisStatus, 
@@ -67,27 +68,44 @@ export default function StudentDashboard() {
   const [isLate, setIsLate] = useState(false);
 
   useEffect(() => {
+    // Load lecturers once on mount
+    getLecturers().then(allLecturers => {
+      const map: Record<string, UserData> = {};
+      allLecturers.forEach((l: any) => map[l.email] = l);
+      setLecturersMap(map);
+    }).catch(console.error);
+  }, []);
+
+  useEffect(() => {
     if (user?.email) {
-      const unsubscribe = subscribeToThesesByStudent(user.email, async (data) => {
+      let actUnsubscribe: (() => void) | null = null;
+      let currentThesisId: string | null = null;
+
+      const unsubscribe = subscribeToThesesByStudent(user.email, (data) => {
         if (data.length > 0) {
           const myThesis = data[0];
           setThesis(myThesis);
           setEditAbstract(myThesis.pendingAbstract || myThesis.abstract);
           setEditScope(myThesis.pendingScope || myThesis.scope);
 
-          const acts = await getThesisActivities(myThesis.id!);
-          setActivities(acts);
-
-          const allLecturers = await getLecturers();
-          const map: Record<string, UserData> = {};
-          allLecturers.forEach((l: any) => map[l.email] = l);
-          setLecturersMap(map);
+          if (myThesis.id && myThesis.id !== currentThesisId) {
+            currentThesisId = myThesis.id;
+            if (actUnsubscribe) actUnsubscribe();
+            actUnsubscribe = subscribeToThesisActivities(myThesis.id, (acts) => {
+              setActivities(acts);
+            });
+          }
         } else {
           setThesis(null);
+          setActivities([]);
         }
         setLoading(false);
       });
-      return () => unsubscribe();
+
+      return () => {
+        unsubscribe();
+        if (actUnsubscribe) actUnsubscribe();
+      };
     }
   }, [user]);
 

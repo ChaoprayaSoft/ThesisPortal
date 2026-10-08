@@ -1,5 +1,19 @@
 import { db } from "../firebase";
-import { collection, doc, setDoc, getDocs, getDoc, updateDoc, query, where, orderBy, onSnapshot, deleteField, deleteDoc } from "firebase/firestore";
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  getDocs, 
+  getDoc, 
+  updateDoc, 
+  query, 
+  where, 
+  orderBy, 
+  onSnapshot, 
+  deleteField, 
+  deleteDoc,
+  writeBatch 
+} from "firebase/firestore";
 
 export type ThesisStatus = "Preparing" | "Pending Advisor" | "Pending Committee" | "Pending Chairperson" | "Pending Sign. Advisor" | "Pending Sign. Committee" | "Pending Sign. Chairperson" | "Graduate" | "Revise";
 
@@ -62,23 +76,23 @@ export async function createThesis(thesis: ThesisData) {
 export async function getThesesByStudent(studentIdOrEmail: string) {
   const q = query(collection(db, "theses"), where("studentUids", "array-contains", studentIdOrEmail));
   const snapshot = await getDocs(q);
-  return snapshot.docs.map(d => d.data() as ThesisData);
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ThesisData));
 }
 
 export async function getThesesByLecturer(email: string) {
   const snapshot = await getDocs(collection(db, "theses"));
   const allTheses = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ThesisData));
   return allTheses.filter(t => 
-    t.lecturerUids.advisor === email || 
-    t.lecturerUids.committees.includes(email) || 
-    t.lecturerUids.chairperson === email ||
+    t.lecturerUids?.advisor === email || 
+    t.lecturerUids?.committees?.includes(email) || 
+    t.lecturerUids?.chairperson === email ||
     t.equipmentChecker === email
   );
 }
 
 export async function getAllTheses() {
   const snapshot = await getDocs(collection(db, "theses"));
-  return snapshot.docs.map(d => d.data() as ThesisData);
+  return snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ThesisData));
 }
 
 export function subscribeToThesesByStudent(studentIdOrEmail: string, callback: (theses: ThesisData[]) => void) {
@@ -92,9 +106,9 @@ export function subscribeToThesesByLecturer(email: string, callback: (theses: Th
   return onSnapshot(collection(db, "theses"), (snapshot) => {
     const allTheses = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ThesisData));
     const filtered = allTheses.filter(t => 
-      t.lecturerUids.advisor === email || 
-      t.lecturerUids.committees.includes(email) || 
-      t.lecturerUids.chairperson === email ||
+      t.lecturerUids?.advisor === email || 
+      t.lecturerUids?.committees?.includes(email) || 
+      t.lecturerUids?.chairperson === email ||
       t.equipmentChecker === email
     );
     callback(filtered);
@@ -102,41 +116,44 @@ export function subscribeToThesesByLecturer(email: string, callback: (theses: Th
 }
 
 export async function deleteThesis(id: string) {
-  const { deleteDoc, collection, query, where, getDocs } = await import("firebase/firestore");
-  
-  // 1. Delete all activity logs associated with this thesis
+  // 1. Delete all activity logs associated with this thesis using writeBatch
   const activitiesQuery = query(collection(db, "thesisActivities"), where("thesisId", "==", id));
   const activitiesSnapshot = await getDocs(activitiesQuery);
-  for (const docSnap of activitiesSnapshot.docs) {
-    await deleteDoc(docSnap.ref);
-  }
+  
+  const batch = writeBatch(db);
+  activitiesSnapshot.docs.forEach((docSnap) => {
+    batch.delete(docSnap.ref);
+  });
 
-  // 2. Try to delete legacy storage folders (manuscripts and reviews)
+  // Delete the thesis document in the same batch
+  batch.delete(doc(db, "theses", id));
+  await batch.commit();
+
+  // 2. Try to clean up legacy storage folders if any exist
   try {
     const { ref, listAll, deleteObject } = await import("firebase/storage");
     const { storage } = await import("../firebase");
     
-    // Helper to delete all files in a folder
     const deleteFolder = async (folderPath: string) => {
       const folderRef = ref(storage, folderPath);
       const res = await listAll(folderRef);
-      for (const itemRef of res.items) {
-        await deleteObject(itemRef);
-      }
+      await Promise.all(res.items.map(itemRef => deleteObject(itemRef)));
     };
     
-    await deleteFolder(`manuscripts/${id}`);
-    await deleteFolder(`reviews/${id}`);
+    await Promise.allSettled([
+      deleteFolder(`manuscripts/${id}`),
+      deleteFolder(`reviews/${id}`)
+    ]);
   } catch (err) {
-    console.log("No legacy storage files found or error deleting them:", err);
+    // Storage cleanup is best-effort and should not block deletion
   }
-
-  // 3. Delete the thesis itself
-  await deleteDoc(doc(db, "theses", id));
 }
 
 export async function updateThesis(id: string, data: Partial<ThesisData>) {
-  await updateDoc(doc(db, "theses", id), data);
+  await updateDoc(doc(db, "theses", id), {
+    ...data,
+    statusUpdatedAt: Date.now()
+  });
 }
 
 export async function updateThesisStatus(thesisId: string, status: ThesisStatus, stage: number) {
@@ -144,13 +161,13 @@ export async function updateThesisStatus(thesisId: string, status: ThesisStatus,
 }
 
 export function getDisplayStatus(t: ThesisData): string {
-  if (t.status === "Pending Committee" && t.lecturerUids.committees.length > 1) {
+  if (t.status === "Pending Committee" && t.lecturerUids?.committees?.length > 1) {
     const unapprovedIdx = t.lecturerUids.committees.findIndex(c => !(t.committeeApprovals || []).includes(c));
     if (unapprovedIdx !== -1) {
       return `Pending Committee #${unapprovedIdx + 1}`;
     }
   }
-  if (t.status === "Pending Sign. Committee" && t.lecturerUids.committees.length > 1) {
+  if (t.status === "Pending Sign. Committee" && t.lecturerUids?.committees?.length > 1) {
     const unapprovedIdx = t.lecturerUids.committees.findIndex(c => !(t.committeeSignApprovals || []).includes(c));
     if (unapprovedIdx !== -1) {
       return `Pending Sign. Committee #${unapprovedIdx + 1}`;
@@ -163,8 +180,9 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
   const baseRole = role.startsWith("Committee") ? "Committee" : role;
   let newStatus = currentThesis.status;
   let newStage = currentThesis.currentStage;
-  let newCommitteeApprovals = currentThesis.committeeApprovals || [];
-  let newCommitteeSignApprovals = currentThesis.committeeSignApprovals || [];
+  let newCommitteeApprovals = [...(currentThesis.committeeApprovals || [])];
+  let newCommitteeSignApprovals = [...(currentThesis.committeeSignApprovals || [])];
+  let additionalUpdates: Record<string, any> = {};
 
   if (baseRole === "Advisor" && currentThesis.status === "Pending Advisor") {
     newStatus = "Preparing";
@@ -173,7 +191,7 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
     if (!newCommitteeApprovals.includes(userEmail)) {
       newCommitteeApprovals.push(userEmail);
     }
-    const allApproved = currentThesis.lecturerUids.committees.every(email => newCommitteeApprovals.includes(email));
+    const allApproved = (currentThesis.lecturerUids?.committees || []).every(email => newCommitteeApprovals.includes(email));
     if (allApproved) {
       newStatus = "Preparing";
       newStage = 2;
@@ -181,17 +199,8 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
   } else if (baseRole === "Chairperson" && currentThesis.status === "Pending Chairperson") {
     newStatus = "Preparing";
     newStage = 3;
-    // Set equipment check to pending when transitioning to stage 3
-    if (currentThesis.equipmentChecker) {
-      await updateDoc(doc(db, "theses", thesisId), {
-        equipmentCheckStatus: "Pending Request"
-      });
-    } else {
-      // If no equipment checker was assigned, just default to Approved so they don't get stuck
-      await updateDoc(doc(db, "theses", thesisId), {
-        equipmentCheckStatus: "Approved"
-      });
-    }
+    // Set equipment check status atomically in the single update
+    additionalUpdates.equipmentCheckStatus = currentThesis.equipmentChecker ? "Pending Request" : "Approved";
   } else if (baseRole === "Advisor" && currentThesis.status === "Pending Sign. Advisor") {
     newStatus = "Preparing";
     newStage = 4;
@@ -199,7 +208,7 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
     if (!newCommitteeSignApprovals.includes(userEmail)) {
       newCommitteeSignApprovals.push(userEmail);
     }
-    const allApproved = currentThesis.lecturerUids.committees.every(email => newCommitteeSignApprovals.includes(email));
+    const allApproved = (currentThesis.lecturerUids?.committees || []).every(email => newCommitteeSignApprovals.includes(email));
     if (allApproved) {
       newStatus = "Preparing";
       newStage = 5;
@@ -216,7 +225,8 @@ export async function approveThesis(thesisId: string, userEmail: string, role: s
     currentStage: newStage,
     committeeApprovals: newCommitteeApprovals,
     committeeSignApprovals: newCommitteeSignApprovals,
-    statusUpdatedAt: Date.now()
+    statusUpdatedAt: Date.now(),
+    ...additionalUpdates
   });
 }
 
@@ -235,7 +245,8 @@ export function getStatusForStage(stage: number): ThesisStatus {
 
 export async function rejectThesis(thesisId: string) {
   await updateDoc(doc(db, "theses", thesisId), {
-    status: "Revise"
+    status: "Revise",
+    statusUpdatedAt: Date.now()
   });
 }
 
@@ -250,8 +261,16 @@ export async function getThesisActivities(thesisId: string) {
   const q = query(collection(db, "thesisActivities"), where("thesisId", "==", thesisId));
   const snapshot = await getDocs(q);
   // Sort descending by timestamp (newest first)
-  const activities = snapshot.docs.map(d => d.data() as ThesisActivity);
+  const activities = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ThesisActivity));
   return activities.sort((a, b) => b.timestamp - a.timestamp);
+}
+
+export function subscribeToThesisActivities(thesisId: string, callback: (activities: ThesisActivity[]) => void) {
+  const q = query(collection(db, "thesisActivities"), where("thesisId", "==", thesisId));
+  return onSnapshot(q, (snapshot) => {
+    const activities = snapshot.docs.map(d => ({ id: d.id, ...d.data() } as ThesisActivity));
+    callback(activities.sort((a, b) => b.timestamp - a.timestamp));
+  });
 }
 
 export async function approveTopicEdits(thesisId: string, newAbstract: string, newScope: string) {
