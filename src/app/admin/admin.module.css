@@ -374,12 +374,12 @@
 /* ── Buttons ─────────────────────────────────────────────── */
 .btnPrimary {
   background: var(--primary-color);
-  color: var(--btn-primary-text, #0e2c42);
+  color: var(--btn-primary-text, #ffffff);
   border: none;
   padding: 9px 20px;
   border-radius: var(--radius-sm);
   font-size: 0.9rem;
-  font-weight: 700;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.18s ease;
   display: inline-flex;
@@ -387,12 +387,12 @@
   justify-content: center;
   gap: 8px;
   font-family: inherit;
-  box-shadow: 0 2px 8px rgba(231, 191, 64, 0.28);
+  box-shadow: 0 2px 8px rgba(14, 44, 66, 0.20);
 }
 
 .btnPrimary:hover:not(:disabled) {
   background: var(--primary-hover);
-  box-shadow: 0 4px 14px rgba(231, 191, 64, 0.38);
+  box-shadow: 0 4px 14px rgba(14, 44, 66, 0.30);
   transform: translateY(-1px);
 }
 
