@@ -47,10 +47,8 @@
   letter-spacing: -0.03em;
 }
 
-.gradientText {
-  background: linear-gradient(135deg, var(--text-main) 0%, var(--primary-color) 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+.brandText {
+  color: var(--primary-color);
 }
 
 .subtitle {

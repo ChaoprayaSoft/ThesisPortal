@@ -117,7 +117,7 @@ export default function LecturersPage() {
       </div>
 
       {showCreateForm && (
-        <div className={styles.card} style={{ border: "1.5px solid var(--primary-border)", background: "linear-gradient(135deg, #ffffff 0%, var(--primary-lighter) 100%)" }}>
+        <div className={styles.card} style={{ border: "1.5px solid var(--primary-border)", background: "var(--bg-card)" }}>
           <h2>Register New Faculty Member</h2>
           <form onSubmit={handleAddLecturer}>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "16px" }}>

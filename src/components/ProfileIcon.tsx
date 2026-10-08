@@ -59,7 +59,7 @@ export default function ProfileIcon({ dbUser, user, defaultLetter = "U", size = 
           width: size, 
           height: size, 
           borderRadius: "50%", 
-          background: profileImageUrl ? "transparent" : "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", 
+          background: profileImageUrl ? "transparent" : "var(--primary-color)", 
           color: "#ffffff", 
           display: "flex", 
           justifyContent: "center", 

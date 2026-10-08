@@ -11,7 +11,7 @@ export default function Home() {
           </div>
 
           <h1 className={styles.title}>
-            <span className={styles.gradientText}>Thesis Portal</span>
+            <span className={styles.brandText}>Thesis Portal</span>
           </h1>
 
           <p className={styles.subtitle}>

@@ -232,7 +232,7 @@ export default function AdminDashboard() {
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "18px" }}>
             <div 
               className={styles.card} 
-              style={{ padding: "22px 24px", cursor: "pointer", background: "linear-gradient(135deg, #ffffff 0%, var(--primary-lighter) 100%)", borderColor: "var(--primary-border)" }}
+              style={{ padding: "22px 24px", cursor: "pointer", background: "var(--bg-card)", borderColor: "var(--primary-border)" }}
               onClick={() => setActiveKpiModal("Theses")}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
@@ -246,7 +246,7 @@ export default function AdminDashboard() {
 
             <div 
               className={styles.card} 
-              style={{ padding: "22px 24px", cursor: "pointer", background: "linear-gradient(135deg, #ffffff 0%, var(--success-bg) 100%)", borderColor: "var(--success-border)" }}
+              style={{ padding: "22px 24px", cursor: "pointer", background: "var(--bg-card)", borderColor: "var(--success-border)" }}
               onClick={() => setActiveKpiModal("Groups")}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
@@ -260,7 +260,7 @@ export default function AdminDashboard() {
 
             <div 
               className={styles.card} 
-              style={{ padding: "22px 24px", cursor: "pointer", background: "linear-gradient(135deg, #ffffff 0%, var(--purple-bg) 100%)", borderColor: "var(--purple-border)" }}
+              style={{ padding: "22px 24px", cursor: "pointer", background: "var(--bg-card)", borderColor: "var(--purple-border)" }}
               onClick={() => setActiveKpiModal("Lecturers")}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>
@@ -274,7 +274,7 @@ export default function AdminDashboard() {
 
             <div 
               className={styles.card} 
-              style={{ padding: "22px 24px", cursor: "pointer", background: "linear-gradient(135deg, #ffffff 0%, var(--danger-bg) 100%)", borderColor: "var(--danger-border)" }}
+              style={{ padding: "22px 24px", cursor: "pointer", background: "var(--bg-card)", borderColor: "var(--danger-border)" }}
               onClick={() => setActiveKpiModal("Late")}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "10px" }}>

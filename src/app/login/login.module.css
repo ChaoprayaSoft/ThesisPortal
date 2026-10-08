@@ -13,29 +13,9 @@
   overflow: hidden;
 }
 
-/* Ambient Pastel Orbs */
-.aurora1 {
-  position: absolute;
-  top: -15%;
-  right: -5%;
-  width: 550px;
-  height: 550px;
-  background: radial-gradient(circle, rgba(199, 210, 254, 0.45) 0%, rgba(238, 242, 255, 0) 70%);
-  border-radius: 50%;
-  filter: blur(45px);
-  pointer-events: none;
-}
-
-.aurora2 {
-  position: absolute;
-  bottom: -10%;
-  left: -5%;
-  width: 480px;
-  height: 480px;
-  background: radial-gradient(circle, rgba(254, 205, 211, 0.35) 0%, rgba(255, 241, 242, 0) 70%);
-  border-radius: 50%;
-  filter: blur(45px);
-  pointer-events: none;
+/* Ambient Pastel Background Elements */
+.aurora1, .aurora2 {
+  display: none;
 }
 
 .card {
@@ -79,11 +59,8 @@
   color: var(--text-main);
 }
 
-.gradientText {
-  background: linear-gradient(135deg, #4f46e5 0%, #8b5cf6 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+.brandText {
+  color: var(--primary-color);
 }
 
 .subtitle {

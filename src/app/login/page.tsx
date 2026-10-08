@@ -50,7 +50,7 @@ export default function LoginPage() {
         </div>
 
         <h1 className={styles.title}>
-          Welcome to <span className={styles.gradientText}>Thesis Portal</span>
+          Welcome to <span className={styles.brandText}>Thesis Portal</span>
         </h1>
         <p className={styles.subtitle}>Sign in with your university Google account to access your workspace</p>
 
