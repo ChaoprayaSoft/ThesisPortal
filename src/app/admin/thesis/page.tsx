@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import styles from "../admin.module.css";
 import { useAuth } from "@/components/AuthProvider";
 import { getLecturers, UserData } from "@/lib/db/users";
@@ -12,6 +12,22 @@ export default function AdminThesisPage() {
   const [lecturers, setLecturers] = useState<UserData[]>([]);
   const [groups, setGroups] = useState<StudentGroup[]>([]);
   const [theses, setTheses] = useState<any[]>([]);
+
+  // Unique years for filtering
+  const availableYears = useMemo(() => {
+    const yearsSet = new Set<string>();
+    theses.forEach(t => {
+      if (t.year && String(t.year).trim()) {
+        yearsSet.add(String(t.year).trim());
+      }
+    });
+    const currentBE = new Date().getFullYear() + 543;
+    yearsSet.add(String(currentBE));
+    yearsSet.add(String(currentBE - 1));
+    yearsSet.add(String(currentBE - 2));
+    yearsSet.add(String(currentBE + 1));
+    return Array.from(yearsSet).sort((a, b) => Number(b) - Number(a));
+  }, [theses]);
 
   // Pagination State
   const [currentPage, setCurrentPage] = useState(1);
@@ -631,13 +647,16 @@ export default function AdminThesisPage() {
             <option value="Graduate">Graduate</option>
             <option value="Revise">Revise</option>
           </select>
-          <input
-            type="number"
-            placeholder="Year (e.g. 2569)"
-            value={filterYear}
-            onChange={e => setFilterYear(e.target.value)}
+          <select 
+            value={filterYear} 
+            onChange={e => setFilterYear(e.target.value)} 
             style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)" }}
-          />
+          >
+            <option value="">All Years</option>
+            {availableYears.map(y => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
           <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)" }}>
             <option value="">All Fields</option>
             <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
