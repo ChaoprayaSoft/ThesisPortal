@@ -257,6 +257,16 @@ export default function AdminThesisPage() {
     setLoading(false);
   };
 
+  const getStageBadgeStyle = (status: string, stage: number) => {
+    if (status === "Graduate") return { bg: "var(--success-light)", text: "var(--success-color)", border: "var(--mint-border)" };
+    if (status === "Revise") return { bg: "var(--danger-light)", text: "var(--danger-color)", border: "var(--rose-border)" };
+    if (stage === 0) return { bg: "var(--primary-light)", text: "var(--primary-color)", border: "var(--primary-border)" };
+    if (stage === 1) return { bg: "var(--purple-light)", text: "var(--purple-color)", border: "var(--lilac-border)" };
+    if (stage === 2) return { bg: "var(--info-light)", text: "var(--info-color)", border: "var(--sky-border)" };
+    if (stage >= 3 && stage <= 5) return { bg: "var(--warning-light)", text: "var(--warning-color)", border: "var(--peach-border)" };
+    return { bg: "var(--bg-subtle)", text: "var(--text-muted)", border: "var(--border-color)" };
+  };
+
   const renderUserModal = () => {
     if (!showUserModal.isOpen) return null;
 
@@ -295,37 +305,45 @@ export default function AdminThesisPage() {
     };
 
     return (
-      <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1100, padding: "20px" }}>
-        <div style={{ background: "#fff", width: "500px", maxWidth: "100%", borderRadius: "8px", padding: "20px", display: "flex", flexDirection: "column", maxHeight: "80vh", boxShadow: "0 10px 25px rgba(0,0,0,0.2)" }}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-            <h3 style={{ margin: 0, color: "#4A4238" }}>
+      <div className={styles.modalOverlay} style={{ zIndex: 1100 }} onClick={() => { setShowUserModal({ ...showUserModal, isOpen: false }); setUserSearchQuery(""); }}>
+        <div className={styles.modalContent} style={{ width: "540px", maxWidth: "100%", maxHeight: "80vh", display: "flex", flexDirection: "column" }} onClick={e => e.stopPropagation()}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+            <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: 700, color: "var(--text-main)" }}>
               {showUserModal.type === "student" ? "Select Student" : `Select ${showUserModal.type.charAt(0).toUpperCase() + showUserModal.type.slice(1)}`}
             </h3>
-            <button type="button" onClick={() => { setShowUserModal({ ...showUserModal, isOpen: false }); setUserSearchQuery(""); }} style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.2rem", color: "#64748b" }}>&times;</button>
+            <button
+              type="button"
+              onClick={() => { setShowUserModal({ ...showUserModal, isOpen: false }); setUserSearchQuery(""); }}
+              className={styles.modalClose}
+            >
+              &times;
+            </button>
           </div>
           <input
             type="text"
             placeholder="Search by name, ID, or email..."
             value={userSearchQuery}
             onChange={e => setUserSearchQuery(e.target.value)}
-            style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #ccc", marginBottom: "15px", fontSize: "1rem" }}
+            style={{ width: "100%", padding: "12px 14px", borderRadius: "10px", border: "1px solid var(--border-color)", marginBottom: "16px", fontSize: "0.95rem", background: "var(--bg-subtle)" }}
             autoFocus
           />
-          <div style={{ flex: 1, overflowY: "auto", border: "1px solid #eee", borderRadius: "6px" }}>
+          <div style={{ flex: 1, overflowY: "auto", border: "1px solid var(--border-color)", borderRadius: "10px", background: "var(--bg-card)" }}>
             {filteredList.map(item => (
               <div
                 key={item.email}
                 onClick={() => handleSelect(item.email)}
-                style={{ padding: "12px", borderBottom: "1px solid #eee", cursor: "pointer" }}
+                style={{ padding: "12px 16px", borderBottom: "1px solid var(--border-color)", cursor: "pointer", transition: "background 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.background = "var(--primary-light)"}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
               >
-                <div style={{ fontWeight: "bold", color: "#1e293b" }}>
+                <div style={{ fontWeight: 600, color: "var(--text-main)", fontSize: "0.95rem" }}>
                   {showUserModal.type === "student" ? `${item.studentId} - ${item.name}` : `${item.name_th || item.name_en || item.email}`}
                 </div>
-                <div style={{ fontSize: "0.85rem", color: "#64748b" }}>{item.email}</div>
+                <div style={{ fontSize: "0.825rem", color: "var(--text-muted)", marginTop: "2px" }}>{item.email}</div>
               </div>
             ))}
             {filteredList.length === 0 && (
-              <div style={{ padding: "20px", textAlign: "center", color: "#94a3b8" }}>No results found.</div>
+              <div style={{ padding: "28px", textAlign: "center", color: "var(--text-muted)", fontSize: "0.9rem" }}>No matching members found.</div>
             )}
           </div>
         </div>
@@ -337,15 +355,22 @@ export default function AdminThesisPage() {
     <div>
       {renderUserModal()}
       <div className={styles.pageHeader}>
-        <h1>Manage Theses</h1>
+        <div>
+          <h1>Manage Theses</h1>
+          <p className={styles.subtitle}>Supervise student thesis projects, assign committee panels, and track milestone workflows.</p>
+        </div>
       </div>
 
       <div className={styles.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showCreateForm ? "20px" : "0" }}>
-          <h2 style={{ margin: 0 }}>{editThesisId ? "Edit Thesis" : "Create New Thesis"}</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showCreateForm ? "24px" : "0" }}>
+          <div>
+            <h2 style={{ margin: 0 }}>{editThesisId ? "Edit Thesis" : "Create New Thesis"}</h2>
+            <p style={{ margin: "4px 0 0", fontSize: "0.875rem", color: "var(--text-muted)" }}>
+              {editThesisId ? "Update thesis metadata, deadlines, and panel assignments" : "Initialize a new project and assign student candidates and reviewer panels"}
+            </p>
+          </div>
           <button onClick={() => {
             if (showCreateForm) {
-              // Canceling
               setTitle(""); setAbstract(""); setScope("");
               setYear((new Date().getFullYear() + 543).toString()); setFieldOfStudy("");
               setSelectedGroup(""); setSelectedStudents([]); setStudentToAdd("");
@@ -354,8 +379,8 @@ export default function AdminThesisPage() {
               setEditThesisId(null);
             }
             setShowCreateForm(!showCreateForm);
-          }} className={styles.btnPrimary} style={{ margin: 0, background: showCreateForm ? "#64748b" : undefined }}>
-            {showCreateForm ? "Cancel" : "Add New Thesis"}
+          }} className={showCreateForm ? styles.btnSecondary : styles.btnPrimary} style={{ margin: 0 }}>
+            {showCreateForm ? "Cancel" : "＋ Add New Thesis"}
           </button>
         </div>
 
@@ -363,39 +388,41 @@ export default function AdminThesisPage() {
           <form onSubmit={handleSubmit}>
             <div className={styles.formGroup}>
               <label>Title</label>
-              <input type="text" value={title} onChange={e => setTitle(e.target.value)} required />
+              <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Enter full thesis title in English or Thai" required />
             </div>
 
             <div className={styles.formGroup}>
               <label>Abstract</label>
-              <textarea rows={4} value={abstract} onChange={e => setAbstract(e.target.value)} required />
+              <textarea rows={4} value={abstract} onChange={e => setAbstract(e.target.value)} placeholder="Overview and summary of the research..." required />
             </div>
 
             <div className={styles.formGroup}>
               <label>Project Scope</label>
-              <textarea rows={4} value={scope} onChange={e => setScope(e.target.value)} required />
+              <textarea rows={4} value={scope} onChange={e => setScope(e.target.value)} placeholder="Key boundaries, deliverables, and methodology..." required />
             </div>
 
-            <div className={styles.formGroup}>
-              <label>Thesis Year (พ.ศ.)</label>
-              <input type="number" min="2500" max="2600" value={year} onChange={e => setYear(e.target.value)} required />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "20px" }}>
+              <div className={styles.formGroup}>
+                <label>Thesis Year (พ.ศ.)</label>
+                <input type="number" min="2500" max="2600" value={year} onChange={e => setYear(e.target.value)} required />
+              </div>
+
+              <div className={styles.formGroup}>
+                <label>Field of Study (แขนงวิชา)</label>
+                <select value={fieldOfStudy} onChange={e => setFieldOfStudy(e.target.value)} required>
+                  <option value="">-- Select Field of Study --</option>
+                  <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
+                  <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
+                  <option value="แขนงวิชาเครื่องมือวัดและควบคุม">แขนงวิชาเครื่องมือวัดและควบคุม</option>
+                  <option value="แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย">แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย</option>
+                  <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
+                  <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
+                </select>
+              </div>
             </div>
 
-            <div className={styles.formGroup}>
-              <label>Field of Study (แขนงวิชา)</label>
-              <select value={fieldOfStudy} onChange={e => setFieldOfStudy(e.target.value)} required>
-                <option value="">-- Select Field of Study --</option>
-                <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
-                <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
-                <option value="แขนงวิชาเครื่องมือวัดและควบคุม">แขนงวิชาเครื่องมือวัดและควบคุม</option>
-                <option value="แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย">แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย</option>
-                <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
-                <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
-              </select>
-            </div>
-
-            <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #ddd" }} />
-            <h3 style={{ marginBottom: "20px" }}>Assign Students</h3>
+            <hr style={{ margin: "28px 0", border: "0", borderTop: "1px solid var(--border-color)" }} />
+            <h3 style={{ marginBottom: "16px", color: "var(--text-main)", fontSize: "1.1rem" }}>👥 Assign Students</h3>
 
             <div className={styles.formGroup}>
               <label>Select Student Group</label>
@@ -407,13 +434,13 @@ export default function AdminThesisPage() {
 
             {currentGroup && (
               <div className={styles.formGroup}>
-                <label>Assign Students</label>
+                <label>Assigned Group Students</label>
 
-                <div style={{ marginBottom: "15px" }}>
+                <div style={{ marginBottom: "14px" }}>
                   <button
                     type="button"
-                    className={styles.btnPrimary}
-                    style={{ margin: 0, padding: "10px 20px", display: "flex", alignItems: "center", gap: "8px", background: "#f8fafc", color: "#475569", border: "1px solid #cbd5e1" }}
+                    className={styles.btnSecondary}
+                    style={{ margin: 0, padding: "8px 16px", display: "inline-flex", alignItems: "center", gap: "8px" }}
                     onClick={() => setShowUserModal({ type: "student", isOpen: true })}
                   >
                     🔍 Search & Add Student
@@ -422,27 +449,27 @@ export default function AdminThesisPage() {
 
                 {selectedStudents.length > 0 && (
                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <p style={{ fontSize: "0.85rem", color: "#64748b", margin: "0 0 5px 0", fontWeight: "bold", textTransform: "uppercase" }}>Assigned Students ({selectedStudents.length})</p>
+                    <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0 0 4px 0", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Selected Students ({selectedStudents.length})</p>
                     {selectedStudents.map(email => {
                       const s = currentGroup.students.find(st => st.email === email);
                       if (!s) {
                         return (
-                          <div key={email} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fef2f2", border: "1px solid #fca5a5", padding: "12px 16px", borderRadius: "6px" }}>
+                          <div key={email} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--danger-light)", border: "1px solid var(--rose-border)", padding: "12px 16px", borderRadius: "10px" }}>
                             <div>
-                              <span style={{ fontWeight: 600, color: "#991b1b", marginRight: "10px" }}>Unknown/Modified Student</span>
-                              <span style={{ fontSize: "0.85rem", color: "#b91c1c" }}>{email}</span>
+                              <span style={{ fontWeight: 600, color: "var(--danger-color)", marginRight: "10px" }}>Unknown/Modified Student</span>
+                              <span style={{ fontSize: "0.85rem", color: "var(--danger-color)" }}>{email}</span>
                             </div>
-                            <button type="button" onClick={() => setSelectedStudents(selectedStudents.filter(e => e !== email))} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: "0.85rem", textDecoration: "underline" }}>Remove</button>
+                            <button type="button" onClick={() => setSelectedStudents(selectedStudents.filter(e => e !== email))} style={{ background: "none", border: "none", color: "var(--danger-color)", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>Remove</button>
                           </div>
                         );
                       }
                       return (
-                        <div key={email} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "12px 16px", borderRadius: "6px" }}>
+                        <div key={email} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg-subtle)", border: "1px solid var(--border-color)", padding: "12px 16px", borderRadius: "10px" }}>
                           <div>
-                            <span style={{ fontWeight: 600, color: "#1e293b", marginRight: "10px" }}>{s.name} {s.name_en ? `(${s.name_en})` : ''}</span>
-                            <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{s.studentId} • {s.email}</span>
+                            <span style={{ fontWeight: 600, color: "var(--text-main)", marginRight: "10px" }}>{s.name} {s.name_en ? `(${s.name_en})` : ''}</span>
+                            <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{s.studentId} • {s.email}</span>
                           </div>
-                          <button type="button" onClick={() => setSelectedStudents(selectedStudents.filter(e => e !== email))} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: "0.85rem", textDecoration: "underline" }}>Remove</button>
+                          <button type="button" onClick={() => setSelectedStudents(selectedStudents.filter(e => e !== email))} style={{ background: "none", border: "none", color: "var(--danger-color)", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>Remove</button>
                         </div>
                       );
                     })}
@@ -451,53 +478,53 @@ export default function AdminThesisPage() {
               </div>
             )}
 
-            <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #ddd" }} />
-            <h3 style={{ marginBottom: "20px" }}>Assign Lecturers</h3>
+            <hr style={{ margin: "28px 0", border: "0", borderTop: "1px solid var(--border-color)" }} />
+            <h3 style={{ marginBottom: "16px", color: "var(--text-main)", fontSize: "1.1rem" }}>🎓 Assign Faculty Panel</h3>
 
             <div className={styles.formGroup}>
               <label>Advisor</label>
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <div style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #ccc", background: "#f8fafc", color: advisor ? "#0f172a" : "#94a3b8" }}>
+                <div style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", color: advisor ? "var(--text-main)" : "var(--text-muted)", fontSize: "0.95rem" }}>
                   {advisor ? (() => {
                     const l = lecturers.find(lec => lec.email === advisor);
                     return l ? `${l.name_th} (${l.email})` : advisor;
                   })() : "No Advisor Selected"}
                 </div>
-                <button type="button" className={styles.btnPrimary} style={{ margin: 0, padding: "10px 20px" }} onClick={() => setShowUserModal({ type: "advisor", isOpen: true })}>Search & Select</button>
+                <button type="button" className={styles.btnSecondary} style={{ margin: 0, padding: "10px 16px" }} onClick={() => setShowUserModal({ type: "advisor", isOpen: true })}>Search & Select</button>
               </div>
             </div>
 
             <div className={styles.formGroup}>
               <label>Committees</label>
-              <div style={{ marginBottom: "15px" }}>
-                <button type="button" className={styles.btnPrimary} style={{ margin: 0, padding: "10px 20px", display: "flex", alignItems: "center", gap: "8px", background: "#f8fafc", color: "#475569", border: "1px solid #cbd5e1" }} onClick={() => setShowUserModal({ type: "committee", isOpen: true })}>
+              <div style={{ marginBottom: "12px" }}>
+                <button type="button" className={styles.btnSecondary} style={{ margin: 0, padding: "8px 16px", display: "inline-flex", alignItems: "center", gap: "8px" }} onClick={() => setShowUserModal({ type: "committee", isOpen: true })}>
                   🔍 Search & Add Committee
                 </button>
               </div>
 
               {committees.length > 0 && (
                 <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                  <p style={{ fontSize: "0.85rem", color: "#64748b", margin: "0 0 5px 0", fontWeight: "bold", textTransform: "uppercase" }}>Assigned Committees ({committees.length})</p>
+                  <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", margin: "0 0 4px 0", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.04em" }}>Assigned Committees ({committees.length})</p>
                   {committees.map(email => {
                     const l = lecturers.find(lec => lec.email === email);
                     if (!l) {
                       return (
-                        <div key={email} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#fef2f2", border: "1px solid #fca5a5", padding: "12px 16px", borderRadius: "6px" }}>
+                        <div key={email} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--danger-light)", border: "1px solid var(--rose-border)", padding: "12px 16px", borderRadius: "10px" }}>
                           <div>
-                            <span style={{ fontWeight: 600, color: "#991b1b", marginRight: "10px" }}>Unknown/Modified Lecturer</span>
-                            <span style={{ fontSize: "0.85rem", color: "#b91c1c" }}>{email}</span>
+                            <span style={{ fontWeight: 600, color: "var(--danger-color)", marginRight: "10px" }}>Unknown/Modified Lecturer</span>
+                            <span style={{ fontSize: "0.85rem", color: "var(--danger-color)" }}>{email}</span>
                           </div>
-                          <button type="button" onClick={() => setCommittees(committees.filter(e => e !== email))} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: "0.85rem", textDecoration: "underline" }}>Remove</button>
+                          <button type="button" onClick={() => setCommittees(committees.filter(e => e !== email))} style={{ background: "none", border: "none", color: "var(--danger-color)", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>Remove</button>
                         </div>
                       );
                     }
                     return (
-                      <div key={email} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8fafc", border: "1px solid #e2e8f0", padding: "12px 16px", borderRadius: "6px" }}>
+                      <div key={email} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--bg-subtle)", border: "1px solid var(--border-color)", padding: "12px 16px", borderRadius: "10px" }}>
                         <div>
-                          <span style={{ fontWeight: 600, color: "#1e293b", marginRight: "10px" }}>{l.name_th} {l.name_en ? `(${l.name_en})` : ''}</span>
-                          <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{l.email}</span>
+                          <span style={{ fontWeight: 600, color: "var(--text-main)", marginRight: "10px" }}>{l.name_th} {l.name_en ? `(${l.name_en})` : ''}</span>
+                          <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{l.email}</span>
                         </div>
-                        <button type="button" onClick={() => setCommittees(committees.filter(e => e !== email))} style={{ background: "none", border: "none", color: "#dc2626", cursor: "pointer", fontSize: "0.85rem", textDecoration: "underline" }}>Remove</button>
+                        <button type="button" onClick={() => setCommittees(committees.filter(e => e !== email))} style={{ background: "none", border: "none", color: "var(--danger-color)", cursor: "pointer", fontSize: "0.85rem", fontWeight: 600 }}>Remove</button>
                       </div>
                     );
                   })}
@@ -508,70 +535,91 @@ export default function AdminThesisPage() {
             <div className={styles.formGroup}>
               <label>Chairperson</label>
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <div style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #ccc", background: "#f8fafc", color: chairperson ? "#0f172a" : "#94a3b8" }}>
+                <div style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", color: chairperson ? "var(--text-main)" : "var(--text-muted)", fontSize: "0.95rem" }}>
                   {chairperson ? (() => {
                     const l = lecturers.find(lec => lec.email === chairperson);
                     return l ? `${l.name_th} (${l.email})` : chairperson;
                   })() : "No Chairperson Selected"}
                 </div>
-                <button type="button" className={styles.btnPrimary} style={{ margin: 0, padding: "10px 20px" }} onClick={() => setShowUserModal({ type: "chairperson", isOpen: true })}>Search & Select</button>
+                <button type="button" className={styles.btnSecondary} style={{ margin: 0, padding: "10px 16px" }} onClick={() => setShowUserModal({ type: "chairperson", isOpen: true })}>Search & Select</button>
               </div>
             </div>
 
             <div className={styles.formGroup}>
               <label>Equipment Checker (Optional)</label>
               <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                <div style={{ flex: 1, padding: "10px", borderRadius: "4px", border: "1px solid #ccc", background: "#f8fafc", color: equipmentChecker ? "#0f172a" : "#94a3b8" }}>
+                <div style={{ flex: 1, padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", color: equipmentChecker ? "var(--text-main)" : "var(--text-muted)", fontSize: "0.95rem" }}>
                   {equipmentChecker ? (() => {
                     const l = lecturers.find(lec => lec.email === equipmentChecker);
                     return l ? `${l.name_th} (${l.email})` : equipmentChecker;
                   })() : "No Equipment Checker Selected"}
                 </div>
-                <button type="button" className={styles.btnPrimary} style={{ margin: 0, padding: "10px 20px" }} onClick={() => setShowUserModal({ type: "equipmentChecker", isOpen: true })}>Search & Select</button>
+                <button type="button" className={styles.btnSecondary} style={{ margin: 0, padding: "10px 16px" }} onClick={() => setShowUserModal({ type: "equipmentChecker", isOpen: true })}>Search & Select</button>
               </div>
             </div>
 
-            <hr style={{ margin: "30px 0", border: "0", borderTop: "1px solid #ddd" }} />
-            <h3 style={{ marginBottom: "20px" }}>Stage Deadlines (Optional)</h3>
+            <hr style={{ margin: "28px 0", border: "0", borderTop: "1px solid var(--border-color)" }} />
+            <h3 style={{ marginBottom: "16px", color: "var(--text-main)", fontSize: "1.1rem" }}>⏳ Stage Deadlines (Optional)</h3>
 
-            <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", marginBottom: "20px" }}>
-              <div className={styles.formGroup} style={{ flex: "1 1 200px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "16px", marginBottom: "24px" }}>
+              <div className={styles.formGroup}>
                 <label>Advisor Deadline</label>
                 <input type="datetime-local" value={deadlineAdvisor} onChange={e => setDeadlineAdvisor(e.target.value)} />
               </div>
-              <div className={styles.formGroup} style={{ flex: "1 1 200px" }}>
+              <div className={styles.formGroup}>
                 <label>Committee Deadline</label>
                 <input type="datetime-local" value={deadlineCommittee} onChange={e => setDeadlineCommittee(e.target.value)} />
               </div>
-              <div className={styles.formGroup} style={{ flex: "1 1 200px" }}>
+              <div className={styles.formGroup}>
                 <label>Chairperson Deadline</label>
                 <input type="datetime-local" value={deadlineChairperson} onChange={e => setDeadlineChairperson(e.target.value)} />
               </div>
             </div>
 
-            <button type="submit" className={styles.btnPrimary} disabled={loading}>
-              {loading ? "Saving..." : (editThesisId ? "Save Changes" : "Create Thesis & Assign Roles")}
+            <button type="submit" className={styles.btnPrimary} disabled={loading} style={{ width: "100%", padding: "14px" }}>
+              {loading ? "Saving..." : (editThesisId ? "💾 Save Changes" : "✨ Create Thesis & Assign Roles")}
             </button>
           </form>
         )}
       </div>
 
       <div className={styles.card}>
-        <h2>All Theses</h2>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
+          <div>
+            <h2 style={{ margin: 0 }}>All Theses</h2>
+            <p style={{ margin: "4px 0 0", fontSize: "0.875rem", color: "var(--text-muted)" }}>Filter and oversee all departmental thesis projects</p>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-muted)" }}>
+            <span>Show</span>
+            <select
+              value={itemsPerPage}
+              onChange={(e) => {
+                setItemsPerPage(Number(e.target.value));
+                setCurrentPage(1);
+              }}
+              style={{ padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", fontWeight: 600, color: "var(--text-main)" }}
+            >
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
+            <span>entries</span>
+          </div>
+        </div>
 
-        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", marginBottom: "20px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "10px", marginBottom: "20px" }}>
           <input
             type="text"
-            placeholder="Search by title..."
+            placeholder="🔍 Search title..."
             value={searchTitle}
             onChange={e => setSearchTitle(e.target.value)}
-            style={{ flex: "1 1 200px", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+            style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)" }}
           />
-          <select value={filterGroup} onChange={e => setFilterGroup(e.target.value)} style={{ flex: "1 1 150px", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}>
+          <select value={filterGroup} onChange={e => setFilterGroup(e.target.value)} style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)" }}>
             <option value="">All Groups</option>
             {groups.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}
           </select>
-          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ flex: "1 1 150px", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}>
+          <select value={filterStatus} onChange={e => setFilterStatus(e.target.value)} style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)" }}>
             <option value="">All Statuses</option>
             <option value="Preparing">Preparing</option>
             <option value="Pending Advisor">Pending Advisor</option>
@@ -588,9 +636,9 @@ export default function AdminThesisPage() {
             placeholder="Year (e.g. 2569)"
             value={filterYear}
             onChange={e => setFilterYear(e.target.value)}
-            style={{ flex: "1 1 120px", padding: "8px", borderRadius: "4px", border: "1px solid #ccc" }}
+            style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)" }}
           />
-          <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ flex: "1 1 200px", padding: "8px", borderRadius: "4px", border: "1px solid #ccc", maxWidth: "100%" }}>
+          <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ padding: "10px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)" }}>
             <option value="">All Fields</option>
             <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
             <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
@@ -599,63 +647,62 @@ export default function AdminThesisPage() {
             <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
             <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
           </select>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 12px", border: "1px solid #ccc", borderRadius: "4px", background: "#fff", flex: "0 1 auto", fontSize: "0.9rem", color: "#64748b" }}>
-            <span>Show</span>
-            <select
-              value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
-                setCurrentPage(1);
-              }}
-              style={{ border: "none", background: "transparent", outline: "none", cursor: "pointer", fontWeight: "bold", color: "#1e293b" }}
-            >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-            </select>
-            <span>per page</span>
-          </div>
         </div>
 
         {totalItems === 0 ? (
-          <p style={{ color: "#666", textAlign: "center", padding: "20px" }}>No theses found matching your criteria.</p>
+          <div style={{ textAlign: "center", padding: "40px 20px", color: "var(--text-muted)", background: "var(--bg-subtle)", borderRadius: "12px" }}>
+            <p style={{ margin: 0, fontSize: "1rem" }}>No theses match the current criteria.</p>
+          </div>
         ) : (
           <div>
             <div className={styles.tableResponsive}>
               <table className={`${styles.table} ${styles.thesisTable}`}>
                 <thead>
                 <tr>
-                  <th style={{ width: "20%" }}>Title</th>
+                  <th style={{ width: "26%" }}>Title</th>
                   <th style={{ width: "12%" }}>Group</th>
                   <th style={{ width: "8%" }}>Year</th>
-                  <th style={{ width: "15%" }}>Field</th>
-                  <th style={{ width: "22%" }}>Status</th>
-                  <th style={{ width: "23%" }}>Actions</th>
+                  <th style={{ width: "18%" }}>Field</th>
+                  <th style={{ width: "18%" }}>Status</th>
+                  <th style={{ width: "18%" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedTheses.map((t) => {
                   const groupName = groups.find(g => g.id === t.groupId)?.name || "Unknown Group";
+                  const badgeStyle = getStageBadgeStyle(t.status, t.currentStage);
                   return (
                     <tr key={t.id}>
-                      <td data-label="Title" style={{ wordBreak: "break-all" }}>
-                        <strong>{t.title}</strong>
+                      <td data-label="Title" style={{ wordBreak: "break-word" }}>
+                        <strong style={{ color: "var(--text-main)", fontSize: "0.95rem" }}>{t.title}</strong>
                         {getDeadlineDisplay(t)}
                       </td>
-                      <td data-label="Group">{groupName}</td>
+                      <td data-label="Group"><span style={{ fontWeight: 500 }}>{groupName}</span></td>
                       <td data-label="Year">{t.year || "-"}</td>
-                      <td data-label="Field">{t.fieldOfStudy || "-"}</td>
+                      <td data-label="Field" style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{t.fieldOfStudy || "-"}</td>
                       <td data-label="Status">
-                        <span style={{ display: "inline-block", padding: "4px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem" }}>
+                        <span style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "4px",
+                          padding: "4px 10px",
+                          background: badgeStyle.bg,
+                          color: badgeStyle.text,
+                          border: `1px solid ${badgeStyle.border}`,
+                          borderRadius: "999px",
+                          fontSize: "0.8rem",
+                          fontWeight: 600
+                        }}>
                           {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
                         </span>
                         {t.status === "Graduate" && t.graduateComment && (
-                          <div style={{ fontSize: "0.8rem", color: "#64748b", marginTop: "6px", wordBreak: "break-word" }}>
+                          <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", fontStyle: "italic" }}>
                             Reason: {t.graduateComment}
                           </div>
                         )}
                       </td>
                       <td data-label="Actions">
-                        <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+                        <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
                           <button
                             onClick={async () => {
                               setViewThesis(t);
@@ -668,9 +715,10 @@ export default function AdminThesisPage() {
                               }
                               setLoadingActivities(false);
                             }}
-                            style={{ background: "none", border: "1px solid #3b82f6", color: "#3b82f6", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
+                            className={styles.btnSecondary}
+                            style={{ padding: "4px 10px", fontSize: "0.775rem", margin: 0 }}
                           >
-                            View Detail
+                            Details
                           </button>
                           {t.status !== "Graduate" && (
                             <button
@@ -679,7 +727,16 @@ export default function AdminThesisPage() {
                                 setGraduateReason("");
                                 setShowGraduateModal(true);
                               }}
-                              style={{ background: "none", border: "1px solid #10b981", color: "#10b981", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
+                              style={{
+                                background: "var(--success-light)",
+                                color: "var(--success-color)",
+                                border: "1px solid var(--mint-border)",
+                                padding: "4px 10px",
+                                borderRadius: "6px",
+                                cursor: "pointer",
+                                fontSize: "0.775rem",
+                                fontWeight: 600
+                              }}
                             >
                               Graduate
                             </button>
@@ -698,7 +755,16 @@ export default function AdminThesisPage() {
                                 }
                               });
                             }}
-                            style={{ background: "none", border: "1px solid #dc2626", color: "#dc2626", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}
+                            style={{
+                              background: "var(--danger-light)",
+                              color: "var(--danger-color)",
+                              border: "1px solid var(--rose-border)",
+                              padding: "4px 10px",
+                              borderRadius: "6px",
+                              cursor: "pointer",
+                              fontSize: "0.775rem",
+                              fontWeight: 600
+                            }}
                           >
                             Delete
                           </button>
@@ -711,11 +777,11 @@ export default function AdminThesisPage() {
               </table>
             </div>
             {totalItems > 0 && (
-              <div className={styles.paginationContainer} style={{ justifyContent: "flex-end" }}>
+              <div className={styles.paginationContainer} style={{ justifyContent: "space-between" }}>
+                <span className={styles.paginationInfo}>
+                  Showing {startIndex + 1}-{endIndex} of {totalItems} (Page {activePage} of {totalPages})
+                </span>
                 <div className={styles.paginationControls}>
-                  <span className={styles.paginationInfo}>
-                    Showing {startIndex + 1}-{endIndex} of {totalItems} (Page {activePage} of {totalPages})
-                  </span>
                   <button
                     className={styles.paginationBtn}
                     onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
@@ -741,12 +807,13 @@ export default function AdminThesisPage() {
 
       {/* Confirmation Modal */}
       {confirmAction && (
-        <div className={styles.modalOverlay} style={{ zIndex: 1100 }}>
-          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "400px", textAlign: "center" }}>
-            <h3 style={{ marginTop: 0, marginBottom: "20px" }}>Confirm Action</h3>
-            <p style={{ color: "#666", marginBottom: "30px" }}>{confirmAction.message}</p>
-            <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
-              <button className={styles.btnPrimary} style={{ margin: 0, background: "#ccc", color: "#000", border: "1px solid #ccc" }} onClick={() => setConfirmAction(null)}>Cancel</button>
+        <div className={styles.modalOverlay} style={{ zIndex: 1100 }} onClick={() => setConfirmAction(null)}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "420px", textAlign: "center" }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: "2rem", marginBottom: "8px" }}>⚠️</div>
+            <h3 style={{ marginTop: 0, marginBottom: "12px", color: "var(--text-main)" }}>Confirm Action</h3>
+            <p style={{ color: "var(--text-muted)", marginBottom: "24px", fontSize: "0.95rem" }}>{confirmAction.message}</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+              <button className={styles.btnSecondary} style={{ margin: 0 }} onClick={() => setConfirmAction(null)}>Cancel</button>
               <button className={styles.btnPrimary} style={{ margin: 0 }} onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }}>Yes, proceed</button>
             </div>
           </div>
@@ -755,12 +822,13 @@ export default function AdminThesisPage() {
 
       {/* Info Modal */}
       {infoMessage && (
-        <div className={styles.modalOverlay} style={{ zIndex: 1200 }}>
-          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "400px", textAlign: "center" }}>
-            <h3 style={{ marginTop: 0, marginBottom: "20px", color: "#0f172a" }}>Notification</h3>
-            <p style={{ color: "#64748b", marginBottom: "30px" }}>{infoMessage}</p>
+        <div className={styles.modalOverlay} style={{ zIndex: 1200 }} onClick={() => setInfoMessage(null)}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "400px", textAlign: "center" }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: "2rem", marginBottom: "8px" }}>✨</div>
+            <h3 style={{ marginTop: 0, marginBottom: "12px", color: "var(--text-main)" }}>Notification</h3>
+            <p style={{ color: "var(--text-muted)", marginBottom: "24px", fontSize: "0.95rem" }}>{infoMessage}</p>
             <div style={{ display: "flex", justifyContent: "center" }}>
-              <button className={styles.btnPrimary} style={{ margin: 0 }} onClick={() => setInfoMessage(null)}>OK</button>
+              <button className={styles.btnPrimary} style={{ margin: 0, minWidth: "120px" }} onClick={() => setInfoMessage(null)}>OK</button>
             </div>
           </div>
         </div>
@@ -768,12 +836,15 @@ export default function AdminThesisPage() {
 
       {/* View Detail Modal */}
       {viewThesis && (
-        <div className={styles.modalOverlay} style={{ zIndex: 1050 }}>
-          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "600px", maxHeight: "80vh", overflowY: "auto" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid #eee", paddingBottom: "10px", marginBottom: "15px", flexWrap: "wrap", gap: "10px" }}>
-              <h2 style={{ margin: 0 }}>Thesis Details</h2>
-              <div style={{ display: "flex", gap: "10px" }}>
-                <button className={styles.btnPrimary} style={{ margin: 0, background: "#3b82f6", padding: "8px 16px", fontSize: "0.9rem" }} onClick={() => {
+        <div className={styles.modalOverlay} style={{ zIndex: 1050 }} onClick={() => setViewThesis(null)}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "680px", maxHeight: "85vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid var(--border-color)", paddingBottom: "16px", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
+              <div>
+                <h2 style={{ margin: "0 0 4px 0", fontSize: "1.3rem" }}>Thesis Details</h2>
+                <span style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>ID: {viewThesis.id}</span>
+              </div>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button className={styles.btnPrimary} style={{ margin: 0, padding: "8px 14px", fontSize: "0.85rem" }} onClick={() => {
                   setTitle(viewThesis.title);
                   setAbstract(viewThesis.abstract);
                   setScope(viewThesis.scope);
@@ -793,142 +864,148 @@ export default function AdminThesisPage() {
                   setShowCreateForm(true);
                   setViewThesis(null);
                   window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}>Edit Thesis</button>
-                <button className={styles.btnPrimary} style={{ margin: 0, background: "#64748b", padding: "8px 16px", fontSize: "0.9rem" }} onClick={() => setViewThesis(null)}>Close Details</button>
+                }}>✏️ Edit</button>
+                <button className={styles.btnSecondary} style={{ margin: 0, padding: "8px 14px", fontSize: "0.85rem" }} onClick={() => setViewThesis(null)}>Close</button>
               </div>
             </div>
-            <div style={{ marginBottom: "15px" }}><strong>Title:</strong> {viewThesis.title}</div>
-            <div style={{ marginBottom: "15px" }}><strong>Group:</strong> {groups.find(g => g.id === viewThesis.groupId)?.name}</div>
-            <div style={{ marginBottom: "15px" }}><strong>Status:</strong> <span style={{ padding: "2px 8px", background: "#f1f5f9", borderRadius: "4px", fontSize: "0.85rem" }}>{getDisplayStatus(viewThesis)}</span></div>
-            <div style={{ marginBottom: "15px" }}><strong>Year:</strong> {viewThesis.year || "-"}</div>
-            <div style={{ marginBottom: "15px" }}><strong>Field of Study:</strong> {viewThesis.fieldOfStudy || "-"}</div>
-            {(viewThesis.deadlines?.advisor || viewThesis.deadlines?.committee || viewThesis.deadlines?.chairperson) && (
-              <div style={{ marginBottom: "15px" }}>
-                <strong>Deadlines:</strong>
-                <ul style={{ paddingLeft: "20px", marginTop: "5px", color: "#475569" }}>
-                  {viewThesis.deadlines.advisor && <li><strong>Advisor:</strong> {new Date(viewThesis.deadlines.advisor).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</li>}
-                  {viewThesis.deadlines.committee && <li><strong>Committee:</strong> {new Date(viewThesis.deadlines.committee).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</li>}
-                  {viewThesis.deadlines.chairperson && <li><strong>Chairperson:</strong> {new Date(viewThesis.deadlines.chairperson).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</li>}
-                </ul>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px", fontSize: "0.95rem" }}>
+              <div>
+                <strong style={{ color: "var(--text-main)", display: "block", marginBottom: "4px" }}>Title:</strong>
+                <span style={{ color: "var(--text-main)", fontWeight: 500 }}>{viewThesis.title}</span>
               </div>
-            )}
-            <div style={{ marginBottom: "15px" }}><strong>Abstract:</strong> <p style={{ whiteSpace: "pre-wrap", margin: "5px 0", background: "#f8fafc", padding: "10px", borderRadius: "4px", border: "1px solid #e2e8f0" }}>{viewThesis.abstract}</p></div>
-            <div style={{ marginBottom: "15px" }}><strong>Scope:</strong> <p style={{ whiteSpace: "pre-wrap", margin: "5px 0", background: "#f8fafc", padding: "10px", borderRadius: "4px", border: "1px solid #e2e8f0" }}>{viewThesis.scope}</p></div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+                <div><strong>Group:</strong> <span style={{ color: "var(--text-muted)" }}>{groups.find(g => g.id === viewThesis.groupId)?.name}</span></div>
+                <div><strong>Year:</strong> <span style={{ color: "var(--text-muted)" }}>{viewThesis.year || "-"}</span></div>
+                <div><strong>Field of Study:</strong> <span style={{ color: "var(--text-muted)" }}>{viewThesis.fieldOfStudy || "-"}</span></div>
+                <div><strong>Status:</strong> <span style={{ padding: "2px 8px", background: "var(--primary-light)", color: "var(--primary-color)", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600 }}>{getDisplayStatus(viewThesis)}</span></div>
+              </div>
 
-            <hr style={{ margin: "20px 0", border: "0", borderTop: "1px solid #ddd" }} />
-
-            <div style={{ marginBottom: "15px" }}>
-              <strong>Assigned Students ({viewThesis.studentUids.length}):</strong>
-              <ul style={{ paddingLeft: "20px", marginTop: "5px", color: "#475569" }}>
-                {viewThesis.studentUids.map((email: string) => {
-                  const s = groups.find(g => g.id === viewThesis.groupId)?.students.find(st => st.email === email);
-                  return <li key={email}>{s ? `${s.name} ${s.name_en ? `(${s.name_en})` : ''} - ` : ''}{email}</li>;
-                })}
-              </ul>
-            </div>
-
-            <div style={{ marginBottom: "15px" }}>
-              <strong>Assigned Lecturers:</strong>
-              <ul style={{ paddingLeft: "20px", marginTop: "5px", color: "#475569" }}>
-                <li>
-                  <strong>Chairperson:</strong> {lecturers.find(l => l.email === viewThesis.lecturerUids.chairperson)?.name_th || ""} - {viewThesis.lecturerUids.chairperson}
-                </li>
-                <li>
-                  <strong>Committees:</strong>
-                  <ul style={{ paddingLeft: "20px", marginTop: "4px" }}>
-                    {viewThesis.lecturerUids.committees.map((email: string, idx: number) => (
-                      <li key={email}>{viewThesis.lecturerUids.committees.length > 1 ? `Committee #${idx + 1}: ` : ""}{lecturers.find(l => l.email === email)?.name_th || ""} - {email}</li>
-                    ))}
+              {(viewThesis.deadlines?.advisor || viewThesis.deadlines?.committee || viewThesis.deadlines?.chairperson) && (
+                <div style={{ background: "var(--warning-light)", padding: "12px 16px", borderRadius: "10px", border: "1px solid var(--peach-border)" }}>
+                  <strong style={{ color: "var(--warning-color)", fontSize: "0.875rem" }}>⏳ Stage Deadlines:</strong>
+                  <ul style={{ paddingLeft: "18px", margin: "6px 0 0 0", color: "var(--text-main)", fontSize: "0.85rem" }}>
+                    {viewThesis.deadlines.advisor && <li><strong>Advisor:</strong> {new Date(viewThesis.deadlines.advisor).toLocaleString('th-TH')}</li>}
+                    {viewThesis.deadlines.committee && <li><strong>Committee:</strong> {new Date(viewThesis.deadlines.committee).toLocaleString('th-TH')}</li>}
+                    {viewThesis.deadlines.chairperson && <li><strong>Chairperson:</strong> {new Date(viewThesis.deadlines.chairperson).toLocaleString('th-TH')}</li>}
                   </ul>
-                </li>
-                <li>
-                  <strong>Advisor:</strong> {lecturers.find(l => l.email === viewThesis.lecturerUids.advisor)?.name_th || ""} - {viewThesis.lecturerUids.advisor}
-                </li>
-              </ul>
-            </div>
-
-            <hr style={{ margin: "20px 0", border: "0", borderTop: "1px solid #ddd" }} />
-            
-            <div style={{ marginBottom: "15px" }}>
-              <strong>Activity History:</strong>
-              {loadingActivities ? (
-                <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "10px" }}>Loading activities...</p>
-              ) : thesisActivities.length === 0 ? (
-                <p style={{ color: "#64748b", fontSize: "0.9rem", marginTop: "10px" }}>No activity history found.</p>
-              ) : (
-                <div style={{ marginTop: "15px", display: "flex", flexDirection: "column", gap: "10px" }}>
-                  {thesisActivities.map(act => (
-                    <div key={act.id} style={{ padding: "10px", background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "6px" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
-                        <strong style={{ color: "#334155" }}>{act.type}</strong>
-                        <span style={{ fontSize: "0.8rem", color: "#64748b" }}>{new Date(act.timestamp).toLocaleString('th-TH')}</span>
-                      </div>
-                      <div style={{ fontSize: "0.85rem", color: "#475569", marginBottom: "5px" }}>
-                        By: {act.actorName || act.actorEmail} ({act.actorRole})
-                      </div>
-                      <div style={{ fontSize: "0.9rem" }}>{act.description}</div>
-                      {act.documentUrl && (
-                        <div style={{ marginTop: "5px" }}>
-                          <a href={act.documentUrl} target="_blank" rel="noopener noreferrer" style={{ color: "#3b82f6", fontSize: "0.85rem", textDecoration: "underline" }}>
-                            {act.documentName || "View Document"}
-                          </a>
-                        </div>
-                      )}
-                      {act.links && act.links.map((lnk: any, idx: number) => (
-                        <div key={idx} style={{ marginTop: "5px" }}>
-                          <a href={lnk.url} target="_blank" rel="noopener noreferrer" style={{ color: "#3b82f6", fontSize: "0.85rem", textDecoration: "underline" }}>
-                            {lnk.type} Link
-                          </a>
-                        </div>
-                      ))}
-                    </div>
-                  ))}
                 </div>
               )}
+
+              <div>
+                <strong style={{ color: "var(--text-main)" }}>Abstract:</strong>
+                <p style={{ whiteSpace: "pre-wrap", margin: "6px 0 0 0", background: "var(--bg-subtle)", padding: "12px 14px", borderRadius: "10px", border: "1px solid var(--border-color)", fontSize: "0.9rem", color: "var(--text-main)" }}>
+                  {viewThesis.abstract}
+                </p>
+              </div>
+
+              <div>
+                <strong style={{ color: "var(--text-main)" }}>Scope:</strong>
+                <p style={{ whiteSpace: "pre-wrap", margin: "6px 0 0 0", background: "var(--bg-subtle)", padding: "12px 14px", borderRadius: "10px", border: "1px solid var(--border-color)", fontSize: "0.9rem", color: "var(--text-main)" }}>
+                  {viewThesis.scope}
+                </p>
+              </div>
+
+              <hr style={{ margin: "16px 0", border: "0", borderTop: "1px solid var(--border-color)" }} />
+
+              <div>
+                <strong style={{ color: "var(--text-main)" }}>👥 Assigned Students ({viewThesis.studentUids.length}):</strong>
+                <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                  {viewThesis.studentUids.map((email: string) => {
+                    const s = groups.find(g => g.id === viewThesis.groupId)?.students.find(st => st.email === email);
+                    return (
+                      <div key={email} style={{ padding: "8px 12px", background: "var(--bg-subtle)", borderRadius: "8px", fontSize: "0.875rem", display: "flex", justifyContent: "space-between" }}>
+                        <span style={{ fontWeight: 600 }}>{s ? `${s.name} ${s.name_en ? `(${s.name_en})` : ''}` : email}</span>
+                        <span style={{ color: "var(--text-muted)" }}>{s?.studentId || email}</span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div>
+                <strong style={{ color: "var(--text-main)" }}>🎓 Assigned Lecturers:</strong>
+                <div style={{ marginTop: "8px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                  <div style={{ padding: "8px 12px", background: "var(--bg-subtle)", borderRadius: "8px", fontSize: "0.875rem" }}>
+                    <span style={{ color: "var(--primary-color)", fontWeight: 700 }}>Advisor:</span> {lecturers.find(l => l.email === viewThesis.lecturerUids.advisor)?.name_th || viewThesis.lecturerUids.advisor}
+                  </div>
+                  {viewThesis.lecturerUids.committees.map((email: string, idx: number) => (
+                    <div key={email} style={{ padding: "8px 12px", background: "var(--bg-subtle)", borderRadius: "8px", fontSize: "0.875rem" }}>
+                      <span style={{ color: "var(--purple-color)", fontWeight: 700 }}>Committee #{idx + 1}:</span> {lecturers.find(l => l.email === email)?.name_th || email}
+                    </div>
+                  ))}
+                  <div style={{ padding: "8px 12px", background: "var(--bg-subtle)", borderRadius: "8px", fontSize: "0.875rem" }}>
+                    <span style={{ color: "var(--info-color)", fontWeight: 700 }}>Chairperson:</span> {lecturers.find(l => l.email === viewThesis.lecturerUids.chairperson)?.name_th || viewThesis.lecturerUids.chairperson}
+                  </div>
+                </div>
+              </div>
+
+              <hr style={{ margin: "16px 0", border: "0", borderTop: "1px solid var(--border-color)" }} />
+              
+              <div>
+                <strong style={{ color: "var(--text-main)" }}>📜 Activity History:</strong>
+                {loadingActivities ? (
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginTop: "8px" }}>Loading activities...</p>
+                ) : thesisActivities.length === 0 ? (
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.875rem", marginTop: "8px" }}>No activity recorded yet.</p>
+                ) : (
+                  <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                    {thesisActivities.map(act => (
+                      <div key={act.id} style={{ padding: "10px 14px", background: "var(--bg-subtle)", border: "1px solid var(--border-color)", borderRadius: "8px" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
+                          <strong style={{ color: "var(--text-main)", fontSize: "0.875rem" }}>{act.type}</strong>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>{new Date(act.timestamp).toLocaleString('th-TH')}</span>
+                        </div>
+                        <div style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginBottom: "4px" }}>
+                          By: {act.actorName || act.actorEmail} ({act.actorRole})
+                        </div>
+                        <div style={{ fontSize: "0.875rem", color: "var(--text-main)" }}>{act.description}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-
-
           </div>
         </div>
       )}
 
       {/* Graduate Modal */}
       {showGraduateModal && (
-        <div className={styles.modalOverlay} style={{ zIndex: 1150 }}>
-          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "500px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #eee", paddingBottom: "10px", marginBottom: "20px" }}>
-              <h2 style={{ margin: 0 }}>Mark Thesis as Graduate</h2>
+        <div className={styles.modalOverlay} style={{ zIndex: 1150 }} onClick={() => { setShowGraduateModal(false); setGraduateThesisId(null); setGraduateReason(""); }}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "480px" }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid var(--border-color)", paddingBottom: "14px", marginBottom: "16px" }}>
+              <h2 style={{ margin: 0, fontSize: "1.2rem", color: "var(--text-main)" }}>🎓 Mark Thesis as Graduate</h2>
               <button
                 type="button"
                 onClick={() => { setShowGraduateModal(false); setGraduateThesisId(null); setGraduateReason(""); }}
-                style={{ background: "transparent", border: "none", cursor: "pointer", fontSize: "1.5rem", color: "#64748b" }}
+                className={styles.modalClose}
               >
                 &times;
               </button>
             </div>
             
             <form onSubmit={handleGraduateSubmit}>
-              <p style={{ marginBottom: "15px", color: "#475569" }}>
-                Are you sure you want to graduate this thesis? This will override all remaining approval stages and change the status directly to <strong>Graduate</strong>.
+              <p style={{ marginBottom: "16px", color: "var(--text-muted)", fontSize: "0.9rem" }}>
+                Overriding will conclude all reviewer approval milestones and grant completion status.
               </p>
               
               <div className={styles.formGroup}>
-                <label>Reason / Comment</label>
+                <label>Graduation Reason / Notes</label>
                 <textarea
                   rows={4}
                   value={graduateReason}
                   onChange={(e) => setGraduateReason(e.target.value)}
-                  placeholder="Enter the graduation reason or comment..."
+                  placeholder="e.g. Passed final oral defense with minor revisions approved..."
                   required
-                  style={{ width: "100%", padding: "10px", borderRadius: "4px", border: "1px solid #ccc" }}
                 />
               </div>
               
               <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginTop: "20px" }}>
                 <button
                   type="button"
-                  className={styles.btnPrimary}
-                  style={{ margin: 0, background: "#64748b", color: "#fff" }}
+                  className={styles.btnSecondary}
+                  style={{ margin: 0 }}
                   onClick={() => { setShowGraduateModal(false); setGraduateThesisId(null); setGraduateReason(""); }}
                 >
                   Cancel
@@ -936,7 +1013,7 @@ export default function AdminThesisPage() {
                 <button
                   type="submit"
                   className={styles.btnPrimary}
-                  style={{ margin: 0, background: "#10b981" }}
+                  style={{ margin: 0, background: "var(--success-color)", borderColor: "var(--success-color)" }}
                   disabled={loading}
                 >
                   {loading ? "Processing..." : "Confirm Graduation"}

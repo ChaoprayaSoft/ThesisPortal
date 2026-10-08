@@ -8,7 +8,7 @@ export default function ScrollToTop() {
 
   useEffect(() => {
     const toggleVisibility = () => {
-      if (window.scrollY > 100) {
+      if (window.scrollY > 150) {
         setIsVisible(true);
       } else {
         setIsVisible(false);
@@ -16,7 +16,6 @@ export default function ScrollToTop() {
     };
 
     window.addEventListener("scroll", toggleVisibility);
-
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
 
@@ -36,27 +35,40 @@ export default function ScrollToTop() {
       onClick={scrollToTop}
       style={{
         position: "fixed",
-        bottom: "40px",
-        right: "40px",
-        width: "50px",
-        height: "50px",
-        borderRadius: "25px",
-        backgroundColor: "#f59e0b",
-        color: "white",
-        border: "none",
+        bottom: "32px",
+        right: "32px",
+        width: "44px",
+        height: "44px",
+        borderRadius: "50%",
+        backgroundColor: "rgba(255, 255, 255, 0.9)",
+        backdropFilter: "blur(8px)",
+        color: "var(--primary-color)",
+        border: "1.5px solid var(--border-color)",
         cursor: "pointer",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
+        boxShadow: "var(--shadow-md)",
         zIndex: 9999,
-        transition: "opacity 0.3s ease, transform 0.3s ease",
+        transition: "all 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
         opacity: isVisible ? 1 : 0,
-        transform: isVisible ? "translateY(0)" : "translateY(20px)",
+        transform: isVisible ? "translateY(0)" : "translateY(16px)",
       }}
       aria-label="Scroll to top"
+      onMouseEnter={(e) => {
+        e.currentTarget.style.backgroundColor = "var(--primary-color)";
+        e.currentTarget.style.color = "#ffffff";
+        e.currentTarget.style.borderColor = "var(--primary-color)";
+        e.currentTarget.style.transform = "translateY(-3px)";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.backgroundColor = "rgba(255, 255, 255, 0.9)";
+        e.currentTarget.style.color = "var(--primary-color)";
+        e.currentTarget.style.borderColor = "var(--border-color)";
+        e.currentTarget.style.transform = "translateY(0)";
+      }}
     >
-      <ChevronUp size={24} />
+      <ChevronUp size={20} />
     </button>
   );
 }

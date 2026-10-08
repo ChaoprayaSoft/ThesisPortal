@@ -12,7 +12,7 @@ interface ProfileIconProps {
   size?: string;
 }
 
-export default function ProfileIcon({ dbUser, user, defaultLetter = "U", size = "40px" }: ProfileIconProps) {
+export default function ProfileIcon({ dbUser, user, defaultLetter = "U", size = "38px" }: ProfileIconProps) {
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -42,9 +42,7 @@ export default function ProfileIcon({ dbUser, user, defaultLetter = "U", size = 
       
       await updateUser(dbUser.id, { profileImageUrl: url });
       
-      // Reload page to reflect new image globally in the layout
       window.location.reload();
-      
     } catch (error) {
       console.error("Error uploading profile image:", error);
       alert("Failed to upload image.");
@@ -61,13 +59,13 @@ export default function ProfileIcon({ dbUser, user, defaultLetter = "U", size = 
           width: size, 
           height: size, 
           borderRadius: "50%", 
-          background: profileImageUrl ? "transparent" : "var(--primary-color)", 
-          color: "white", 
+          background: profileImageUrl ? "transparent" : "linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)", 
+          color: "#ffffff", 
           display: "flex", 
           justifyContent: "center", 
           alignItems: "center", 
-          fontWeight: "bold", 
-          fontSize: "1.2rem", 
+          fontWeight: 700, 
+          fontSize: "0.95rem", 
           flexShrink: 0,
           cursor: "pointer",
           backgroundImage: profileImageUrl ? `url(${profileImageUrl})` : "none",
@@ -75,14 +73,24 @@ export default function ProfileIcon({ dbUser, user, defaultLetter = "U", size = 
           backgroundPosition: "center",
           position: "relative",
           overflow: "hidden",
-          border: profileImageUrl ? "2px solid var(--border-color)" : "none"
+          border: profileImageUrl ? "2px solid var(--primary-border)" : "2px solid #ffffff",
+          boxShadow: "0 2px 8px rgba(99, 102, 241, 0.2)",
+          transition: "transform 0.2s ease, box-shadow 0.2s ease",
         }}
         title="Click to change profile picture"
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = "scale(1.05)";
+          e.currentTarget.style.boxShadow = "0 4px 12px rgba(99, 102, 241, 0.35)";
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = "scale(1)";
+          e.currentTarget.style.boxShadow = "0 2px 8px rgba(99, 102, 241, 0.2)";
+        }}
       >
         {!profileImageUrl && !uploading && initial}
         {uploading && (
           <div style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.5)", display: "flex", justifyContent: "center", alignItems: "center" }}>
-            <span style={{ display: "inline-block", width: "20px", height: "20px", border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }}></span>
+            <span style={{ display: "inline-block", width: "16px", height: "16px", border: "2px solid #fff", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 1s linear infinite" }}></span>
           </div>
         )}
       </div>

@@ -1,49 +1,70 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* ── Purple/Violet Design System ─────────────────────── */
-  --bg-app:    #f0f2ff;          /* Soft lavender-white base */
-  --bg-card:   #ffffff;
-  --bg-sidebar: #ffffff;
+  /* ── Modern Pastel & Minimal Design System ──────────────────────── */
+  --bg-app:          #f8f9fd;          /* Clean, luminous pastel porcelain canvas */
+  --bg-card:         #ffffff;          /* Pure white card surface */
+  --bg-sidebar:      #ffffff;
+  --bg-subtle:       #f1f5f9;
 
-  /* Primary — vivid purple */
-  --primary-color:   #7c3aed;
-  --primary-hover:   #6d28d9;
-  --primary-light:   #ede9fe;
-  --primary-lighter: #f5f3ff;
+  /* Primary — Soft Pastel Indigo / Periwinkle */
+  --primary-color:   #6366f1;
+  --primary-hover:   #4f46e5;
+  --primary-light:   #eef2ff;          /* Delicate periwinkle wash */
+  --primary-lighter: #f8faff;
+  --primary-border:  #c7d2fe;
+  --primary-glow:    rgba(99, 102, 241, 0.12);
 
-  /* Text */
-  --text-main:  #1e1b4b;   /* Deep navy */
-  --text-muted: #6b7280;   /* Cool grey  */
-  --text-light: #9ca3af;
+  /* Text & Typography */
+  --text-main:       #1e293b;          /* Refined deep slate */
+  --text-muted:      #64748b;          /* Soft slate */
+  --text-light:      #94a3b8;          /* Light slate */
 
   /* Borders */
-  --border-color: #e8eaf6;   /* Soft lavender border */
-  --border-strong: #c7d2fe;
+  --border-color:    #e2e8f0;          /* Subtle pastel slate border */
+  --border-subtle:   #f1f5f9;
+  --border-strong:   #cbd5e1;
 
-  /* Semantic */
-  --danger-color: #ef4444;
-  --danger-hover: #dc2626;
-  --success-color: #10b981;
-  --warning-color: #f59e0b;
-  --info-color:   #3b82f6;
+  /* Pastel Semantic / Status Colors */
+  --success-color:   #10b981;
+  --success-bg:      #ecfdf5;          /* Pastel mint */
+  --success-text:    #047857;
+  --success-border:  #a7f3d0;
 
-  /* Accents (matching orange badges from screenshots) */
-  --accent-orange: #f97316;
-  --accent-orange-bg: #fff7ed;
-  --accent-orange-border: #fed7aa;
+  --warning-color:   #f59e0b;
+  --warning-bg:      #fffbeb;          /* Pastel honey/peach */
+  --warning-text:    #b45309;
+  --warning-border:  #fde68a;
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px 0 rgba(109, 40, 217, 0.06), 0 1px 2px -1px rgba(109, 40, 217, 0.04);
-  --shadow-md: 0 4px 12px -2px rgba(109, 40, 217, 0.08), 0 2px 6px -2px rgba(109, 40, 217, 0.05);
-  --shadow-lg: 0 10px 30px -5px rgba(109, 40, 217, 0.12), 0 4px 10px -3px rgba(109, 40, 217, 0.07);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.06);
+  --danger-color:    #f43f5e;
+  --danger-hover:    #e11d48;
+  --danger-bg:       #fff1f2;          /* Pastel blush/rose */
+  --danger-text:     #be123c;
+  --danger-border:   #fecdd3;
 
-  /* Radius */
-  --radius-sm: 6px;
-  --radius-md: 10px;
-  --radius-lg: 16px;
-  --radius-xl: 24px;
+  --info-color:      #0ea5e9;
+  --info-bg:         #f0f9ff;          /* Pastel sky */
+  --info-text:       #0369a1;
+  --info-border:     #bae6fd;
+
+  --purple-color:    #8b5cf6;
+  --purple-bg:       #faf5ff;          /* Pastel lilac */
+  --purple-text:     #6d28d9;
+  --purple-border:   #ddd6fe;
+
+  /* Shadows (Diffused, soft, premium) */
+  --shadow-sm:       0 1px 2px 0 rgba(15, 23, 42, 0.04);
+  --shadow-card:     0 2px 10px -2px rgba(99, 102, 241, 0.04), 0 1px 3px 0 rgba(15, 23, 42, 0.03);
+  --shadow-md:       0 8px 24px -4px rgba(99, 102, 241, 0.07), 0 2px 6px -1px rgba(15, 23, 42, 0.04);
+  --shadow-lg:       0 16px 36px -6px rgba(99, 102, 241, 0.10), 0 4px 12px -2px rgba(15, 23, 42, 0.04);
+  --shadow-modal:    0 24px 48px -12px rgba(15, 23, 42, 0.15);
+
+  /* Border Radii */
+  --radius-sm:       8px;
+  --radius-md:       12px;
+  --radius-lg:       18px;
+  --radius-xl:       24px;
+  --radius-full:     9999px;
 }
 
 html, body {
@@ -55,9 +76,10 @@ html, body {
   margin: 0;
   color: var(--text-main);
   background: var(--bg-app);
-  font-family: 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Sarabun', 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.01em;
 }
 
 *, *::before, *::after {
@@ -67,4 +89,23 @@ html, body {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Custom scrollbars with pastel styling */
+::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }

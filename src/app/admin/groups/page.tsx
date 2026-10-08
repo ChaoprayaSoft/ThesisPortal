@@ -227,67 +227,74 @@ export default function GroupsPage() {
   return (
     <div>
       <div className={styles.pageHeader}>
-        <h1>Manage Student Groups</h1>
+        <div>
+          <h1>Manage Student Groups</h1>
+          <p className={styles.subtitle}>Import cohort rosters from Excel, manage student registration, and assign departmental study fields.</p>
+        </div>
       </div>
 
       <div className={styles.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showUploadForm ? "20px" : "0" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showUploadForm ? "24px" : "0" }}>
           <div>
-            <h2 style={{ margin: 0 }}>Create Group (Upload Excel)</h2>
-            {showUploadForm && <p style={{ marginTop: "10px", marginBottom: 0 }}>Excel should have headers: รหัสนักศึกษา | ชื่อ-นามสกุล | Email</p>}
+            <h2 style={{ margin: 0 }}>Create Group (Excel Import)</h2>
+            <p style={{ margin: "4px 0 0", fontSize: "0.875rem", color: "var(--text-muted)" }}>
+              {showUploadForm ? "Upload student cohort roster (.xlsx) with columns: รหัสนักศึกษา, ชื่อ-นามสกุล, Email" : "Batch import a full class cohort with automatic user account provisioning"}
+            </p>
           </div>
           <button onClick={() => {
             if (showUploadForm) { setGroupName(""); setFieldOfStudy(""); setFile(null); }
             setShowUploadForm(!showUploadForm);
-          }} className={styles.btnPrimary} style={{ margin: 0, background: showUploadForm ? "#64748b" : undefined }}>
-            {showUploadForm ? "Cancel" : "Add New Group"}
+          }} className={showUploadForm ? styles.btnSecondary : styles.btnPrimary} style={{ margin: 0 }}>
+            {showUploadForm ? "Cancel" : "＋ Import New Group"}
           </button>
         </div>
         
         {showUploadForm && (
           <form onSubmit={handleUpload} style={{ marginTop: "20px" }}>
-            <div className={styles.formGroup}>
-              <label>Group Name</label>
-              <input type="text" value={groupName} onChange={e => setGroupName(e.target.value)} required />
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
+              <div className={styles.formGroup}>
+                <label>Group Name</label>
+                <input type="text" placeholder="e.g. CPE65 Section 1" value={groupName} onChange={e => setGroupName(e.target.value)} required />
+              </div>
+              <div className={styles.formGroup}>
+                <label>Field of Study (แขนงวิชา)</label>
+                <select value={fieldOfStudy} onChange={e => setFieldOfStudy(e.target.value)} required>
+                  <option value="">-- Select Field of Study --</option>
+                  <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
+                  <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
+                  <option value="แขนงวิชาเครื่องมือวัดและควบคุม">แขนงวิชาเครื่องมือวัดและควบคุม</option>
+                  <option value="แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย">แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย</option>
+                  <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
+                  <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
+                </select>
+              </div>
             </div>
             <div className={styles.formGroup}>
-              <label>Field of Study (แขนงวิชา)</label>
-              <select value={fieldOfStudy} onChange={e => setFieldOfStudy(e.target.value)} required>
-                <option value="">-- Select Field of Study --</option>
-                <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
-                <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
-                <option value="แขนงวิชาเครื่องมือวัดและควบคุม">แขนงวิชาเครื่องมือวัดและควบคุม</option>
-                <option value="แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย">แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย</option>
-                <option value="ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์">ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์</option>
-                <option value="สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์">สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์</option>
-              </select>
-            </div>
-            <div className={styles.formGroup}>
-              <label>Excel File (.xlsx)</label>
+              <label>Excel File (.xlsx, .xls)</label>
               <input type="file" accept=".xlsx, .xls" onChange={e => setFile(e.target.files?.[0] || null)} required />
             </div>
-            <button type="submit" className={styles.btnPrimary} disabled={loading}>
-              {loading ? "Uploading..." : "Create Group"}
+            <button type="submit" className={styles.btnPrimary} disabled={loading} style={{ width: "100%", padding: "14px" }}>
+              {loading ? "Processing Roster..." : "✨ Upload & Provision Accounts"}
             </button>
           </form>
         )}
       </div>
 
       <div className={styles.card}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "20px", flexWrap: "wrap", gap: "10px" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
           <div style={{ flex: "1 1 300px" }}>
-            <h2 style={{ marginBottom: "5px" }}>Existing Groups</h2>
-            <p style={{ margin: 0 }}>Click on a group to view and edit its students.</p>
+            <h2 style={{ marginBottom: "4px" }}>Existing Groups</h2>
+            <p style={{ margin: 0, fontSize: "0.875rem", color: "var(--text-muted)" }}>Select a group to review roster members, edit details, or manage student records.</p>
           </div>
           <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", flex: "1 1 auto", justifyContent: "flex-end" }}>
             <input 
               type="text" 
-              placeholder="Search group name..." 
+              placeholder="🔍 Search group name..." 
               value={groupSearch} 
               onChange={e => setGroupSearch(e.target.value)} 
-              style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc", width: "250px", maxWidth: "100%" }}
+              style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", width: "240px", maxWidth: "100%" }}
             />
-            <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ padding: "8px", borderRadius: "4px", border: "1px solid #ccc", width: "250px", maxWidth: "100%" }}>
+            <select value={filterField} onChange={e => setFilterField(e.target.value)} style={{ padding: "10px 14px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", width: "240px", maxWidth: "100%" }}>
               <option value="">All Fields of Study</option>
               <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
               <option value="แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์">แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์</option>
@@ -303,10 +310,10 @@ export default function GroupsPage() {
           <table className={styles.table} style={{ width: "100%", minWidth: "700px" }}>
             <thead>
             <tr>
-              <th>Group Name</th>
-              <th>Field of Study</th>
-              <th>Students Count</th>
-              <th>Action</th>
+              <th style={{ width: "35%" }}>Group Name</th>
+              <th style={{ width: "35%" }}>Field of Study</th>
+              <th style={{ width: "15%" }}>Enrolled</th>
+              <th style={{ width: "15%" }}>Action</th>
             </tr>
           </thead>
           <tbody>
@@ -318,10 +325,18 @@ export default function GroupsPage() {
               })
               .map(g => (
               <tr key={g.id} style={{ cursor: "pointer" }} onClick={() => openModal(g)}>
-                <td>{g.name}</td>
-                <td>{g.fieldOfStudy || "-"}</td>
-                <td>{g.students?.length || 0}</td>
-                <td><button className={styles.btnPrimary} style={{ padding: "6px 12px", fontSize: "0.8rem", marginTop: 0 }}>View / Edit</button></td>
+                <td><strong style={{ color: "var(--text-main)" }}>{g.name}</strong></td>
+                <td style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>{g.fieldOfStudy || "-"}</td>
+                <td>
+                  <span style={{ display: "inline-block", padding: "3px 10px", background: "var(--primary-light)", color: "var(--primary-color)", border: "1px solid var(--primary-border)", borderRadius: "999px", fontSize: "0.8rem", fontWeight: 600 }}>
+                    👥 {g.students?.length || 0} students
+                  </span>
+                </td>
+                <td>
+                  <button className={styles.btnSecondary} style={{ padding: "6px 14px", fontSize: "0.8rem", margin: 0 }}>
+                    Manage Roster
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -332,21 +347,21 @@ export default function GroupsPage() {
       {/* Modal Overlay */}
       {selectedGroup && (
         <div className={styles.modalOverlay} onClick={closeModal}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+          <div className={styles.modalContent} style={{ maxWidth: "850px", width: "100%", maxHeight: "88vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
             
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "20px", flexWrap: "wrap", gap: "12px", borderBottom: "1px solid var(--border-color)", paddingBottom: "16px" }}>
               {isEditingGroupInfo ? (
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", flex: 1, marginRight: "20px" }}>
                   <input 
                     type="text" 
                     value={groupInfoEdit.name} 
                     onChange={e => setGroupInfoEdit({...groupInfoEdit, name: e.target.value})} 
-                    style={{ padding: "8px", fontSize: "1.2rem", fontWeight: "bold", border: "1px solid #ccc", borderRadius: "4px" }}
+                    style={{ padding: "10px 12px", fontSize: "1.1rem", fontWeight: "bold", border: "1px solid var(--border-color)", borderRadius: "8px", background: "var(--bg-subtle)" }}
                   />
                   <select 
                     value={groupInfoEdit.fieldOfStudy} 
                     onChange={e => setGroupInfoEdit({...groupInfoEdit, fieldOfStudy: e.target.value})} 
-                    style={{ padding: "8px", border: "1px solid #ccc", borderRadius: "4px" }}
+                    style={{ padding: "10px 12px", border: "1px solid var(--border-color)", borderRadius: "8px", background: "var(--bg-subtle)" }}
                   >
                     <option value="">-- Select Field of Study --</option>
                     <option value="แขนงวิชาโทรคมนาคม">แขนงวิชาโทรคมนาคม</option>
@@ -359,12 +374,12 @@ export default function GroupsPage() {
                 </div>
               ) : (
                 <div style={{ flex: 1, marginRight: "20px" }}>
-                  <h2 style={{ margin: "0 0 5px 0" }}>Group: {selectedGroup.name}</h2>
-                  <div style={{ fontSize: "0.9rem", color: "#666" }}>{selectedGroup.fieldOfStudy || "No Field of Study Assigned"}</div>
+                  <h2 style={{ margin: "0 0 4px 0", fontSize: "1.3rem" }}>{selectedGroup.name}</h2>
+                  <div style={{ fontSize: "0.875rem", color: "var(--text-muted)" }}>{selectedGroup.fieldOfStudy || "No Field of Study Assigned"} • {selectedGroup.students?.length || 0} Registered Students</div>
                 </div>
               )}
               
-              <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+              <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
                 {isEditingGroupInfo ? (
                   <>
                     <button 
@@ -386,13 +401,14 @@ export default function GroupsPage() {
                         });
                       }} 
                       className={styles.btnPrimary} 
-                      style={{ padding: "6px 16px", fontSize: "0.9rem", margin: 0, background: "#10b981" }}
+                      style={{ padding: "8px 16px", fontSize: "0.85rem", margin: 0 }}
                     >
                       Save Info
                     </button>
                     <button 
                       onClick={() => setIsEditingGroupInfo(false)} 
-                      style={{ padding: "6px 16px", fontSize: "0.9rem", margin: 0, background: "#ccc", color: "#000", border: "none", cursor: "pointer", borderRadius: "2px" }}
+                      className={styles.btnSecondary}
+                      style={{ padding: "8px 16px", fontSize: "0.85rem", margin: 0 }}
                     >
                       Cancel
                     </button>
@@ -400,76 +416,79 @@ export default function GroupsPage() {
                 ) : (
                   <button 
                     onClick={() => setIsEditingGroupInfo(true)} 
-                    style={{ padding: "6px 16px", fontSize: "0.9rem", margin: 0, background: "#f8fafc", color: "#334155", border: "1px solid #cbd5e1", cursor: "pointer", borderRadius: "2px" }}
+                    className={styles.btnSecondary}
+                    style={{ padding: "8px 16px", fontSize: "0.85rem", margin: 0 }}
                   >
-                    Edit Info
+                    ✏️ Edit Info
                   </button>
                 )}
                 
                 <button 
                   onClick={() => setShowAddForm(!showAddForm)} 
                   className={styles.btnPrimary} 
-                  style={{ padding: "6px 16px", fontSize: "0.9rem", margin: 0 }}
+                  style={{ padding: "8px 16px", fontSize: "0.85rem", margin: 0 }}
                 >
-                  {showAddForm ? "Cancel Add" : "Add Student"}
+                  {showAddForm ? "Cancel Add" : "＋ Add Student"}
                 </button>
                 <button 
                   onClick={handleDeleteGroup}
-                  style={{ padding: "6px 16px", fontSize: "0.9rem", margin: 0, background: "#dc2626", color: "white", border: "none", cursor: "pointer", borderRadius: "2px" }}
+                  style={{ padding: "8px 14px", fontSize: "0.85rem", margin: 0, background: "var(--danger-light)", color: "var(--danger-color)", border: "1px solid var(--rose-border)", cursor: "pointer", borderRadius: "8px", fontWeight: 600 }}
                 >
                   Delete Group
                 </button>
-                <button className={styles.modalClose} onClick={closeModal} style={{ marginLeft: "10px" }}>&times;</button>
+                <button className={styles.modalClose} onClick={closeModal} style={{ marginLeft: "4px" }}>&times;</button>
               </div>
             </div>
 
             {showAddForm && (
-              <div style={{ background: "#f9f9f9", padding: "20px", borderRadius: "4px", marginBottom: "20px", border: "1px solid #eaeaea" }}>
-                <h3 style={{ marginTop: 0, marginBottom: "15px", fontSize: "1rem" }}>Add New Student</h3>
-                <form onSubmit={handleAddStudent} style={{ display: "flex", gap: "10px", alignItems: "flex-end", flexWrap: "wrap" }}>
-                  <div className={styles.formGroup} style={{ margin: 0, flex: "1 1 120px" }}>
+              <div style={{ background: "var(--bg-subtle)", padding: "20px", borderRadius: "12px", marginBottom: "20px", border: "1px solid var(--border-color)" }}>
+                <h3 style={{ marginTop: 0, marginBottom: "12px", fontSize: "1rem", color: "var(--text-main)" }}>Add New Student Candidate</h3>
+                <form onSubmit={handleAddStudent} style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))", gap: "12px", alignItems: "flex-end" }}>
+                  <div className={styles.formGroup} style={{ margin: 0 }}>
                     <label style={{ fontSize: "0.8rem" }}>Student ID</label>
-                    <input type="text" value={newStudentId} onChange={e => setNewStudentId(e.target.value)} required style={{ padding: "8px" }} />
+                    <input type="text" placeholder="e.g. 65010001" value={newStudentId} onChange={e => setNewStudentId(e.target.value)} required />
                   </div>
-                  <div className={styles.formGroup} style={{ margin: 0, flex: "2 1 150px" }}>
+                  <div className={styles.formGroup} style={{ margin: 0 }}>
                     <label style={{ fontSize: "0.8rem" }}>Name (TH)</label>
-                    <input type="text" value={newStudentName} onChange={e => setNewStudentName(e.target.value)} required style={{ padding: "8px" }} />
+                    <input type="text" placeholder="ชื่อ นามสกุล" value={newStudentName} onChange={e => setNewStudentName(e.target.value)} required />
                   </div>
-                  <div className={styles.formGroup} style={{ margin: 0, flex: "2 1 150px" }}>
+                  <div className={styles.formGroup} style={{ margin: 0 }}>
                     <label style={{ fontSize: "0.8rem" }}>Name (EN)</label>
-                    <input type="text" value={newStudentNameEn} onChange={e => setNewStudentNameEn(e.target.value)} style={{ padding: "8px" }} />
+                    <input type="text" placeholder="Firstname Lastname" value={newStudentNameEn} onChange={e => setNewStudentNameEn(e.target.value)} />
                   </div>
-                  <div className={styles.formGroup} style={{ margin: 0, flex: "2 1 200px" }}>
+                  <div className={styles.formGroup} style={{ margin: 0 }}>
                     <label style={{ fontSize: "0.8rem" }}>Email</label>
-                    <input type="email" value={newStudentEmail} onChange={e => setNewStudentEmail(e.target.value)} required style={{ padding: "8px" }} />
+                    <input type="email" placeholder="student@kmitl.ac.th" value={newStudentEmail} onChange={e => setNewStudentEmail(e.target.value)} required />
                   </div>
-                  <button type="submit" className={styles.btnPrimary} disabled={loading} style={{ margin: 0, padding: "9px 16px" }}>
-                    {loading ? "..." : "Save"}
-                  </button>
+                  <div>
+                    <button type="submit" className={styles.btnPrimary} disabled={loading} style={{ margin: 0, width: "100%", padding: "10px" }}>
+                      {loading ? "..." : "Save Member"}
+                    </button>
+                  </div>
                 </form>
               </div>
             )}
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "15px" }}>
-              <h3 style={{ margin: 0, fontSize: "1.1rem" }}>Students in Group</h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", flexWrap: "wrap", gap: "10px" }}>
+              <h3 style={{ margin: 0, fontSize: "1.05rem", color: "var(--text-main)" }}>Roster Members</h3>
               <input
                 type="text"
-                placeholder="Search student name..."
+                placeholder="🔍 Search roster..."
                 value={studentSearch}
                 onChange={e => setStudentSearch(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: "4px", border: "1px solid #ccc", width: "250px", fontSize: "0.9rem" }}
+                style={{ padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", width: "220px", fontSize: "0.875rem" }}
               />
             </div>
             
             <div className={styles.tableResponsive}>
-              <table className={styles.table} style={{ tableLayout: "fixed", width: "100%", minWidth: "900px" }}>
+              <table className={styles.table} style={{ tableLayout: "fixed", width: "100%", minWidth: "750px" }}>
                 <thead>
                   <tr>
-                    <th style={{ width: "20%" }}>ID</th>
-                    <th style={{ width: "25%" }}>Name (TH)</th>
-                    <th style={{ width: "20%" }}>Name (EN)</th>
-                    <th style={{ width: "20%" }}>Email</th>
-                    <th style={{ width: "15%" }}>Actions</th>
+                    <th style={{ width: "18%" }}>Student ID</th>
+                    <th style={{ width: "24%" }}>Name (TH)</th>
+                    <th style={{ width: "22%" }}>Name (EN)</th>
+                    <th style={{ width: "22%" }}>Email</th>
+                    <th style={{ width: "14%" }}>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -483,25 +502,27 @@ export default function GroupsPage() {
                     <tr key={idx}>
                       {editingIndex === idx ? (
                         <>
-                          <td><input type="text" value={editData.studentId} onChange={e => setEditData({...editData, studentId: e.target.value})} style={{width: "100%", padding: "4px"}}/></td>
-                          <td><input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} style={{width: "100%", padding: "4px"}}/></td>
-                          <td><input type="text" value={editData.name_en || ''} onChange={e => setEditData({...editData, name_en: e.target.value})} style={{width: "100%", padding: "4px"}}/></td>
-                          <td><input type="text" value={editData.email} onChange={e => setEditData({...editData, email: e.target.value})} style={{width: "100%", padding: "4px"}}/></td>
+                          <td><input type="text" value={editData.studentId} onChange={e => setEditData({...editData, studentId: e.target.value})} style={{width: "100%", padding: "6px", borderRadius: "6px", border: "1px solid var(--border-color)"}}/></td>
+                          <td><input type="text" value={editData.name} onChange={e => setEditData({...editData, name: e.target.value})} style={{width: "100%", padding: "6px", borderRadius: "6px", border: "1px solid var(--border-color)"}}/></td>
+                          <td><input type="text" value={editData.name_en || ''} onChange={e => setEditData({...editData, name_en: e.target.value})} style={{width: "100%", padding: "6px", borderRadius: "6px", border: "1px solid var(--border-color)"}}/></td>
+                          <td><input type="text" value={editData.email} onChange={e => setEditData({...editData, email: e.target.value})} style={{width: "100%", padding: "6px", borderRadius: "6px", border: "1px solid var(--border-color)"}}/></td>
                           <td>
-                            <button onClick={() => saveEdit(idx)} className={styles.btnPrimary} style={{ padding: "4px 12px", fontSize: "0.8rem", margin: 0 }}>Save</button>
-                            <button onClick={() => setEditingIndex(null)} style={{ background: "none", border: "none", textDecoration: "underline", cursor: "pointer", marginLeft: "8px", fontSize: "0.8rem" }}>Cancel</button>
+                            <div style={{ display: "flex", gap: "6px" }}>
+                              <button onClick={() => saveEdit(idx)} className={styles.btnPrimary} style={{ padding: "4px 8px", fontSize: "0.75rem", margin: 0 }}>Save</button>
+                              <button onClick={() => setEditingIndex(null)} className={styles.btnSecondary} style={{ padding: "4px 8px", fontSize: "0.75rem", margin: 0 }}>Cancel</button>
+                            </div>
                           </td>
                         </>
                       ) : (
                         <>
-                          <td style={{ wordBreak: "break-word" }}>{s.studentId || "-"}</td>
+                          <td style={{ wordBreak: "break-word", fontWeight: 600 }}>{s.studentId || "-"}</td>
                           <td style={{ wordBreak: "break-word" }}>{s.name}</td>
-                          <td style={{ wordBreak: "break-word" }}>{s.name_en || "-"}</td>
-                          <td style={{ wordBreak: "break-word" }}>{s.email}</td>
+                          <td style={{ wordBreak: "break-word", color: "var(--text-muted)", fontSize: "0.875rem" }}>{s.name_en || "-"}</td>
+                          <td style={{ wordBreak: "break-word", color: "var(--text-muted)", fontSize: "0.85rem" }}>{s.email}</td>
                           <td>
-                            <div style={{ display: "flex", gap: "8px" }}>
-                              <button onClick={() => startEdit(idx, s)} style={{ background: "none", border: "1px solid #ccc", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}>Edit</button>
-                              <button onClick={() => handleRemoveStudent(idx)} style={{ background: "none", border: "1px solid #dc2626", color: "#dc2626", padding: "4px 12px", borderRadius: "2px", cursor: "pointer", fontSize: "0.8rem" }}>Delete</button>
+                            <div style={{ display: "flex", gap: "6px" }}>
+                              <button onClick={() => startEdit(idx, s)} className={styles.btnSecondary} style={{ padding: "4px 8px", fontSize: "0.75rem", margin: 0 }}>Edit</button>
+                              <button onClick={() => handleRemoveStudent(idx)} style={{ background: "var(--danger-light)", border: "1px solid var(--rose-border)", color: "var(--danger-color)", padding: "4px 8px", borderRadius: "6px", cursor: "pointer", fontSize: "0.75rem", fontWeight: 600 }}>Delete</button>
                             </div>
                           </td>
                         </>
@@ -518,12 +539,13 @@ export default function GroupsPage() {
       )}
       {/* Confirmation Modal */}
       {confirmAction && (
-        <div className={styles.modalOverlay} style={{ zIndex: 1100 }}>
-          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "400px", textAlign: "center" }}>
-            <h3 style={{ marginTop: 0, marginBottom: "20px" }}>Confirm Action</h3>
-            <p style={{ color: "#666", marginBottom: "30px" }}>{confirmAction.message}</p>
-            <div style={{ display: "flex", justifyContent: "center", gap: "20px" }}>
-              <button className={styles.btnPrimary} style={{ margin: 0, background: "#ccc", color: "#000", border: "1px solid #ccc" }} onClick={() => setConfirmAction(null)}>Cancel</button>
+        <div className={styles.modalOverlay} style={{ zIndex: 1100 }} onClick={() => setConfirmAction(null)}>
+          <div className={styles.modalContent} style={{ width: "100%", maxWidth: "420px", textAlign: "center" }} onClick={e => e.stopPropagation()}>
+            <div style={{ fontSize: "2rem", marginBottom: "8px" }}>⚠️</div>
+            <h3 style={{ marginTop: 0, marginBottom: "12px", color: "var(--text-main)" }}>Confirm Action</h3>
+            <p style={{ color: "var(--text-muted)", marginBottom: "24px", fontSize: "0.95rem" }}>{confirmAction.message}</p>
+            <div style={{ display: "flex", justifyContent: "center", gap: "12px" }}>
+              <button className={styles.btnSecondary} style={{ margin: 0 }} onClick={() => setConfirmAction(null)}>Cancel</button>
               <button className={styles.btnPrimary} style={{ margin: 0 }} onClick={() => { confirmAction.onConfirm(); setConfirmAction(null); }}>Yes, proceed</button>
             </div>
           </div>

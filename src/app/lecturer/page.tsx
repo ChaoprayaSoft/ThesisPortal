@@ -3,12 +3,22 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
 import styles from "./lecturer.module.css";
-import { getThesesByLecturer, subscribeToThesesByLecturer, approveThesis, rejectThesis, ThesisData, getThesisActivities, ThesisActivity, logThesisActivity, getDisplayStatus } from "@/lib/db/theses";
+import { 
+  getThesesByLecturer, 
+  subscribeToThesesByLecturer, 
+  approveThesis, 
+  rejectThesis, 
+  ThesisData, 
+  getThesisActivities, 
+  ThesisActivity, 
+  logThesisActivity, 
+  getDisplayStatus 
+} from "@/lib/db/theses";
 import { getCommentTemplates } from "@/lib/db/settings";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import { getAllUsers } from "@/lib/db/users";
 import { getGroups } from "@/lib/db/groups";
-import { Bell, ExternalLink, Plus, X } from "lucide-react";
+import { Bell, ExternalLink, Plus, X, Search, CheckCircle2, AlertCircle, FileEdit, Clock, BookOpen } from "lucide-react";
 import ImportantNoteModal from "@/components/ImportantNoteModal";
 
 export default function LecturerDashboard() {
@@ -101,7 +111,6 @@ export default function LecturerDashboard() {
         setTheses(data);
         setLoading(false);
 
-        // If a workspace is active, update the active thesis data so it reflects new state
         setActiveWorkspace(prev => {
           if (!prev) return null;
           const updatedThesis = data.find(t => t.id === prev.thesis.id);
@@ -112,10 +121,7 @@ export default function LecturerDashboard() {
     }
   }, [user]);
 
-  const loadData = async () => {
-    // Left empty for backwards compatibility with any manual reloads in the file,
-    // though real-time listener handles state updates automatically now.
-  };
+  const loadData = async () => {};
 
   const openWorkspace = async (thesis: ThesisData, role: string) => {
     setActiveWorkspace({ thesis, role });
@@ -175,7 +181,6 @@ export default function LecturerDashboard() {
   const executeAction = async () => {
     if (!user?.email || !activeWorkspace?.thesis.id || !confirmDialog) return;
 
-    // Validation
     let validLinks: any[] = [];
     if (activeWorkspace.role !== "Equipment Checker") {
       validLinks = reviewLinks.filter(l => l.url.trim() !== "");
@@ -194,7 +199,7 @@ export default function LecturerDashboard() {
 
     setActionLoading(activeWorkspace.thesis.id);
     const actionType = confirmDialog.type;
-    setConfirmDialog(null); // Close the modal immediately
+    setConfirmDialog(null);
 
     try {
       if (actionType === "Approve") {
@@ -221,26 +226,26 @@ export default function LecturerDashboard() {
           }
         } else {
           await approveThesis(activeWorkspace.thesis.id, user.email, activeWorkspace.role, activeWorkspace.thesis);
-        await logThesisActivity({
-          thesisId: activeWorkspace.thesis.id,
-          type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Approved" : "Manuscript Approved",
-          timestamp: Date.now(),
-          actorEmail: user.email,
-          actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
-          actorRole: activeWorkspace.role,
-          description: reviewComments.trim() || (activeWorkspace.thesis.currentStage >= 3 ? "Lecturer signed off on thesis." : "Lecturer approved manuscript."),
-          links: validLinks
-        });
+          await logThesisActivity({
+            thesisId: activeWorkspace.thesis.id,
+            type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Approved" : "Manuscript Approved",
+            timestamp: Date.now(),
+            actorEmail: user.email,
+            actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
+            actorRole: activeWorkspace.role,
+            description: reviewComments.trim() || (activeWorkspace.thesis.currentStage >= 3 ? "Lecturer signed off on thesis." : "Lecturer approved manuscript."),
+            links: validLinks
+          });
 
-        if (activeWorkspace.thesis.studentUids?.length > 0) {
-          for (const sEmail of activeWorkspace.thesis.studentUids) {
-            await sendNotificationEmail({
-              to: sEmail,
-              subject: `Thesis Approved by ${activeWorkspace.role}`,
-              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> has been approved by your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}).</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to view the updated status.</p>`
-            });
+          if (activeWorkspace.thesis.studentUids?.length > 0) {
+            for (const sEmail of activeWorkspace.thesis.studentUids) {
+              await sendNotificationEmail({
+                to: sEmail,
+                subject: `Thesis Approved by ${activeWorkspace.role}`,
+                html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> has been approved by your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}).</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to view the updated status.</p>`
+              });
+            }
           }
-        }
         }
       } else {
         if (activeWorkspace.role === "Equipment Checker") {
@@ -253,15 +258,14 @@ export default function LecturerDashboard() {
             actorEmail: user.email,
             actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
             actorRole: "Equipment Checker",
-            description: reviewComments.trim() || "Lecturer rejected equipment check."
+            description: reviewComments.trim() ? `Equipment check was rejected.\n\nReason: ${reviewComments.trim()}` : "Equipment check was rejected."
           });
-
           if (activeWorkspace.thesis.studentUids?.length > 0) {
             for (const sEmail of activeWorkspace.thesis.studentUids) {
               await sendNotificationEmail({
                 to: sEmail,
-                subject: `Equipment Check Rejected`,
-                html: `<p>Your equipment check for <b>${activeWorkspace.thesis.title}</b> has been rejected.</p>${reviewComments ? `<p><b>Reason:</b> ${reviewComments}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review and re-request when ready.</p>`
+                subject: `Equipment Check Rejected: ${activeWorkspace.thesis.title}`,
+                html: `<p>Your equipment check request for <b>${activeWorkspace.thesis.title}</b> was rejected by your Equipment Checker (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}).</p>${reviewComments.trim() ? `<p><b>Reason:</b><br/>${reviewComments.trim().replace(/\n/g, '<br/>')}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to re-request after resolving any issues.</p>`
               });
             }
           }
@@ -269,38 +273,37 @@ export default function LecturerDashboard() {
           await rejectThesis(activeWorkspace.thesis.id);
           await logThesisActivity({
             thesisId: activeWorkspace.thesis.id,
-            type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Refused" : "Revision Requested",
-          timestamp: Date.now(),
-          actorEmail: user.email,
-          actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
-          actorRole: activeWorkspace.role,
-          description: reviewComments.trim() || "Lecturer requested revision.",
-          links: validLinks
-        });
+            type: activeWorkspace.thesis.currentStage >= 3 ? "Signature Refused / Revision Requested" : "Revision Requested",
+            timestamp: Date.now(),
+            actorEmail: user.email,
+            actorName: dbUser?.name_th || dbUser?.name_en || user.displayName || user.email,
+            actorRole: activeWorkspace.role,
+            description: reviewComments.trim() || (activeWorkspace.thesis.currentStage >= 3 ? "Lecturer refused signature and requested revision." : "Lecturer requested revision."),
+            links: validLinks
+          });
 
-        if (activeWorkspace.thesis.studentUids?.length > 0) {
-          const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
-          for (const sEmail of activeWorkspace.thesis.studentUids) {
-            await sendNotificationEmail({
-              to: sEmail,
-              subject: `Thesis Revision Required`,
-              html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> requires revision. Your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}) has requested changes.</p>${reviewComments ? `<p><b>Comments:</b> ${reviewComments}</p>` : ""}${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to propose edits.</p>`
-            });
+          if (activeWorkspace.thesis.studentUids?.length > 0) {
+            const linksHtml = validLinks.length > 0 ? `<p><b>Feedback & Marked-up Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
+            for (const sEmail of activeWorkspace.thesis.studentUids) {
+              await sendNotificationEmail({
+                to: sEmail,
+                subject: `Revision Requested for: ${activeWorkspace.thesis.title}`,
+                html: `<p>Your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}) has requested revisions for <b>${activeWorkspace.thesis.title}</b>.</p><p><b>Comments:</b> ${reviewComments || "Please review attached notes."}</p>${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to upload your revisions.</p>`
+              });
+            }
           }
-        }
         }
       }
 
-      setActiveWorkspace(null);
       await loadData();
+      setActiveWorkspace(null);
     } catch (err: any) {
       console.error(err);
-      alert(`Failed to ${actionType.toLowerCase()} thesis. Error: ${err.message || err}`);
+      setErrorDialog("Failed to perform action: " + err.message);
     }
     setActionLoading(null);
   };
 
-  // Helper to determine what actionable role the current user has for a given thesis
   const getActionableRoles = (t: ThesisData, email: string) => {
     const roles: string[] = [];
     if (t.lecturerUids.advisor === email && (t.status === "Pending Advisor" || t.status === "Pending Sign. Advisor")) roles.push("Advisor");
@@ -316,8 +319,6 @@ export default function LecturerDashboard() {
       }
     }
     if (t.lecturerUids.chairperson === email && (t.status === "Pending Chairperson" || t.status === "Pending Sign. Chairperson")) roles.push("Chairperson");
-    
-    // Add Equipment Checker Role
     if (t.equipmentChecker === email && t.equipmentCheckStatus === "Requested") roles.push("Equipment Checker");
     
     return roles as any[];
@@ -335,7 +336,6 @@ export default function LecturerDashboard() {
       };
       await updateThesis(deadlineModalThesis.id, { deadlines: dData });
 
-      // Update local state to reflect new deadlines without needing a full reload immediately
       if (activeWorkspace?.thesis.id === deadlineModalThesis.id) {
         setActiveWorkspace(prev => prev ? { ...prev, thesis: { ...prev.thesis, deadlines: dData } } : null);
       }
@@ -435,52 +435,61 @@ export default function LecturerDashboard() {
     const dateStr = new Date(deadline).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' });
 
     return (
-      <div style={{ fontSize: "0.8rem", marginTop: "6px" }}>
-        <span style={{ color: "#64748b" }}>Due: {dateStr} ({stageName})</span>
-        {isLate && <span style={{ marginLeft: "8px", background: "#fee2e2", color: "#dc2626", padding: "2px 6px", borderRadius: "4px", fontWeight: "bold", fontSize: "0.75rem" }}>LATE</span>}
+      <div style={{ fontSize: "0.78rem", marginTop: "4px" }}>
+        <span style={{ color: "var(--text-light)" }}>Due: {dateStr} ({stageName})</span>
+        {isLate && <span style={{ marginLeft: "6px", background: "var(--danger-bg)", color: "var(--danger-text)", border: "1px solid var(--danger-border)", padding: "1px 6px", borderRadius: "var(--radius-full)", fontWeight: 700, fontSize: "0.72rem" }}>LATE</span>}
       </div>
     );
   };
 
   if (loading) {
-    return <div className={styles.loading}>Loading your theses...</div>;
+    return (
+      <div className={styles.loading}>
+        <div className={styles.loadingSpinner}></div>
+        <span>Loading your assigned theses...</span>
+      </div>
+    );
   }
 
   return (
     <div>
-      <div className={styles.pageHeader} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
-        <h1 style={{ margin: 0 }}>My Assigned Theses</h1>
+      <div className={styles.pageHeader}>
+        <div>
+          <h1 style={{ margin: 0 }}>Faculty Workspace</h1>
+          <p style={{ color: "var(--text-muted)", margin: "4px 0 0 0", fontSize: "0.9rem" }}>Review submissions, sign milestones, and manage deadlines</p>
+        </div>
         <button 
           onClick={() => {
             setSelectedNoteField(dbUser?.fieldOfStudy || (theses.find(t => t.fieldOfStudy)?.fieldOfStudy) || "");
             setIsNoteModalOpen(true);
           }}
-          className={styles.btnPrimary}
-          style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--danger-color)', borderColor: 'var(--danger-color)', margin: 0 }}
+          className={styles.btnDanger}
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
         >
-          <Bell size={18} />
+          <Bell size={16} />
           Important Note
         </button>
       </div>
 
-
-
+      {/* Action Required Card */}
       <div className={styles.card}>
-        <h2>Action Required</h2>
-        <p>Theses that are currently waiting for your review and approval.</p>
+        <h2>Action Required ({theses.filter(t => getActionableRoles(t, user?.email || "").length > 0).length})</h2>
+        <p>Theses that are actively waiting for your approval or signature.</p>
 
         {theses.filter(t => getActionableRoles(t, user?.email || "").length > 0).length === 0 ? (
-          <p style={{ marginTop: "20px", fontStyle: "italic", color: "var(--text-light)" }}>No theses are currently waiting for your approval.</p>
+          <div style={{ padding: "28px 0", textAlign: "center", color: "var(--text-light)", fontStyle: "italic", fontSize: "0.92rem" }}>
+            🎉 No theses are currently waiting for your approval.
+          </div>
         ) : (
-          <div className={styles.tableResponsive}>
-            <table className={styles.table} style={{ marginTop: "20px", minWidth: "800px" }}>
+          <div className={styles.tableResponsive} style={{ marginTop: "16px" }}>
+            <table className={styles.table}>
               <thead>
                 <tr>
-                  <th style={{ width: "35%" }}>Title</th>
-                  <th style={{ width: "15%" }}>Year</th>
-                  <th style={{ width: "15%" }}>Status</th>
+                  <th style={{ width: "38%" }}>Thesis Project</th>
+                  <th style={{ width: "12%" }}>Year</th>
+                  <th style={{ width: "20%" }}>Status</th>
                   <th style={{ width: "15%" }}>Role Required</th>
-                  <th style={{ width: "20%" }}>Action</th>
+                  <th style={{ width: "15%" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -491,22 +500,26 @@ export default function LecturerDashboard() {
                   return (
                     <tr key={t.id}>
                       <td>
-                        <strong>{t.title}</strong>
-                        <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                        <strong style={{ color: "var(--text-main)", fontSize: "0.92rem" }}>{t.title}</strong>
+                        <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "2px" }}>{t.fieldOfStudy || "No Field"}</div>
                         {getDeadlineDisplay(t)}
                       </td>
                       <td>{t.year || "-"}</td>
                       <td>
-                        <span style={{ padding: "4px 10px", background: "var(--primary-lighter)", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", border: "1px solid var(--border-strong)", whiteSpace: "nowrap", color: "var(--primary-color)", fontWeight: 500 }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
+                        <span style={{ padding: "3px 10px", background: "var(--primary-light)", borderRadius: "var(--radius-full)", fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                          {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
+                        </span>
                       </td>
-                      <td>{roles.join(", ")}</td>
+                      <td>
+                        <span style={{ fontWeight: 600, color: "var(--text-main)", fontSize: "0.88rem" }}>{roles.join(", ")}</span>
+                      </td>
                       <td>
                         <button
                           className={styles.btnPrimary}
-                          style={{ margin: 0, padding: "6px 14px", fontSize: "0.85rem" }}
+                          style={{ padding: "6px 14px", fontSize: "0.82rem" }}
                           onClick={() => openWorkspace(t, roles[0])}
                         >
-                          Open Workspace
+                          Review
                         </button>
                       </td>
                     </tr>
@@ -518,41 +531,46 @@ export default function LecturerDashboard() {
         )}
       </div>
 
+      {/* Abstract & Scope Proposals Card */}
       <div className={styles.card}>
         <h2>Abstract & Scope Edit Proposals</h2>
-        <p>Theses where the student has proposed changes to the Abstract or Scope.</p>
+        <p>Theses where the student group has submitted proposed changes to the project abstract or scope.</p>
 
         {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).length === 0 ? (
-          <p style={{ marginTop: "20px", fontStyle: "italic", color: "var(--text-light)" }}>No pending Abstract & Scope edits.</p>
+          <div style={{ padding: "20px 0", textAlign: "center", color: "var(--text-light)", fontStyle: "italic", fontSize: "0.9rem" }}>
+            No pending topic edit requests.
+          </div>
         ) : (
-          <div className={styles.tableResponsive}>
-            <table className={styles.table} style={{ marginTop: "20px", minWidth: "800px" }}>
+          <div className={styles.tableResponsive} style={{ marginTop: "16px" }}>
+            <table className={styles.table}>
               <thead>
                 <tr>
-                  <th style={{ width: "40%" }}>Title</th>
-                  <th style={{ width: "20%" }}>Year</th>
-                  <th style={{ width: "20%" }}>Status</th>
-                  <th style={{ width: "20%" }}>Action</th>
+                  <th style={{ width: "45%" }}>Thesis Project</th>
+                  <th style={{ width: "15%" }}>Year</th>
+                  <th style={{ width: "22%" }}>Status</th>
+                  <th style={{ width: "18%" }}>Action</th>
                 </tr>
               </thead>
               <tbody>
                 {theses.filter(t => t.lecturerUids.advisor === user?.email && (t.pendingAbstract || t.pendingScope)).map(t => (
                   <tr key={`topic-${t.id}`}>
                     <td>
-                      <strong>{t.title}</strong>
-                      <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                      <strong style={{ color: "var(--text-main)", fontSize: "0.92rem" }}>{t.title}</strong>
+                      <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "2px" }}>{t.fieldOfStudy || "No Field"}</div>
                     </td>
                     <td>{t.year || "-"}</td>
                     <td>
-                      <span style={{ padding: "4px 8px", background: "#fef3c7", color: "#92400e", borderRadius: "4px", fontSize: "0.85rem", border: "1px solid #fcd34d", whiteSpace: "nowrap", fontWeight: "bold" }}>Pending Abstract & Scope Edits</span>
+                      <span style={{ padding: "3px 10px", background: "var(--warning-bg)", color: "var(--warning-text)", borderRadius: "var(--radius-full)", fontSize: "0.78rem", border: "1px solid var(--warning-border)", fontWeight: 600 }}>
+                        Pending Topic Changes
+                      </span>
                     </td>
                     <td>
                       <button
-                        className={styles.btnPrimary}
-                        style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f59e0b", color: "#fff", border: "1px solid #d97706" }}
+                        className={styles.btnSecondary}
+                        style={{ padding: "5px 12px", fontSize: "0.82rem" }}
                         onClick={() => setTopicReviewThesis(t)}
                       >
-                        Review Edits
+                        <FileEdit size={14} /> Review Edits
                       </button>
                     </td>
                   </tr>
@@ -563,26 +581,31 @@ export default function LecturerDashboard() {
         )}
       </div>
 
+      {/* All Assigned Theses Card */}
       <div className={styles.card}>
         <h2>All Assigned Theses</h2>
-        <p>All theses where you are listed as an Advisor, Committee member, or Chairperson.</p>
+        <p>Complete index of projects where you are assigned as an Advisor, Committee member, or Chairperson.</p>
 
         {theses.length === 0 ? (
           <p style={{ marginTop: "20px", fontStyle: "italic", color: "var(--text-light)" }}>You have no assigned theses.</p>
         ) : (
           <>
-            <div style={{ display: "flex", gap: "10px", flexWrap: "wrap", marginTop: "15px", marginBottom: "15px" }}>
-              <input
-                type="text"
-                placeholder="Search title, group, year..."
-                value={assignedSearch}
-                onChange={e => setAssignedSearch(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", background: "#fff", color: "var(--text-main)", width: "300px", maxWidth: "100%", fontFamily: "inherit", outline: "none" }}
-              />
+            <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "16px", marginBottom: "16px" }}>
+              <div style={{ position: "relative", width: "320px", maxWidth: "100%" }}>
+                <input
+                  type="text"
+                  placeholder="Search title, group, year..."
+                  value={assignedSearch}
+                  onChange={e => setAssignedSearch(e.target.value)}
+                  style={{ padding: "8px 12px 8px 34px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", background: "#fff", color: "var(--text-main)", width: "100%", fontFamily: "inherit", outline: "none", fontSize: "0.88rem" }}
+                />
+                <Search size={15} style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
+              </div>
+
               <select
                 value={roleFilter}
                 onChange={e => setRoleFilter(e.target.value)}
-                style={{ padding: "8px 12px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", background: "#fff", color: "var(--text-main)", width: "200px", fontFamily: "inherit", outline: "none" }}
+                style={{ padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", background: "#fff", color: "var(--text-main)", width: "180px", fontFamily: "inherit", outline: "none", fontSize: "0.88rem" }}
               >
                 <option value="">All Roles</option>
                 <option value="Advisor">Advisor</option>
@@ -592,15 +615,15 @@ export default function LecturerDashboard() {
             </div>
 
             <div className={styles.tableResponsive}>
-              <table className={styles.table} style={{ marginTop: "20px", minWidth: "900px" }}>
+              <table className={styles.table}>
                 <thead>
                   <tr>
-                    <th style={{ width: "30%" }}>Title</th>
-                    <th style={{ width: "15%" }}>Group</th>
+                    <th style={{ width: "32%" }}>Title</th>
+                    <th style={{ width: "16%" }}>Group</th>
                     <th style={{ width: "10%" }}>Year</th>
-                    <th style={{ width: "15%" }}>Status</th>
-                    <th style={{ width: "15%" }}>Your Roles</th>
-                    <th style={{ width: "15%" }}>Action</th>
+                    <th style={{ width: "16%" }}>Status</th>
+                    <th style={{ width: "14%" }}>Your Roles</th>
+                    <th style={{ width: "12%" }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -611,10 +634,8 @@ export default function LecturerDashboard() {
                       if (t.lecturerUids.committees.includes(user?.email || "")) myRoles.push("Committee");
                       if (t.lecturerUids.chairperson === user?.email) myRoles.push("Chairperson");
 
-                      // Filter by Role
                       if (roleFilter && !myRoles.includes(roleFilter)) return false;
 
-                      // Filter by Search (Title, Group, Year)
                       if (assignedSearch) {
                         const searchLower = assignedSearch.toLowerCase();
                         const groupName = groupMap[t.groupId] || "";
@@ -637,30 +658,33 @@ export default function LecturerDashboard() {
 
                       return (
                         <tr key={t.id}>
-                          <td style={{ wordBreak: "break-all" }}>
-                            <strong>{t.title}</strong>
+                          <td>
+                            <strong style={{ color: "var(--text-main)", fontSize: "0.9rem" }}>{t.title}</strong>
                             {getDeadlineDisplay(t)}
-                            <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "4px" }}>{t.fieldOfStudy || "No Field of Study"}</div>
+                            <div style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginTop: "2px" }}>{t.fieldOfStudy || "No Field"}</div>
                           </td>
                           <td>{groupName}</td>
                           <td>{t.year || "-"}</td>
                           <td>
-                            <span style={{ padding: "4px 10px", background: "var(--primary-lighter)", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", border: "1px solid var(--border-strong)", whiteSpace: "nowrap", color: "var(--primary-color)", fontWeight: 500 }}>{getStageIcon(t.currentStage)} {getDisplayStatus(t)}</span>
+                            <span style={{ padding: "3px 8px", background: "var(--primary-lighter)", borderRadius: "var(--radius-full)", fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: 600 }}>
+                              {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
+                            </span>
                           </td>
-                          <td>{myRoles.join(", ")}</td>
+                          <td style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 500 }}>{myRoles.join(", ")}</td>
                           <td>
-                            <div style={{ display: "flex", gap: "8px" }}>
+                            <div style={{ display: "flex", gap: "6px" }}>
                               <button
-                                className={styles.btnPrimary}
-                                style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "var(--border-color)", color: "var(--text-main)", border: "1.5px solid var(--border-color)" }}
+                                className={styles.btnSecondary}
+                                style={{ padding: "4px 10px", fontSize: "0.8rem" }}
                                 onClick={() => openWorkspace(t, "ViewOnly")}
                               >
-                                View Details
+                                Details
                               </button>
                               {t.lecturerUids.advisor === user?.email && (
                                 <button
-                                  className={styles.btnPrimary}
-                                  style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem", background: "#f59e0b", color: "#fff", border: "1px solid #d97706" }}
+                                  className={styles.btnSecondary}
+                                  style={{ padding: "4px 8px", fontSize: "0.8rem" }}
+                                  title="Manage Deadlines"
                                   onClick={() => {
                                     setDeadlineAdvisor(formatDatetimeLocal(t.deadlines?.advisor));
                                     setDeadlineCommittee(formatDatetimeLocal(t.deadlines?.committee));
@@ -668,7 +692,7 @@ export default function LecturerDashboard() {
                                     setDeadlineModalThesis(t);
                                   }}
                                 >
-                                  Manage Deadlines
+                                  <Clock size={13} />
                                 </button>
                               )}
                             </div>
@@ -683,34 +707,35 @@ export default function LecturerDashboard() {
         )}
       </div>
 
-      {/* Workspace Modal */}
+      {/* Review Workspace Modal */}
       {activeWorkspace && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1100, padding: "20px" }}>
-          <div style={{ background: "var(--bg-card)", width: "1200px", maxWidth: "100%", height: "90vh", borderRadius: "var(--radius-xl)", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--shadow-lg)" }}>
+        <div className={styles.modalOverlay} onClick={() => setActiveWorkspace(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "1150px", height: "88vh", padding: 0, display: "flex", flexDirection: "column" }}>
 
             {/* Modal Header */}
-            <div style={{ padding: "18px 28px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(135deg, var(--primary-color), #6d28d9)", color: "#fff" }}>
+            <div style={{ padding: "16px 24px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--primary-light)", color: "var(--primary-color)" }}>
               <div>
-                <h2 style={{ margin: 0, color: "#fff", fontSize: "1.25rem", fontWeight: 700 }}>Review Workspace</h2>
-                <div style={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.8)", marginTop: "4px" }}>
-                  <strong>{activeWorkspace.thesis.title}</strong> • {activeWorkspace.role === "ViewOnly" ? "Viewing Details" : `Reviewing as: ${activeWorkspace.role}`}
+                <h2 style={{ margin: 0, color: "var(--primary-color)", fontSize: "1.15rem", fontWeight: 700 }}>Review Workspace</h2>
+                <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                  <strong style={{ color: "var(--text-main)" }}>{activeWorkspace.thesis.title}</strong> · {activeWorkspace.role === "ViewOnly" ? "Viewing Details" : `Reviewing as: ${activeWorkspace.role}`}
                 </div>
               </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                 <button
                   onClick={() => {
                     setSelectedNoteField(activeWorkspace.thesis.fieldOfStudy || dbUser?.fieldOfStudy || "");
                     setIsNoteModalOpen(true);
                   }}
-                  className={styles.btnPrimary}
-                  style={{ display: "flex", alignItems: "center", gap: "6px", backgroundColor: "var(--danger-color)", borderColor: "var(--danger-color)", margin: 0, padding: "8px 14px", fontSize: "0.85rem" }}
+                  className={styles.btnDanger}
+                  style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "6px 12px", fontSize: "0.82rem" }}
                 >
-                  <Bell size={16} />
+                  <Bell size={14} />
                   Important Note
                 </button>
                 <button
                   onClick={() => setActiveWorkspace(null)}
-                  style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "50%", width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", cursor: "pointer", color: "#fff" }}
+                  className={styles.modalClose}
+                  style={{ float: "none", fontSize: "1.3rem" }}
                 >&times;</button>
               </div>
             </div>
@@ -719,86 +744,79 @@ export default function LecturerDashboard() {
             <div className={styles.workspaceBody}>
 
               {/* Left Column: Activity Log & Submissions */}
-              <div className={activeWorkspace.role === "ViewOnly" ? styles.workspaceFull : styles.workspaceLeft} style={activeWorkspace.role === "ViewOnly" ? { width: "100%", borderRight: "none", padding: "30px", overflowY: "auto" } : {}}>
+              <div className={activeWorkspace.role === "ViewOnly" ? styles.workspaceFull : styles.workspaceLeft} style={activeWorkspace.role === "ViewOnly" ? { width: "100%", borderRight: "none", padding: "28px", overflowY: "auto" } : {}}>
                 {activeWorkspace.role === "ViewOnly" && (
-                  <div style={{ marginBottom: "40px" }}>
-                    <h3 style={{ margin: "0 0 15px 0", color: "var(--text-main)", borderBottom: "1px solid var(--border-color)", paddingBottom: "10px", fontWeight: 700 }}>Thesis Details</h3>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", marginBottom: "20px" }}>
-                      <div style={{ flex: "1 1 250px" }}>
-                        <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "4px" }}>Title</strong>
-                        <div style={{ color: "var(--text-main)", fontWeight: 700, fontSize: "1.05rem" }}>{activeWorkspace.thesis.title}</div>
+                  <div style={{ marginBottom: "32px" }}>
+                    <h3 style={{ margin: "0 0 14px 0", color: "var(--text-main)", borderBottom: "1px solid var(--border-color)", paddingBottom: "8px", fontWeight: 700, fontSize: "1.1rem" }}>Thesis Details</h3>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", marginBottom: "18px" }}>
+                      <div style={{ flex: "1 1 240px" }}>
+                        <strong style={{ display: "block", color: "var(--text-light)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "2px" }}>Title</strong>
+                        <div style={{ color: "var(--text-main)", fontWeight: 700, fontSize: "1rem" }}>{activeWorkspace.thesis.title}</div>
                       </div>
-                      <div style={{ flex: "1 1 250px" }}>
-                        <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "4px" }}>Status</strong>
-                        <div style={{ color: "var(--primary-color)", fontWeight: 700 }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {getDisplayStatus(activeWorkspace.thesis)}</div>
+                      <div style={{ flex: "1 1 240px" }}>
+                        <strong style={{ display: "block", color: "var(--text-light)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "2px" }}>Status</strong>
+                        <div style={{ color: "var(--primary-color)", fontWeight: 700, fontSize: "0.92rem" }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {getDisplayStatus(activeWorkspace.thesis)}</div>
                       </div>
                     </div>
 
-                    <div style={{ marginBottom: "20px" }}>
-                      <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "6px" }}>Abstract</strong>
-                      <div style={{ color: "var(--text-main)", whiteSpace: "pre-wrap", background: "var(--primary-lighter)", padding: "14px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", lineHeight: 1.65 }}>{activeWorkspace.thesis.abstract || "No abstract provided."}</div>
+                    <div style={{ marginBottom: "16px" }}>
+                      <strong style={{ display: "block", color: "var(--text-light)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Abstract</strong>
+                      <div style={{ color: "var(--text-main)", whiteSpace: "pre-wrap", background: "var(--bg-subtle)", padding: "14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", lineHeight: 1.6, fontSize: "0.9rem" }}>{activeWorkspace.thesis.abstract || "No abstract provided."}</div>
                     </div>
 
-                    <div style={{ marginBottom: "20px" }}>
-                      <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "6px" }}>Scope</strong>
-                      <div style={{ color: "var(--text-main)", whiteSpace: "pre-wrap", background: "var(--primary-lighter)", padding: "14px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", lineHeight: 1.65 }}>{activeWorkspace.thesis.scope || "No scope provided."}</div>
+                    <div style={{ marginBottom: "16px" }}>
+                      <strong style={{ display: "block", color: "var(--text-light)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Scope</strong>
+                      <div style={{ color: "var(--text-main)", whiteSpace: "pre-wrap", background: "var(--bg-subtle)", padding: "14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", lineHeight: 1.6, fontSize: "0.9rem" }}>{activeWorkspace.thesis.scope || "No scope provided."}</div>
                     </div>
 
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-                      <div style={{ flex: "1 1 250px", minWidth: 0 }}>
-                        <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "6px" }}>Members (Students)</strong>
+                      <div style={{ flex: "1 1 240px" }}>
+                        <strong style={{ display: "block", color: "var(--text-light)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Student Members</strong>
                         {activeWorkspace.thesis.studentUids?.length > 0 ? (
-                          <ul style={{ margin: 0, paddingLeft: "20px", color: "var(--text-main)", wordBreak: "break-all" }}>
+                          <ul style={{ margin: 0, paddingLeft: "18px", color: "var(--text-main)", fontSize: "0.88rem" }}>
                             {activeWorkspace.thesis.studentUids.map(uid => <li key={uid}>{userMap[uid] || uid}</li>)}
                           </ul>
-                        ) : <div style={{ color: "var(--text-muted)" }}>None</div>}
+                        ) : <div style={{ color: "var(--text-muted)", fontSize: "0.88rem" }}>None</div>}
                       </div>
-                      <div style={{ flex: "1 1 250px", minWidth: 0 }}>
-                        <strong style={{ display: "block", color: "var(--text-muted)", fontSize: "0.78rem", textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: "6px" }}>Committees & Advisors</strong>
-                        <ul style={{ margin: 0, paddingLeft: "20px", color: "var(--text-main)", wordBreak: "break-word" }}>
+                      <div style={{ flex: "1 1 240px" }}>
+                        <strong style={{ display: "block", color: "var(--text-light)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Faculty Committee</strong>
+                        <ul style={{ margin: 0, paddingLeft: "18px", color: "var(--text-main)", fontSize: "0.88rem" }}>
+                          <li><strong>Advisor:</strong> {userMap[activeWorkspace.thesis.lecturerUids.advisor] || activeWorkspace.thesis.lecturerUids.advisor || "None"}</li>
                           <li><strong>Chairperson:</strong> {userMap[activeWorkspace.thesis.lecturerUids.chairperson] || activeWorkspace.thesis.lecturerUids.chairperson || "None"}</li>
-                          {activeWorkspace.thesis.lecturerUids.committees?.length > 0 ? (
+                          {activeWorkspace.thesis.lecturerUids.committees?.length > 0 && (
                             <li><strong>Committees:</strong>
-                              <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px", wordBreak: "break-all" }}>
-                                {activeWorkspace.thesis.lecturerUids.committees.map((c, idx) => <li key={c}>{activeWorkspace.thesis.lecturerUids.committees.length > 1 ? `Committee #${idx + 1}: ` : ""}{userMap[c] || c}</li>)}
+                              <ul style={{ margin: "4px 0 0 0", paddingLeft: "18px" }}>
+                                {activeWorkspace.thesis.lecturerUids.committees.map((c, idx) => <li key={c}>{activeWorkspace.thesis.lecturerUids.committees.length > 1 ? `#${idx + 1}: ` : ""}{userMap[c] || c}</li>)}
                               </ul>
                             </li>
-                          ) : <li><strong>Committees:</strong> None</li>}
-                          <li><strong>Advisor:</strong> {userMap[activeWorkspace.thesis.lecturerUids.advisor] || activeWorkspace.thesis.lecturerUids.advisor || "None"}</li>
+                          )}
                         </ul>
                       </div>
                     </div>
                   </div>
                 )}
 
-                <h3 style={{ margin: "0 0 20px 0", color: "var(--text-main)", fontWeight: 700, borderBottom: activeWorkspace.role === "ViewOnly" ? "1px solid var(--border-color)" : "none", paddingBottom: activeWorkspace.role === "ViewOnly" ? "10px" : "0" }}>Submission History</h3>
+                <h3 style={{ margin: "0 0 16px 0", color: "var(--text-main)", fontWeight: 700, fontSize: "1.05rem" }}>Submission History & Audit Trail</h3>
 
                 {activities.length === 0 ? (
-                  <p style={{ color: "var(--text-muted)", fontStyle: "italic" }}>No activity recorded yet.</p>
+                  <p style={{ color: "var(--text-light)", fontStyle: "italic", textAlign: "center", padding: "24px 0" }}>No activity recorded yet.</p>
                 ) : (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     {activities.map(act => (
-                      <div key={act.id} style={{ background: "var(--primary-lighter)", padding: "15px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                          <strong style={{ color: "var(--text-main)" }}>{act.type}</strong>
-                          <span style={{ fontSize: "0.8rem", color: "var(--text-muted)" }}>{new Date(act.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      <div key={act.id} style={{ background: "var(--bg-subtle)", padding: "14px 16px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "6px" }}>
+                          <strong style={{ color: "var(--text-main)", fontSize: "0.88rem" }}>{act.type}</strong>
+                          <span style={{ fontSize: "0.75rem", color: "var(--text-light)" }}>{new Date(act.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                         </div>
-                        <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem", color: "var(--text-main)" }}>{act.description}</p>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.85rem", flexDirection: "column", gap: "10px" }}>
-                          <span style={{ color: "var(--text-muted)", wordBreak: "break-word" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
-
-                          {act.documentUrl && (
-                            <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "5px" }}>
-                              <ExternalLink size={14} /> Download {act.documentName || "Document"}
-                            </a>
-                          )}
+                        <p style={{ margin: "0 0 8px 0", fontSize: "0.88rem", color: "var(--text-main)", lineHeight: 1.5 }}>{act.description}</p>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.8rem", flexDirection: "column", gap: "6px" }}>
+                          <span style={{ color: "var(--text-muted)" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
 
                           {act.links && act.links.length > 0 && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: "5px", width: "100%", marginTop: "5px" }}>
-                              <strong style={{ color: "var(--text-main)" }}>Submitted Links:</strong>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", width: "100%", marginTop: "4px" }}>
                               {act.links.map((link, idx) => (
-                                <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px", background: "#fff", padding: "6px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", width: "fit-content", maxWidth: "100%", wordBreak: "break-all" }}>
-                                  <ExternalLink size={14} /> <span>{link.type}</span>
+                                <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "5px", background: "#ffffff", padding: "4px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "0.8rem" }}>
+                                  <ExternalLink size={12} /> <span>{link.type}</span>
                                 </a>
                               ))}
                             </div>
@@ -810,31 +828,32 @@ export default function LecturerDashboard() {
                 )}
               </div>
 
-              {/* Right Column: Review Tools & Deadlines */}
+              {/* Right Column: Review Tools */}
               <div className={styles.workspaceRight} style={activeWorkspace.role === "ViewOnly" ? { display: "none" } : {}}>
 
                 {activeWorkspace.role !== "ViewOnly" && activeWorkspace.role !== "Equipment Checker" && (
                   <>
-                    <h3 style={{ margin: "0 0 20px 0", color: "var(--text-main)", fontWeight: 700 }}>Your Review</h3>
+                    <h3 style={{ margin: "0 0 16px 0", color: "var(--text-main)", fontWeight: 700, fontSize: "1.05rem" }}>Review & Feedback</h3>
 
-                    <div style={{ marginBottom: "20px" }}>
-                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>Review Comments / Notes</label>
+                    <div style={{ marginBottom: "16px" }}>
+                      <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "6px" }}>Comments & Feedback</label>
                       <textarea
                         value={reviewComments}
                         onChange={e => setReviewComments(e.target.value)}
-                        placeholder="Provide your feedback, requested revisions, or approval notes here..."
-                        style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", minHeight: "150px", fontFamily: "inherit", background: "#fff", outline: "none", color: "var(--text-main)" }}
+                        placeholder="Provide your feedback, revision requests, or remarks..."
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", minHeight: "130px", fontFamily: "inherit", background: "#fff", outline: "none", color: "var(--text-main)", fontSize: "0.88rem" }}
                       />
                       {commentTemplates.length > 0 && (
-                        <div style={{ marginTop: "10px", position: "relative" }}>
+                        <div style={{ marginTop: "8px", position: "relative" }}>
                           <button
                             onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)}
-                            style={{ background: "var(--primary-lighter)", border: "1.5px solid var(--border-strong)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}
+                            className={styles.btnSecondary}
+                            style={{ padding: "4px 10px", fontSize: "0.8rem" }}
                           >
-                            Insert Pre-defined Sentence ▾
+                            Quick Feedback Sentence ▾
                           </button>
                           {showTemplatesDropdown && (
-                            <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "5px", background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-md)", zIndex: 10, minWidth: "300px", maxHeight: "200px", overflowY: "auto" }}>
+                            <div style={{ position: "absolute", top: "100%", left: 0, marginTop: "4px", background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-md)", zIndex: 10, minWidth: "300px", maxHeight: "180px", overflowY: "auto" }}>
                               {commentTemplates.map((template, idx) => (
                                 <button
                                   key={idx}
@@ -842,7 +861,7 @@ export default function LecturerDashboard() {
                                     setReviewComments(prev => prev ? `${prev}\n${template}` : template);
                                     setShowTemplatesDropdown(false);
                                   }}
-                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 15px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid var(--border-color)" : "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", color: "var(--text-main)", fontFamily: "inherit" }}
+                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "8px 12px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid var(--border-subtle)" : "none", background: "transparent", cursor: "pointer", fontSize: "0.82rem", color: "var(--text-main)", fontFamily: "inherit" }}
                                   onMouseOver={e => e.currentTarget.style.background = "var(--primary-lighter)"}
                                   onMouseOut={e => e.currentTarget.style.background = "transparent"}
                                 >
@@ -855,17 +874,17 @@ export default function LecturerDashboard() {
                       )}
                     </div>
 
-                    <div style={{ marginBottom: "30px" }}>
-                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>Attach Materials (Required)</label>
-                      <p style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "10px", marginTop: 0 }}>You must provide at least one link to your marked-up manuscript or external references.</p>
+                    <div style={{ marginBottom: "24px" }}>
+                      <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "4px" }}>Attach Marked-up Materials</label>
+                      <p style={{ fontSize: "0.78rem", color: "var(--text-muted)", marginBottom: "8px", marginTop: 0 }}>Provide at least one external cloud link to your marked-up manuscript.</p>
 
-                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         {reviewLinks.map((link, idx) => (
-                          <div key={idx} style={{ display: "flex", gap: "8px", alignItems: "center", background: "#fff", padding: "10px", borderRadius: "var(--radius-md)", border: "1.5px dashed var(--border-strong)" }}>
+                          <div key={idx} style={{ display: "flex", gap: "6px", alignItems: "center", background: "#fff", padding: "8px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)" }}>
                             <select
                               value={link.type}
                               onChange={e => handleLinkChange(idx, "type", e.target.value)}
-                              style={{ padding: "8px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", background: "var(--primary-lighter)", fontSize: "0.85rem", fontFamily: "inherit", color: "var(--text-main)", outline: "none" }}
+                              style={{ padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", fontSize: "0.8rem", fontFamily: "inherit", color: "var(--text-main)", outline: "none" }}
                             >
                               <option value="Marked-up Manuscript">Marked-up Manuscript</option>
                               <option value="Reference Link">Reference Link</option>
@@ -876,15 +895,15 @@ export default function LecturerDashboard() {
                               placeholder="https://..."
                               value={link.url}
                               onChange={e => handleLinkChange(idx, "url", e.target.value)}
-                              style={{ flex: 1, padding: "8px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", fontSize: "0.85rem", outline: "none", fontFamily: "inherit" }}
+                              style={{ flex: 1, padding: "6px 8px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "0.8rem", outline: "none", fontFamily: "inherit" }}
                             />
                             {reviewLinks.length > 1 && (
                               <button
                                 onClick={() => handleRemoveLink(idx)}
-                                style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: "4px", width: "32px", height: "32px", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer" }}
-                                title="Remove Link"
+                                style={{ background: "var(--danger-bg)", color: "var(--danger-color)", border: "1px solid var(--danger-border)", borderRadius: "var(--radius-sm)", width: "26px", height: "26px", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer" }}
+                                title="Remove"
                               >
-                                <X size={16} />
+                                <X size={13} />
                               </button>
                             )}
                           </div>
@@ -892,18 +911,19 @@ export default function LecturerDashboard() {
 
                         <button
                           onClick={handleAddLink}
-                          style={{ alignSelf: "flex-start", background: "var(--primary-lighter)", border: "1.5px solid var(--border-strong)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "5px", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}
+                          className={styles.btnSecondary}
+                          style={{ alignSelf: "flex-start", padding: "4px 10px", fontSize: "0.78rem" }}
                         >
-                          <Plus size={14} /> Add another link
+                          <Plus size={12} /> Add link
                         </button>
                       </div>
                     </div>
 
-                    <div style={{ marginTop: "auto" }}>
-                      <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    <div style={{ marginTop: "auto", paddingTop: "14px", borderTop: "1px solid var(--border-color)" }}>
+                      <div style={{ display: "flex", gap: "10px" }}>
                         <button
                           className={styles.btnPrimary}
-                          style={{ flex: 1, margin: 0, background: "#10b981", fontSize: "1rem", padding: "12px" }}
+                          style={{ flex: 1, padding: "10px", fontSize: "0.92rem", background: "var(--success-color)" }}
                           disabled={actionLoading === activeWorkspace.thesis.id}
                           onClick={triggerApprove}
                         >
@@ -911,79 +931,48 @@ export default function LecturerDashboard() {
                         </button>
                         <button
                           className={styles.btnDanger}
-                          style={{ flex: 1, margin: 0, fontSize: "1rem", padding: "12px", background: "#dc2626", color: "#fff" }}
+                          style={{ flex: 1, padding: "10px", fontSize: "0.92rem" }}
                           disabled={actionLoading === activeWorkspace.thesis.id}
                           onClick={triggerReject}
                         >
-                          {actionLoading === activeWorkspace.thesis.id ? "Processing..." : (activeWorkspace.thesis.currentStage >= 3 ? "Refuse Signature / Request Revision" : "Request Revision")}
+                          {actionLoading === activeWorkspace.thesis.id ? "Processing..." : (activeWorkspace.thesis.currentStage >= 3 ? "Refuse Signature" : "Request Revision")}
                         </button>
                       </div>
-                      <p style={{ fontSize: "0.8rem", color: "var(--text-muted)", marginTop: "10px", textAlign: "center" }}>
-                        Both actions will send your comments and attached file back to the student.
-                      </p>
                     </div>
                   </>
                 )}
 
                 {activeWorkspace.role === "Equipment Checker" && (
-                  <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", alignItems: "center", textAlign: "center", background: "#fff", padding: "30px", borderRadius: "var(--radius-lg)", border: "1px solid var(--border-color)" }}>
-                    <h3 style={{ margin: "0 0 15px 0", color: "var(--text-main)", fontWeight: 700 }}>Equipment Check Request</h3>
-                    <p style={{ color: "var(--text-muted)", marginBottom: "25px", fontSize: "0.95rem" }}>The student has requested an equipment check before proceeding to the signing step.</p>
+                  <div style={{ display: "flex", flexDirection: "column", height: "100%", justifyContent: "center", alignItems: "center", textAlign: "center", background: "#fff", padding: "24px", borderRadius: "var(--radius-lg)", border: "1px solid var(--border-color)" }}>
+                    <h3 style={{ margin: "0 0 10px 0", color: "var(--text-main)", fontWeight: 700, fontSize: "1.1rem" }}>Equipment Clearance Request</h3>
+                    <p style={{ color: "var(--text-muted)", marginBottom: "20px", fontSize: "0.88rem", lineHeight: 1.5 }}>The student group has submitted a clearance request for borrowed laboratory equipment.</p>
                     
                     <div style={{ width: "100%", marginBottom: "20px", textAlign: "left" }}>
-                      <label style={{ display: "block", fontSize: "0.9rem", fontWeight: 700, color: "var(--text-main)", marginBottom: "8px" }}>Reason / Comments</label>
+                      <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "6px" }}>Remarks</label>
                       <textarea
                         value={reviewComments}
                         onChange={e => setReviewComments(e.target.value)}
-                        placeholder="Provide your feedback or reason for rejection here..."
-                        style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", minHeight: "100px", fontFamily: "inherit", background: "#fff", outline: "none", color: "var(--text-main)" }}
+                        placeholder="Provide your feedback or reason for rejection..."
+                        style={{ width: "100%", padding: "10px 12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", minHeight: "90px", fontFamily: "inherit", background: "#fff", outline: "none", color: "var(--text-main)", fontSize: "0.88rem" }}
                       />
-                      {commentTemplates.length > 0 && (
-                        <div style={{ marginTop: "10px", position: "relative" }}>
-                          <button
-                            onClick={() => setShowTemplatesDropdown(!showTemplatesDropdown)}
-                            style={{ background: "var(--primary-lighter)", border: "1.5px solid var(--border-strong)", color: "var(--primary-color)", padding: "6px 12px", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", cursor: "pointer", fontWeight: 600, fontFamily: "inherit" }}
-                          >
-                            Insert Pre-defined Sentence ▾
-                          </button>
-                          {showTemplatesDropdown && (
-                            <div style={{ position: "absolute", bottom: "100%", left: 0, marginBottom: "5px", background: "#fff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)", boxShadow: "var(--shadow-md)", zIndex: 10, minWidth: "300px", maxHeight: "200px", overflowY: "auto" }}>
-                              {commentTemplates.map((template, idx) => (
-                                <button
-                                  key={idx}
-                                  onClick={() => {
-                                    setReviewComments(prev => prev ? `${prev}\n${template}` : template);
-                                    setShowTemplatesDropdown(false);
-                                  }}
-                                  style={{ display: "block", width: "100%", textAlign: "left", padding: "10px 15px", border: "none", borderBottom: idx < commentTemplates.length - 1 ? "1px solid var(--border-color)" : "none", background: "transparent", cursor: "pointer", fontSize: "0.85rem", color: "var(--text-main)", fontFamily: "inherit" }}
-                                  onMouseOver={e => e.currentTarget.style.background = "var(--primary-lighter)"}
-                                  onMouseOut={e => e.currentTarget.style.background = "transparent"}
-                                >
-                                  {template}
-                                </button>
-                              ))}
-                            </div>
-                          )}
-                        </div>
-                      )}
                     </div>
 
-                    <div style={{ display: "flex", gap: "10px", width: "100%", flexWrap: "wrap" }}>
+                    <div style={{ display: "flex", gap: "10px", width: "100%" }}>
                       <button
                         className={styles.btnPrimary}
-                        style={{ flex: 1, margin: 0, background: "#10b981", fontSize: "1rem", padding: "12px 24px" }}
+                        style={{ flex: 1, padding: "10px", background: "var(--success-color)" }}
                         disabled={actionLoading === activeWorkspace.thesis.id}
                         onClick={triggerApprove}
                       >
-                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Approve Equipment Check"}
+                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Approve Clearance"}
                       </button>
                       <button
                         className={styles.btnDanger}
-                        style={{ flex: 1, margin: 0, fontSize: "1rem", padding: "12px 24px", background: "#dc2626", color: "#fff" }}
+                        style={{ flex: 1, padding: "10px" }}
                         disabled={actionLoading === activeWorkspace.thesis.id}
                         onClick={triggerReject}
                       >
-                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Reject Check"}
+                        {actionLoading === activeWorkspace.thesis.id ? "Processing..." : "Reject"}
                       </button>
                     </div>
                   </div>
@@ -997,22 +986,24 @@ export default function LecturerDashboard() {
 
       {/* Custom Confirm Modal */}
       {confirmDialog && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#fff", width: "450px", maxWidth: "100%", borderRadius: "var(--radius-xl)", padding: "32px", boxShadow: "var(--shadow-lg)", textAlign: "center" }}>
-            <h2 style={{ margin: "0 0 15px 0", color: "var(--text-main)", fontSize: "1.4rem", fontWeight: 700 }}>Confirm {confirmDialog.type}</h2>
-            <p style={{ color: "var(--text-muted)", fontSize: "1rem", marginBottom: "28px", lineHeight: "1.6" }}>
+        <div className={styles.modalOverlay} onClick={() => setConfirmDialog(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "420px", textAlign: "center", padding: "28px" }}>
+            <h2 style={{ margin: "0 0 10px 0", color: "var(--text-main)", fontSize: "1.25rem", fontWeight: 700 }}>Confirm {confirmDialog.type}</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.92rem", marginBottom: "24px", lineHeight: 1.55 }}>
               {confirmDialog.message}
             </p>
-            <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "center" }}>
               <button
                 onClick={() => setConfirmDialog(null)}
-                style={{ flex: 1, padding: "12px", borderRadius: "var(--radius-md)", background: "var(--border-color)", border: "none", color: "var(--text-main)", fontSize: "1rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                className={styles.btnSecondary}
+                style={{ flex: 1, padding: "10px" }}
               >
                 Cancel
               </button>
               <button
                 onClick={executeAction}
-                style={{ flex: 1, padding: "12px", borderRadius: "var(--radius-md)", background: confirmDialog.type === "Approve" ? "#10b981" : "#dc2626", border: "none", color: "#fff", fontSize: "1rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                className={confirmDialog.type === "Approve" ? styles.btnPrimary : styles.btnDanger}
+                style={{ flex: 1, padding: "10px", ...(confirmDialog.type === "Approve" ? { background: "var(--success-color)" } : {}) }}
               >
                 Confirm {confirmDialog.type}
               </button>
@@ -1023,33 +1014,35 @@ export default function LecturerDashboard() {
 
       {/* Manage Deadlines Modal */}
       {deadlineModalThesis && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#fff", width: "460px", maxWidth: "100%", borderRadius: "var(--radius-xl)", padding: "32px", boxShadow: "var(--shadow-lg)" }}>
-            <h2 style={{ margin: "0 0 20px 0", color: "var(--text-main)", fontSize: "1.3rem", fontWeight: 700 }}>Manage Deadlines</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+        <div className={styles.modalOverlay} onClick={() => setDeadlineModalThesis(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "440px", padding: "28px" }}>
+            <h2 style={{ margin: "0 0 18px 0", color: "var(--text-main)", fontSize: "1.2rem", fontWeight: 700 }}>Manage Stage Deadlines</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "5px", fontWeight: 500 }}>Advisor Review Deadline</label>
-                <input type="datetime-local" value={deadlineAdvisor} onChange={e => setDeadlineAdvisor(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none" }} />
+                <label style={{ display: "block", fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>Advisor Review Deadline</label>
+                <input type="datetime-local" value={deadlineAdvisor} onChange={e => setDeadlineAdvisor(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none", fontSize: "0.88rem" }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "5px", fontWeight: 500 }}>Committee Review Deadline</label>
-                <input type="datetime-local" value={deadlineCommittee} onChange={e => setDeadlineCommittee(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none" }} />
+                <label style={{ display: "block", fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>Committee Review Deadline</label>
+                <input type="datetime-local" value={deadlineCommittee} onChange={e => setDeadlineCommittee(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none", fontSize: "0.88rem" }} />
               </div>
               <div>
-                <label style={{ display: "block", fontSize: "0.85rem", color: "var(--text-muted)", marginBottom: "5px", fontWeight: 500 }}>Chairperson Review Deadline</label>
-                <input type="datetime-local" value={deadlineChairperson} onChange={e => setDeadlineChairperson(e.target.value)} style={{ width: "100%", padding: "10px", borderRadius: "var(--radius-md)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none" }} />
+                <label style={{ display: "block", fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "4px", fontWeight: 600 }}>Chairperson Review Deadline</label>
+                <input type="datetime-local" value={deadlineChairperson} onChange={e => setDeadlineChairperson(e.target.value)} style={{ width: "100%", padding: "8px 12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", fontFamily: "inherit", outline: "none", fontSize: "0.88rem" }} />
               </div>
-              <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+              <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
                 <button
                   onClick={() => setDeadlineModalThesis(null)}
-                  style={{ flex: 1, padding: "12px", borderRadius: "var(--radius-md)", background: "var(--border-color)", border: "none", color: "var(--text-main)", fontSize: "1rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+                  className={styles.btnSecondary}
+                  style={{ flex: 1, padding: "10px" }}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleSaveDeadlines}
                   disabled={savingDeadlines}
-                  style={{ flex: 1, padding: "12px", borderRadius: "var(--radius-md)", background: "var(--primary-color)", border: "none", color: "#fff", fontSize: "1rem", fontWeight: 600, cursor: "pointer", opacity: savingDeadlines ? 0.7 : 1, fontFamily: "inherit" }}
+                  className={styles.btnPrimary}
+                  style={{ flex: 1, padding: "10px" }}
                 >
                   {savingDeadlines ? "Saving..." : "Save Deadlines"}
                 </button>
@@ -1061,15 +1054,16 @@ export default function LecturerDashboard() {
 
       {/* Error Modal */}
       {errorDialog && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#fff", width: "420px", maxWidth: "100%", borderRadius: "var(--radius-xl)", padding: "32px", boxShadow: "var(--shadow-lg)", textAlign: "center" }}>
-            <h2 style={{ margin: "0 0 15px 0", color: "var(--danger-color)", fontSize: "1.4rem", fontWeight: 700 }}>Notice</h2>
-            <p style={{ color: "var(--text-main)", fontSize: "1rem", marginBottom: "28px", lineHeight: "1.6" }}>
+        <div className={styles.modalOverlay} onClick={() => setErrorDialog(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "400px", borderRadius: "var(--radius-xl)", padding: "28px", textAlign: "center" }}>
+            <h2 style={{ margin: "0 0 10px 0", color: "var(--danger-color)", fontSize: "1.25rem", fontWeight: 700 }}>Notice</h2>
+            <p style={{ color: "var(--text-main)", fontSize: "0.92rem", marginBottom: "22px", lineHeight: 1.5 }}>
               {errorDialog}
             </p>
             <button
               onClick={() => setErrorDialog(null)}
-              style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-md)", background: "var(--primary-color)", border: "none", color: "#fff", fontSize: "1rem", fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}
+              className={styles.btnPrimary}
+              style={{ width: "100%", padding: "10px" }}
             >
               Okay
             </button>
@@ -1079,50 +1073,45 @@ export default function LecturerDashboard() {
 
       {/* Abstract & Scope Edit Review Modal */}
       {topicReviewThesis && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(30,27,75,0.5)", backdropFilter: "blur(6px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "var(--bg-card)", width: "900px", maxWidth: "100%", maxHeight: "90vh", borderRadius: "var(--radius-xl)", display: "flex", flexDirection: "column", overflow: "hidden", boxShadow: "var(--shadow-lg)" }}>
-
-            <div style={{ padding: "18px 28px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "linear-gradient(135deg, var(--primary-color), #6d28d9)" }}>
+        <div className={styles.modalOverlay} onClick={() => setTopicReviewThesis(null)}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "860px" }}>
+            <div style={{ padding: "0 0 16px 0", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h2 style={{ margin: 0, color: "#fff", fontSize: "1.25rem", fontWeight: 700 }}>Review Abstract & Scope Edits</h2>
-                <div style={{ fontSize: "0.875rem", color: "rgba(255,255,255,0.8)", marginTop: "4px" }}>
+                <h2 style={{ margin: 0, color: "var(--text-main)", fontSize: "1.25rem", fontWeight: 700 }}>Review Abstract & Scope Edits</h2>
+                <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "2px" }}>
                   <strong>{topicReviewThesis.title}</strong>
                 </div>
               </div>
-              <button
-                onClick={() => setTopicReviewThesis(null)}
-                style={{ background: "rgba(255,255,255,0.15)", border: "1px solid rgba(255,255,255,0.3)", borderRadius: "50%", width: "34px", height: "34px", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.3rem", cursor: "pointer", color: "#fff" }}
-              >&times;</button>
+              <button className={styles.modalClose} onClick={() => setTopicReviewThesis(null)}>&times;</button>
             </div>
 
-            <div style={{ padding: "30px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "20px" }}>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-                <div style={{ flex: "1 1 300px", background: "#fff", padding: "16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "var(--text-muted)", fontSize: "0.95rem", fontWeight: 600 }}>Current Abstract</h3>
-                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "var(--text-main)", margin: 0, lineHeight: 1.65 }}>{topicReviewThesis.abstract || "No abstract provided."}</p>
+            <div style={{ padding: "20px 0", display: "flex", flexDirection: "column", gap: "16px", maxHeight: "60vh", overflowY: "auto" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+                <div style={{ flex: "1 1 300px", background: "var(--bg-subtle)", padding: "14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)" }}>
+                  <h3 style={{ margin: "0 0 8px 0", color: "var(--text-muted)", fontSize: "0.85rem", fontWeight: 600, textTransform: "uppercase" }}>Current Abstract</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.88rem", color: "var(--text-main)", margin: 0, lineHeight: 1.6 }}>{topicReviewThesis.abstract || "No abstract provided."}</p>
                 </div>
-                <div style={{ flex: "1 1 300px", background: "var(--primary-lighter)", padding: "16px", borderRadius: "var(--radius-md)", border: "2px solid var(--primary-color)" }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "var(--primary-color)", fontSize: "0.95rem", fontWeight: 600 }}>Proposed Abstract</h3>
-                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "var(--text-main)", margin: 0, lineHeight: 1.65 }}>{topicReviewThesis.pendingAbstract || "No abstract provided."}</p>
+                <div style={{ flex: "1 1 300px", background: "var(--primary-light)", padding: "14px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--primary-border)" }}>
+                  <h3 style={{ margin: "0 0 8px 0", color: "var(--primary-color)", fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase" }}>Proposed Abstract</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.88rem", color: "var(--text-main)", margin: 0, lineHeight: 1.6 }}>{topicReviewThesis.pendingAbstract || "No abstract provided."}</p>
                 </div>
               </div>
 
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "20px" }}>
-                <div style={{ flex: "1 1 300px", background: "#fff", padding: "16px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "var(--text-muted)", fontSize: "0.95rem", fontWeight: 600 }}>Current Scope</h3>
-                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "var(--text-main)", margin: 0, lineHeight: 1.65 }}>{topicReviewThesis.scope || "No scope provided."}</p>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+                <div style={{ flex: "1 1 300px", background: "var(--bg-subtle)", padding: "14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)" }}>
+                  <h3 style={{ margin: "0 0 8px 0", color: "var(--text-muted)", fontSize: "0.85rem", fontWeight: 600, textTransform: "uppercase" }}>Current Scope</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.88rem", color: "var(--text-main)", margin: 0, lineHeight: 1.6 }}>{topicReviewThesis.scope || "No scope provided."}</p>
                 </div>
-                <div style={{ flex: "1 1 300px", background: "var(--primary-lighter)", padding: "16px", borderRadius: "var(--radius-md)", border: "2px solid var(--primary-color)" }}>
-                  <h3 style={{ margin: "0 0 10px 0", color: "var(--primary-color)", fontSize: "0.95rem", fontWeight: 600 }}>Proposed Scope</h3>
-                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.95rem", color: "var(--text-main)", margin: 0, lineHeight: 1.65 }}>{topicReviewThesis.pendingScope || "No scope provided."}</p>
+                <div style={{ flex: "1 1 300px", background: "var(--primary-light)", padding: "14px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--primary-border)" }}>
+                  <h3 style={{ margin: "0 0 8px 0", color: "var(--primary-color)", fontSize: "0.85rem", fontWeight: 700, textTransform: "uppercase" }}>Proposed Scope</h3>
+                  <p style={{ whiteSpace: "pre-wrap", fontSize: "0.88rem", color: "var(--text-main)", margin: 0, lineHeight: 1.6 }}>{topicReviewThesis.pendingScope || "No scope provided."}</p>
                 </div>
               </div>
             </div>
 
-            <div style={{ padding: "18px 28px", borderTop: "1px solid var(--border-color)", display: "flex", justifyContent: "flex-end", gap: "12px", background: "var(--primary-lighter)" }}>
+            <div style={{ padding: "16px 0 0 0", borderTop: "1px solid var(--border-color)", display: "flex", justifyContent: "flex-end", gap: "10px" }}>
               <button
                 className={styles.btnDanger}
-                style={{ margin: 0, padding: "10px 20px" }}
                 onClick={handleRejectTopicEdits}
                 disabled={topicReviewActionLoading}
               >
@@ -1130,14 +1119,12 @@ export default function LecturerDashboard() {
               </button>
               <button
                 className={styles.btnPrimary}
-                style={{ margin: 0, padding: "10px 20px" }}
                 onClick={handleApproveTopicEdits}
                 disabled={topicReviewActionLoading}
               >
                 {topicReviewActionLoading ? "Processing..." : "Approve Edits"}
               </button>
             </div>
-
           </div>
         </div>
       )}
@@ -1149,7 +1136,6 @@ export default function LecturerDashboard() {
         fieldOfStudy={selectedNoteField}
         showFieldSelect={true}
       />
-
     </div>
   );
 }

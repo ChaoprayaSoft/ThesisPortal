@@ -5,6 +5,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { useRouter } from "next/navigation";
 import { getCommentTemplates, setCommentTemplates } from "@/lib/db/settings";
 import styles from "../admin.module.css";
+import { Plus, Trash2, Save, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function CommentTemplatesPage() {
   const [templates, setTemplates] = useState<string[]>([]);
@@ -61,102 +62,95 @@ export default function CommentTemplatesPage() {
   };
 
   if (authLoading || loading) {
-    return <div className={styles.loading}>Loading comment templates...</div>;
+    return (
+      <div className={styles.loading}>
+        <div className={styles.loadingSpinner}></div>
+        <span>Loading comment templates...</span>
+      </div>
+    );
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 style={{ fontSize: "1.75rem", fontWeight: "bold", marginBottom: "5px" }}>Pre-defined Comment Templates</h1>
-        <p style={{ color: "var(--text-muted)", marginBottom: "20px" }}>Manage sentences that lecturers can easily insert when reviewing a thesis.</p>
+    <div className={styles.card} style={{ maxWidth: "800px", margin: "0 auto" }}>
+      <div className={styles.pageHeader} style={{ marginBottom: "20px" }}>
+        <div>
+          <h1 style={{ fontSize: "1.6rem", margin: 0 }}>Comment Templates</h1>
+          <p style={{ color: "var(--text-muted)", margin: "4px 0 0 0", fontSize: "0.9rem" }}>
+            Configure quick-insert feedback sentences available to faculty members during review.
+          </p>
+        </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "20px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "16px" }}>
         {templates.map((template, index) => (
           <div key={index} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
             <input
               type="text"
               value={template}
               onChange={(e) => handleTemplateChange(index, e.target.value)}
-              placeholder="Enter comment sentence..."
+              placeholder="Enter feedback template..."
               style={{
                 flex: 1,
-                padding: "10px",
+                padding: "9px 13px",
                 borderRadius: "var(--radius-sm)",
-                border: "1px solid var(--border-color)",
-                background: "var(--bg-main)",
+                border: "1.5px solid var(--border-color)",
+                background: "#ffffff",
                 color: "var(--text-main)",
-                fontSize: "1rem"
+                fontSize: "0.92rem",
+                outline: "none",
+                fontFamily: "inherit"
               }}
             />
             <button
               onClick={() => handleRemoveTemplate(index)}
-              style={{
-                padding: "10px 15px",
-                background: "#ff4d4f",
-                color: "white",
-                border: "none",
-                borderRadius: "var(--radius-sm)",
-                cursor: "pointer",
-                fontWeight: "bold"
-              }}
+              className={styles.btnDanger}
+              style={{ padding: "8px 12px" }}
+              title="Delete template"
             >
-              Delete
+              <Trash2 size={15} />
             </button>
           </div>
         ))}
       </div>
 
-      <div style={{ marginTop: "15px", marginBottom: "30px" }}>
+      <div style={{ marginTop: "16px", marginBottom: "24px" }}>
         <button
           onClick={handleAddTemplate}
-          style={{
-            padding: "10px 15px",
-            background: "var(--primary-color)",
-            color: "white",
-            border: "none",
-            borderRadius: "var(--radius-sm)",
-            cursor: "pointer",
-            fontWeight: "bold",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "5px"
-          }}
+          className={styles.btnSecondary}
+          style={{ padding: "8px 16px" }}
         >
-          + Add New Sentence
+          <Plus size={16} />
+          Add Feedback Sentence
         </button>
       </div>
 
-      <div className={styles.footer} style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid var(--border-color)" }}>
+      <div style={{ paddingTop: "16px", borderTop: "1px solid var(--border-color)", display: "flex", justifyContent: "flex-end" }}>
         <button 
-          className={styles.saveBtn} 
+          className={styles.btnPrimary} 
           onClick={handleSave}
           disabled={saving}
-          style={{
-            padding: "12px 24px",
-            background: "var(--primary-color)",
-            color: "white",
-            border: "none",
-            borderRadius: "var(--radius-md)",
-            cursor: "pointer",
-            fontWeight: "bold",
-            fontSize: "1rem"
-          }}
+          style={{ padding: "10px 24px" }}
         >
+          <Save size={16} />
           {saving ? "Saving..." : "Save Templates"}
         </button>
       </div>
 
       {status && (
         <div style={{ 
-          marginTop: "15px", 
-          padding: "10px", 
+          marginTop: "16px", 
+          padding: "12px 16px", 
           borderRadius: "var(--radius-sm)",
-          background: status.type === "success" ? "#d4edda" : "#f8d7da",
-          color: status.type === "success" ? "#155724" : "#721c24",
-          border: `1px solid ${status.type === "success" ? "#c3e6cb" : "#f5c6cb"}`
+          background: status.type === "success" ? "var(--success-bg)" : "var(--danger-bg)",
+          color: status.type === "success" ? "var(--success-text)" : "var(--danger-text)",
+          border: `1px solid ${status.type === "success" ? "var(--success-border)" : "var(--danger-border)"}`,
+          fontSize: "0.9rem",
+          display: "flex",
+          alignItems: "center",
+          gap: "8px"
         }}>
-          {status.message}
+          {status.type === "success" ? <CheckCircle2 size={16} /> : <AlertCircle size={16} />}
+          <span>{status.message}</span>
         </div>
       )}
     </div>

@@ -2,11 +2,24 @@
 
 import { useState, useEffect } from "react";
 import { useAuth } from "@/components/AuthProvider";
-import { getThesesByStudent, subscribeToThesesByStudent, updateThesis, logThesisActivity, getThesisActivities, ThesisData, ThesisActivity, updateThesisStatus, getStatusForStage, deleteThesisActivity, getDisplayStatus, requestEquipmentCheck } from "@/lib/db/theses";
+import { 
+  getThesesByStudent, 
+  subscribeToThesesByStudent, 
+  updateThesis, 
+  logThesisActivity, 
+  getThesisActivities, 
+  ThesisData, 
+  ThesisActivity, 
+  updateThesisStatus, 
+  getStatusForStage, 
+  deleteThesisActivity, 
+  getDisplayStatus, 
+  requestEquipmentCheck 
+} from "@/lib/db/theses";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
-import { Plus, X, ExternalLink, Bell } from "lucide-react";
+import { Plus, X, ExternalLink, Bell, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Wrench, FileText } from "lucide-react";
 import ImportantNoteModal from "@/components/ImportantNoteModal";
 
 const getStageLabel = (stage: number) => {
@@ -21,6 +34,7 @@ const getStageLabel = (stage: number) => {
     default: return "Unknown";
   }
 };
+
 export default function StudentDashboard() {
   const { user, dbUser } = useAuth();
   const [thesis, setThesis] = useState<ThesisData | null>(null);
@@ -63,7 +77,6 @@ export default function StudentDashboard() {
           const acts = await getThesisActivities(myThesis.id!);
           setActivities(acts);
 
-          // Load lecturers for names
           const allLecturers = await getLecturers();
           const map: Record<string, UserData> = {};
           allLecturers.forEach((l: any) => map[l.email] = l);
@@ -90,9 +103,23 @@ export default function StudentDashboard() {
     }
   };
 
-  const loadData = async () => {
-    // left empty for backwards compatibility
+  const getStatusBadgeStyle = (status: string) => {
+    if (status === "Graduate") {
+      return { background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-border)" };
+    }
+    if (status === "Revise") {
+      return { background: "var(--danger-bg)", color: "var(--danger-text)", border: "1px solid var(--danger-border)" };
+    }
+    if (status.includes("Chairperson")) {
+      return { background: "var(--info-bg)", color: "var(--info-text)", border: "1px solid var(--info-border)" };
+    }
+    if (status.includes("Committee")) {
+      return { background: "var(--purple-bg)", color: "var(--purple-text)", border: "1px solid var(--purple-border)" };
+    }
+    return { background: "var(--warning-bg)", color: "var(--warning-text)", border: "1px solid var(--warning-border)" };
   };
+
+  const loadData = async () => {};
 
   useEffect(() => {
     if (!thesis) return;
@@ -125,9 +152,8 @@ export default function StudentDashboard() {
       }
     };
 
-    updateTimer(); // Initial call
+    updateTimer();
     const interval = setInterval(updateTimer, 1000);
-
     return () => clearInterval(interval);
   }, [thesis]);
 
@@ -159,7 +185,6 @@ export default function StudentDashboard() {
           html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has proposed edits for the thesis <b>${thesis.title}</b>.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review them.</p>`
         });
       }
-
     } catch (error) {
       alert("Failed to submit edits.");
     }
@@ -185,14 +210,12 @@ export default function StudentDashboard() {
   const handleSubmitLinks = async () => {
     if (!thesis?.id || !user?.email) return;
 
-    // Validation
     const validLinks = submissionLinks.filter(l => l.url.trim() !== "");
     if (validLinks.length === 0) {
       setErrorDialog("Please provide at least one valid URL.");
       return;
     }
 
-    // Check if URLs are somewhat valid (start with http)
     const invalidUrl = validLinks.find(l => !l.url.trim().startsWith("http"));
     if (invalidUrl) {
       setErrorDialog("URLs must start with http:// or https://");
@@ -218,7 +241,6 @@ export default function StudentDashboard() {
 
         const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
 
-        // Notify based on currentStage
         if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
           await sendNotificationEmail({
             to: thesis.lecturerUids.advisor,
@@ -243,7 +265,6 @@ export default function StudentDashboard() {
       }
 
       await updateThesis(thesis.id, { statusUpdatedAt: Date.now() });
-
       setSubmissionLinks([{ type: "Manuscript", url: "" }]);
       await loadData();
     } catch (err) {
@@ -303,14 +324,12 @@ export default function StudentDashboard() {
       const revertStatus = activity.type === "Initial Submission" ? "Preparing" : "Revise";
       await updateThesis(thesis.id, { status: revertStatus, statusUpdatedAt: Date.now() });
 
-      // Notify Student
       await sendNotificationEmail({
         to: user.email,
         subject: `Submission Cancelled: ${thesis.title}`,
         html: `<p>You have successfully cancelled your recent submission for <b>${thesis.title}</b>.</p><p>You can make a new submission when ready.</p>`
       });
 
-      // Notify Lecturer(s) based on current stage
       if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
         await sendNotificationEmail({
           to: thesis.lecturerUids.advisor,
@@ -341,14 +360,19 @@ export default function StudentDashboard() {
   };
 
   if (loading) {
-    return <div className={styles.loading}>Loading your workspace...</div>;
+    return (
+      <div className={styles.loading}>
+        <div className={styles.loadingSpinner}></div>
+        <span>Loading your workspace...</span>
+      </div>
+    );
   }
 
   if (!thesis) {
     return (
-      <div className={styles.card} style={{ textAlign: "center" }}>
-        <h2>No Thesis Assigned</h2>
-        <p>You have not been assigned to a thesis project yet. Please contact your administrator.</p>
+      <div className={styles.card} style={{ textAlign: "center", padding: "48px 24px" }}>
+        <h2 style={{ fontSize: "1.4rem", color: "var(--text-main)", marginBottom: "8px" }}>No Thesis Assigned</h2>
+        <p style={{ color: "var(--text-muted)", margin: 0 }}>You have not been assigned to a thesis project yet. Please contact your faculty administrator.</p>
       </div>
     );
   }
@@ -363,14 +387,13 @@ export default function StudentDashboard() {
               onClick={(!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? () => setShowEquipmentCheckModal(true) : undefined}
               className={styles.btnPrimary}
               style={{
-                display: 'flex', alignItems: 'center', gap: '8px',
-                backgroundColor: thesis.equipmentCheckStatus === 'Approved' ? '#10b981' : (thesis.equipmentCheckStatus === 'Requested' ? '#3b82f6' : '#f59e0b'),
-                borderColor: thesis.equipmentCheckStatus === 'Approved' ? '#10b981' : (thesis.equipmentCheckStatus === 'Requested' ? '#3b82f6' : '#f59e0b'),
+                backgroundColor: thesis.equipmentCheckStatus === 'Approved' ? 'var(--success-color)' : (thesis.equipmentCheckStatus === 'Requested' ? 'var(--info-color)' : 'var(--warning-color)'),
+                boxShadow: "none",
                 cursor: (!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? 'pointer' : 'default',
-                margin: 0
               }}
               disabled={requestingEquipmentCheck || (thesis.equipmentCheckStatus !== undefined && thesis.equipmentCheckStatus !== 'Pending Request')}
             >
+              <Wrench size={16} />
               {requestingEquipmentCheck ? "Requesting..." : (
                 (!thesis.equipmentCheckStatus || thesis.equipmentCheckStatus === 'Pending Request') ? "Request Equipment Check" :
                 thesis.equipmentCheckStatus === 'Requested' ? "Equipment Check: Pending Approval" :
@@ -380,10 +403,10 @@ export default function StudentDashboard() {
           )}
           <button 
             onClick={() => setIsNoteModalOpen(true)}
-            className={styles.btnPrimary}
-            style={{ display: 'flex', alignItems: 'center', gap: '8px', backgroundColor: 'var(--danger-color)', borderColor: 'var(--danger-color)', margin: 0 }}
+            className={styles.btnDanger}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
-            <Bell size={18} />
+            <Bell size={16} />
             Important Note
           </button>
         </div>
@@ -396,49 +419,51 @@ export default function StudentDashboard() {
       />
 
       {showEquipmentCheckModal && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#fff", width: "450px", maxWidth: "100%", borderRadius: "12px", padding: "30px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)" }}>
-            <h2 style={{ margin: "0 0 15px 0", color: "#4A4238", fontSize: "1.4rem" }}>Request Equipment Check</h2>
-            <p style={{ color: "#7A7061", fontSize: "0.95rem", marginBottom: "20px" }}>
-              You are about to request an equipment check. You can optionally leave a message below.
+        <div className={styles.modalOverlay} style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15, 23, 42, 0.45)", backdropFilter: "blur(8px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "#fff", width: "480px", maxWidth: "100%", borderRadius: "var(--radius-xl)", padding: "28px", boxShadow: "var(--shadow-modal)", border: "1px solid var(--border-color)" }}>
+            <h2 style={{ margin: "0 0 10px 0", color: "var(--text-main)", fontSize: "1.25rem", fontWeight: 700 }}>Request Equipment Check</h2>
+            <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", marginBottom: "18px", lineHeight: 1.5 }}>
+              Submit a request to your assigned equipment inspector. You may include an optional note below.
             </p>
             <textarea
               value={equipmentCheckMessage}
               onChange={e => setEquipmentCheckMessage(e.target.value)}
-              placeholder="Leave a message (optional)"
-              style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "80px", fontFamily: "inherit", background: "#fff", marginBottom: "20px" }}
+              placeholder="Leave a message or list of borrowed items (optional)..."
+              style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", minHeight: "90px", fontFamily: "inherit", background: "#fff", marginBottom: "20px", fontSize: "0.9rem", outline: "none" }}
             />
-            <div style={{ display: "flex", gap: "15px", justifyContent: "flex-end" }}>
+            <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
               <button
                 onClick={() => { setShowEquipmentCheckModal(false); setEquipmentCheckMessage(""); }}
-                style={{ padding: "10px 20px", borderRadius: "6px", background: "#EBE4D1", border: "none", color: "#4A4238", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+                className={styles.btnSecondary}
               >
                 Cancel
               </button>
               <button
                 onClick={handleRequestEquipmentCheck}
                 disabled={requestingEquipmentCheck}
-                style={{ padding: "10px 20px", borderRadius: "6px", background: "#10b981", border: "none", color: "#fff", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+                className={styles.btnPrimary}
               >
-                {requestingEquipmentCheck ? "Confirming..." : "Confirm"}
+                {requestingEquipmentCheck ? "Confirming..." : "Confirm Request"}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Thesis Header Card */}
       <div className={`${styles.card} ${styles.workspaceHeader}`}>
         <div>
-          <h2 style={{ marginBottom: "10px", fontSize: "1.8rem" }}>{thesis.title}</h2>
-          <div style={{ display: "flex", gap: "20px", color: "#7A7061", fontSize: "0.95rem", flexWrap: "wrap" }}>
-            <span><strong>Year:</strong> {thesis.year || "-"}</span>
-            <span><strong>Field:</strong> {thesis.fieldOfStudy || "-"}</span>
+          <h2 style={{ marginBottom: "8px", fontSize: "1.55rem", letterSpacing: "-0.025em" }}>{thesis.title}</h2>
+          <div style={{ display: "flex", gap: "16px", color: "var(--text-muted)", fontSize: "0.88rem", flexWrap: "wrap" }}>
+            <span><strong style={{ color: "var(--text-main)" }}>Year:</strong> {thesis.year || "-"}</span>
+            <span><strong style={{ color: "var(--text-main)" }}>Field:</strong> {thesis.fieldOfStudy || "-"}</span>
           </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }} className={styles.statusBadge}>
-          <div style={{ fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px", marginBottom: "8px" }}>Current Status</div>
-          <div style={{ padding: "8px 16px", background: "#EBE4D1", borderRadius: "999px", fontWeight: "bold", color: "#4A4238", border: "1px solid #D6CEB8", display: "inline-block" }}>
-            {getStageIcon(thesis.currentStage)} {getDisplayStatus(thesis)}
+        <div className={styles.statusBadge}>
+          <div style={{ fontSize: "0.78rem", color: "var(--text-light)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600, marginBottom: "6px" }}>Current Status</div>
+          <div style={{ padding: "6px 14px", borderRadius: "var(--radius-full)", fontWeight: 700, fontSize: "0.88rem", display: "inline-flex", alignItems: "center", gap: "6px", ...getStatusBadgeStyle(thesis.status) }}>
+            <span>{getStageIcon(thesis.currentStage)}</span>
+            <span>{getDisplayStatus(thesis)}</span>
           </div>
         </div>
       </div>
@@ -451,32 +476,42 @@ export default function StudentDashboard() {
         else if (thesis.currentStage === 2) stageName = "Chairperson";
 
         return thesis.currentStage < 3 && (timeLeft || isLate) && (
-          <div style={{ background: isLate ? "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)" : "linear-gradient(135deg, #1e293b 0%, #0f172a 100%)", borderRadius: "12px", padding: "20px 30px", marginBottom: "20px", display: "flex", justifyContent: "space-between", alignItems: "center", boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1)", border: isLate ? "1px solid #fca5a5" : "1px solid #334155" }}>
+          <div style={{ 
+            background: isLate ? "var(--danger-bg)" : "#1e293b", 
+            borderRadius: "var(--radius-lg)", 
+            padding: "20px 28px", 
+            marginBottom: "24px", 
+            display: "flex", 
+            justifyContent: "space-between", 
+            alignItems: "center", 
+            flexWrap: "wrap",
+            gap: "16px",
+            boxShadow: "var(--shadow-card)", 
+            border: isLate ? "1px solid var(--danger-border)" : "1px solid #334155" 
+          }}>
             <div>
-              <h3 style={{ margin: 0, color: isLate ? "#991b1b" : "#94a3b8", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "1px" }}>Current Stage Deadline ({stageName})</h3>
-              <div style={{ color: isLate ? "#dc2626" : "#f8fafc", fontSize: "1.2rem", fontWeight: "bold", marginTop: "5px" }}>
-                {isLate ? "Submission is LATE!" : "Time Remaining for Submission"}
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: isLate ? "var(--danger-text)" : "var(--primary-light)", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>
+                <Clock size={14} />
+                <span>Stage Deadline ({stageName})</span>
+              </div>
+              <div style={{ color: isLate ? "var(--danger-text)" : "#f8fafc", fontSize: "1.15rem", fontWeight: 700, marginTop: "4px" }}>
+                {isLate ? "Submission deadline has passed!" : "Time remaining before stage deadline"}
               </div>
             </div>
 
             {!isLate && timeLeft && (
-              <div style={{ display: "flex", gap: "15px", color: "#fff", textAlign: "center" }}>
-                <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.days}</div>
-                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Days</div>
-                </div>
-                <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.hours}</div>
-                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Hours</div>
-                </div>
-                <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.minutes}</div>
-                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Mins</div>
-                </div>
-                <div style={{ background: "rgba(255,255,255,0.1)", padding: "10px 15px", borderRadius: "8px", minWidth: "70px" }}>
-                  <div style={{ fontSize: "1.8rem", fontWeight: "bold", lineHeight: "1" }}>{timeLeft.seconds}</div>
-                  <div style={{ fontSize: "0.7rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "4px" }}>Secs</div>
-                </div>
+              <div style={{ display: "flex", gap: "10px", color: "#fff", textAlign: "center" }}>
+                {[
+                  { label: "Days", val: timeLeft.days },
+                  { label: "Hours", val: timeLeft.hours },
+                  { label: "Mins", val: timeLeft.minutes },
+                  { label: "Secs", val: timeLeft.seconds },
+                ].map((item, i) => (
+                  <div key={i} style={{ background: "rgba(255, 255, 255, 0.08)", padding: "8px 14px", borderRadius: "var(--radius-sm)", minWidth: "58px", border: "1px solid rgba(255, 255, 255, 0.1)" }}>
+                    <div style={{ fontSize: "1.45rem", fontWeight: 800, lineHeight: 1, color: "#ffffff" }}>{item.val}</div>
+                    <div style={{ fontSize: "0.68rem", color: "#94a3b8", textTransform: "uppercase", marginTop: "3px", fontWeight: 600 }}>{item.label}</div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
@@ -484,108 +519,120 @@ export default function StudentDashboard() {
       })()}
 
       <div className={styles.dashboardGrid}>
-
         {/* LEFT COLUMN */}
         <div>
+          {/* Abstract & Scope Card */}
           <div className={styles.card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
               <h2 style={{ margin: 0 }}>Abstract & Scope</h2>
               {!isEditing && (
-                <button className={styles.btnPrimary} style={{ margin: 0, padding: "6px 12px", fontSize: "0.85rem" }} onClick={() => setIsEditing(true)}>
+                <button 
+                  className={styles.btnSecondary} 
+                  style={{ padding: "6px 14px", fontSize: "0.82rem" }} 
+                  onClick={() => setIsEditing(true)}
+                >
                   Propose Edits
                 </button>
               )}
             </div>
 
             {(thesis.pendingAbstract || thesis.pendingScope) && !isEditing && (
-              <div style={{ background: "#fef3c7", padding: "10px 15px", borderRadius: "6px", fontSize: "0.85rem", color: "#92400e", marginBottom: "20px", border: "1px solid #fcd34d" }}>
-                <strong>Note:</strong> You have proposed edits pending approval from your Advisor.
+              <div style={{ background: "var(--warning-bg)", padding: "10px 14px", borderRadius: "var(--radius-sm)", fontSize: "0.85rem", color: "var(--warning-text)", marginBottom: "18px", border: "1px solid var(--warning-border)", display: "flex", alignItems: "center", gap: "8px" }}>
+                <AlertTriangle size={16} />
+                <span>You have proposed topic edits pending approval from your Advisor.</span>
               </div>
             )}
 
             {isEditing ? (
-              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "5px" }}>Abstract</label>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "6px" }}>Abstract</label>
                   <textarea
                     value={editAbstract}
                     onChange={e => setEditAbstract(e.target.value)}
-                    style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "150px", fontFamily: "inherit" }}
+                    style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", minHeight: "130px", fontFamily: "inherit", fontSize: "0.92rem", outline: "none" }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: "block", fontSize: "0.9rem", fontWeight: "bold", color: "#4A4238", marginBottom: "5px" }}>Scope</label>
+                  <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, color: "var(--text-main)", marginBottom: "6px" }}>Scope</label>
                   <textarea
                     value={editScope}
                     onChange={e => setEditScope(e.target.value)}
-                    style={{ width: "100%", padding: "12px", borderRadius: "6px", border: "1px solid #D6CEB8", minHeight: "100px", fontFamily: "inherit" }}
+                    style={{ width: "100%", padding: "12px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", minHeight: "90px", fontFamily: "inherit", fontSize: "0.92rem", outline: "none" }}
                   />
                 </div>
                 <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-                  <button className={styles.btnDanger} onClick={() => { setIsEditing(false); setEditAbstract(thesis.pendingAbstract || thesis.abstract); setEditScope(thesis.pendingScope || thesis.scope); }} disabled={submittingEdits}>Cancel</button>
-                  <button className={styles.btnPrimary} style={{ margin: 0 }} onClick={handleProposeEdits} disabled={submittingEdits}>
+                  <button className={styles.btnSecondary} onClick={() => { setIsEditing(false); setEditAbstract(thesis.pendingAbstract || thesis.abstract); setEditScope(thesis.pendingScope || thesis.scope); }} disabled={submittingEdits}>
+                    Cancel
+                  </button>
+                  <button className={styles.btnPrimary} onClick={handleProposeEdits} disabled={submittingEdits}>
                     {submittingEdits ? "Submitting..." : "Submit to Advisor"}
                   </button>
                 </div>
               </div>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "18px" }}>
                 <div>
-                  <h3 style={{ fontSize: "1rem", color: "#4A4238", margin: "0 0 5px 0" }}>Abstract</h3>
-                  <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{thesis.pendingAbstract || thesis.abstract || "No abstract provided."}</p>
+                  <h3 style={{ fontSize: "0.9rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px 0", fontWeight: 700 }}>Abstract</h3>
+                  <p style={{ margin: 0, whiteSpace: "pre-wrap", color: "var(--text-main)", fontSize: "0.92rem", lineHeight: 1.65 }}>{thesis.pendingAbstract || thesis.abstract || "No abstract provided."}</p>
                 </div>
                 <div>
-                  <h3 style={{ fontSize: "1rem", color: "#4A4238", margin: "0 0 5px 0" }}>Scope</h3>
-                  <p style={{ margin: 0, whiteSpace: "pre-wrap" }}>{thesis.pendingScope || thesis.scope || "No scope provided."}</p>
+                  <h3 style={{ fontSize: "0.9rem", color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: "0.04em", margin: "0 0 6px 0", fontWeight: 700 }}>Scope</h3>
+                  <p style={{ margin: 0, whiteSpace: "pre-wrap", color: "var(--text-main)", fontSize: "0.92rem", lineHeight: 1.65 }}>{thesis.pendingScope || thesis.scope || "No scope provided."}</p>
                 </div>
               </div>
             )}
           </div>
 
+          {/* Activity & Reviews Card */}
           <div className={styles.card}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px" }}>
-              <h2 style={{ margin: 0 }}>Activity & Reviews</h2>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "18px" }}>
+              <h2 style={{ margin: 0 }}>Activity & Review Trail</h2>
             </div>
 
             {activities.length === 0 ? (
-              <p style={{ color: "#7A7061", fontStyle: "italic" }}>No activity recorded yet.</p>
+              <p style={{ color: "var(--text-light)", fontStyle: "italic", textAlign: "center", padding: "24px 0" }}>No activity recorded yet.</p>
             ) : (
-              <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
                 {activities.map(act => (
-                  <div key={act.id} style={{ background: "#FDF9F1", padding: "15px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "8px" }}>
-                      <strong>{act.type}</strong>
+                  <div key={act.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px", flexWrap: "wrap", gap: "6px" }}>
+                      <strong style={{ fontSize: "0.92rem", color: "var(--text-main)" }}>{act.type}</strong>
                       <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                        <span style={{ fontSize: "0.8rem", color: "#7A7061" }}>{new Date(act.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                        {/* Cancel Button only for latest activity, if it's a submission, and submitted by this student */}
+                        <span style={{ fontSize: "0.78rem", color: "var(--text-light)" }}>
+                          {new Date(act.timestamp).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                        </span>
                         {activities.indexOf(act) === 0 && act.actorEmail === user?.email && (act.type === "Initial Submission" || act.type === "Revision Resubmitted") && (
                           <button
                             onClick={() => handleCancelSubmission(act)}
-                            style={{ background: "#dc2626", color: "white", border: "none", padding: "4px 8px", borderRadius: "4px", cursor: "pointer", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}
+                            className={styles.btnDanger}
+                            style={{ padding: "3px 8px", fontSize: "0.75rem", display: "inline-flex", alignItems: "center", gap: "4px" }}
                           >
                             <X size={12} /> Cancel
                           </button>
                         )}
                       </div>
                     </div>
-                    <p style={{ margin: "0 0 10px 0", fontSize: "0.95rem" }}>{act.description}</p>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.85rem", flexDirection: "column", gap: "10px" }}>
-                      <span style={{ color: "#7A7061" }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
+                    <p style={{ margin: "0 0 10px 0", fontSize: "0.9rem", color: "var(--text-main)", lineHeight: 1.55 }}>{act.description}</p>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", fontSize: "0.82rem", flexDirection: "column", gap: "8px" }}>
+                      <span style={{ color: "var(--text-muted)", fontWeight: 500 }}>By: {act.actorName || act.actorEmail} ({act.actorRole})</span>
 
                       {act.documentUrl && (
-                        <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "5px" }}>
+                        <a href={act.documentUrl} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: 600, textDecoration: "none", display: "flex", alignItems: "center", gap: "5px" }}>
                           <ExternalLink size={14} /> View Document ({act.documentName || "PDF"})
                         </a>
                       )}
 
                       {act.links && act.links.length > 0 && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: "5px", width: "100%", marginTop: "5px" }}>
-                          <strong style={{ color: "#4A4238" }}>Submitted Links:</strong>
-                          {act.links.map((link, idx) => (
-                            <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "#3b82f6", fontWeight: "bold", textDecoration: "none", display: "flex", alignItems: "center", gap: "6px", background: "#fff", padding: "6px 12px", borderRadius: "6px", border: "1px solid #D6CEB8", width: "fit-content" }}>
-                              <ExternalLink size={14} /> <span>{link.type}</span>
-                            </a>
-                          ))}
+                        <div style={{ display: "flex", flexDirection: "column", gap: "6px", width: "100%", marginTop: "4px" }}>
+                          <span style={{ color: "var(--text-muted)", fontWeight: 600, fontSize: "0.8rem" }}>Submitted Links:</span>
+                          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                            {act.links.map((link, idx) => (
+                              <a key={idx} href={link.url} target="_blank" rel="noreferrer" style={{ color: "var(--primary-color)", fontWeight: 600, textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "5px 12px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "0.82rem" }}>
+                                <ExternalLink size={13} /> <span>{link.type}</span>
+                              </a>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -599,115 +646,119 @@ export default function StudentDashboard() {
         {/* RIGHT COLUMN */}
         <div>
           {thesis.currentStage >= 3 && thesis.equipmentCheckStatus !== 'Approved' && (
-            <div className={styles.card} style={{ marginBottom: "20px", textAlign: "center", padding: "40px 20px" }}>
-              <h3 style={{ color: "#7A7061", marginBottom: "10px" }}>Equipment Check Required</h3>
-              <p style={{ fontSize: "0.95rem", color: "#4A4238" }}>
-                You must complete your borrowed equipment check before proceeding. <br/>
-                Please use the button at the top of the page.
+            <div className={styles.card} style={{ textAlign: "center", padding: "32px 20px" }}>
+              <div style={{ width: "44px", height: "44px", borderRadius: "50%", background: "var(--warning-bg)", color: "var(--warning-color)", display: "inline-flex", alignItems: "center", justifyContent: "center", marginBottom: "12px" }}>
+                <Wrench size={22} />
+              </div>
+              <h3 style={{ color: "var(--text-main)", marginBottom: "8px", fontSize: "1.1rem" }}>Equipment Clearance Required</h3>
+              <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", margin: 0, lineHeight: 1.5 }}>
+                You must complete your borrowed equipment inspection before proceeding. Use the button at the top of the page.
               </p>
             </div>
           )}
 
           {!(thesis.currentStage >= 3 && thesis.equipmentCheckStatus !== 'Approved') && (
-            <div className={styles.card} style={{ marginBottom: "20px" }}>
-            <h2 style={{ marginBottom: "20px" }}>Submit Materials</h2>
-            <p style={{ fontSize: "0.9rem", marginBottom: "20px", color: "#7A7061" }}>
-              Provide links to your manuscript, video clips, or other external resources.
-            </p>
+            <div className={styles.card}>
+              <h2>Submit Materials</h2>
+              <p style={{ fontSize: "0.88rem", marginBottom: "18px" }}>
+                Provide cloud links to your manuscript, video demonstration, or supplementary project files.
+              </p>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "15px", marginBottom: "20px" }}>
-              {submissionLinks.map((link, idx) => (
-                <div key={idx} style={{ display: "flex", flexWrap: "wrap", gap: "10px", alignItems: "center", background: "#FDF9F1", padding: "10px", borderRadius: "8px", border: "1px solid #D6CEB8" }}>
-                  <select
-                    value={link.type}
-                    onChange={e => handleLinkChange(idx, "type", e.target.value)}
-                    style={{ padding: "8px", borderRadius: "4px", border: "1px solid #C6BFA5", background: "#fff", fontSize: "0.85rem" }}
-                  >
-                    <option value="Manuscript">Manuscript</option>
-                    <option value="Video Clip">Video Clip</option>
-                    <option value="Other documents">Other documents</option>
-                  </select>
-                  <input
-                    type="url"
-                    placeholder="https://..."
-                    value={link.url}
-                    onChange={e => handleLinkChange(idx, "url", e.target.value)}
-                    style={{ flex: 1, padding: "8px", borderRadius: "4px", border: "1px solid #C6BFA5", fontSize: "0.85rem" }}
-                  />
-                  {submissionLinks.length > 1 && (
-                    <button
-                      onClick={() => handleRemoveLink(idx)}
-                      style={{ background: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca", borderRadius: "4px", width: "32px", height: "32px", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer" }}
-                      title="Remove Link"
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "18px" }}>
+                {submissionLinks.map((link, idx) => (
+                  <div key={idx} style={{ display: "flex", gap: "8px", alignItems: "center", background: "var(--bg-subtle)", padding: "10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)" }}>
+                    <select
+                      value={link.type}
+                      onChange={e => handleLinkChange(idx, "type", e.target.value)}
+                      style={{ padding: "7px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", background: "#fff", fontSize: "0.85rem", outline: "none", fontFamily: "inherit" }}
                     >
-                      <X size={16} />
-                    </button>
-                  )}
-                </div>
-              ))}
+                      <option value="Manuscript">Manuscript</option>
+                      <option value="Video Clip">Video Clip</option>
+                      <option value="Other documents">Other documents</option>
+                    </select>
+                    <input
+                      type="url"
+                      placeholder="https://drive.google.com/..."
+                      value={link.url}
+                      onChange={e => handleLinkChange(idx, "url", e.target.value)}
+                      style={{ flex: 1, padding: "7px 10px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", fontSize: "0.85rem", outline: "none", fontFamily: "inherit", background: "#ffffff" }}
+                    />
+                    {submissionLinks.length > 1 && (
+                      <button
+                        onClick={() => handleRemoveLink(idx)}
+                        style={{ background: "var(--danger-bg)", color: "var(--danger-color)", border: "1px solid var(--danger-border)", borderRadius: "var(--radius-sm)", width: "30px", height: "30px", display: "flex", justifyContent: "center", alignItems: "center", cursor: "pointer" }}
+                        title="Remove Link"
+                      >
+                        <X size={15} />
+                      </button>
+                    )}
+                  </div>
+                ))}
+
+                <button
+                  onClick={handleAddLink}
+                  className={styles.btnSecondary}
+                  style={{ alignSelf: "flex-start", padding: "6px 12px", fontSize: "0.82rem" }}
+                >
+                  <Plus size={14} /> Add link
+                </button>
+              </div>
 
               <button
-                onClick={handleAddLink}
-                style={{ alignSelf: "flex-start", background: "#EBE4D1", border: "1px solid #D6CEB8", color: "#4A4238", padding: "6px 12px", borderRadius: "4px", fontSize: "0.85rem", display: "flex", alignItems: "center", gap: "5px", cursor: "pointer", fontWeight: "bold" }}
+                className={styles.btnPrimary}
+                style={{ width: "100%", padding: "11px", fontSize: "0.95rem" }}
+                onClick={handleSubmitLinks}
+                disabled={submittingLinks}
               >
-                <Plus size={16} /> Add another link
+                {submittingLinks ? "Submitting..." : "Submit Materials"}
               </button>
             </div>
-
-            <button
-              className={styles.btnPrimary}
-              style={{ width: "100%", margin: 0, padding: "12px", fontSize: "1rem" }}
-              onClick={handleSubmitLinks}
-              disabled={submittingLinks}
-            >
-              {submittingLinks ? "Submitting..." : "Submit Materials"}
-            </button>
-          </div>
           )}
 
+          {/* Assigned Lecturers Card */}
           <div className={styles.card}>
-            <h2 style={{ marginBottom: "20px" }}>Assigned Lecturers</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+            <h2>Assigned Faculty</h2>
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div>
-                <strong style={{ display: "block", fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px" }}>Chairperson</strong>
-                {thesis.lecturerUids.chairperson ? (
-                  <div style={{ display: "flex", flexDirection: "column", marginTop: "2px" }}>
-                    <span style={{ color: "#4A4238" }}>{lecturersMap[thesis.lecturerUids.chairperson]?.name_en || lecturersMap[thesis.lecturerUids.chairperson]?.name_th || thesis.lecturerUids.chairperson}</span>
-                    {(lecturersMap[thesis.lecturerUids.chairperson]?.name_en || lecturersMap[thesis.lecturerUids.chairperson]?.name_th) && (
-                      <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{thesis.lecturerUids.chairperson}</span>
-                    )}
+                <strong style={{ display: "block", fontSize: "0.75rem", color: "var(--text-light)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>Advisor</strong>
+                {thesis.lecturerUids.advisor ? (
+                  <div style={{ display: "flex", flexDirection: "column", marginTop: "4px" }}>
+                    <span style={{ color: "var(--text-main)", fontWeight: 600, fontSize: "0.92rem" }}>
+                      {lecturersMap[thesis.lecturerUids.advisor]?.name_en || lecturersMap[thesis.lecturerUids.advisor]?.name_th || thesis.lecturerUids.advisor}
+                    </span>
+                    <span style={{ fontSize: "0.8rem", color: "var(--text-light)" }}>{thesis.lecturerUids.advisor}</span>
                   </div>
-                ) : <span style={{ color: "#4A4238" }}>None</span>}
+                ) : <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>None</span>}
               </div>
+
               <div>
-                <strong style={{ display: "block", fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px" }}>Committee</strong>
+                <strong style={{ display: "block", fontSize: "0.75rem", color: "var(--text-light)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>Committee Members</strong>
                 {thesis.lecturerUids.committees.length > 0 ? (
-                  <ul style={{ margin: "5px 0 0 0", paddingLeft: "20px", color: "#4A4238", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginTop: "6px" }}>
                     {thesis.lecturerUids.committees.map((c, idx) => (
-                      <li key={c}>
-                        <div style={{ display: "flex", flexDirection: "column" }}>
-                          <span>{thesis.lecturerUids.committees.length > 1 ? `Committee #${idx + 1}: ` : ""}{lecturersMap[c]?.name_en || lecturersMap[c]?.name_th || c}</span>
-                          {(lecturersMap[c]?.name_en || lecturersMap[c]?.name_th) && (
-                            <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{c}</span>
-                          )}
-                        </div>
-                      </li>
+                      <div key={c} style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={{ color: "var(--text-main)", fontWeight: 600, fontSize: "0.9rem" }}>
+                          {thesis.lecturerUids.committees.length > 1 ? `#${idx + 1} ` : ""}{lecturersMap[c]?.name_en || lecturersMap[c]?.name_th || c}
+                        </span>
+                        <span style={{ fontSize: "0.8rem", color: "var(--text-light)" }}>{c}</span>
+                      </div>
                     ))}
-                  </ul>
+                  </div>
                 ) : (
-                  <span style={{ color: "#4A4238" }}>None</span>
+                  <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>None</span>
                 )}
               </div>
+
               <div>
-                <strong style={{ display: "block", fontSize: "0.85rem", color: "#7A7061", textTransform: "uppercase", letterSpacing: "1px" }}>Advisor</strong>
-                {thesis.lecturerUids.advisor ? (
-                  <div style={{ display: "flex", flexDirection: "column", marginTop: "2px" }}>
-                    <span style={{ color: "#4A4238" }}>{lecturersMap[thesis.lecturerUids.advisor]?.name_en || lecturersMap[thesis.lecturerUids.advisor]?.name_th || thesis.lecturerUids.advisor}</span>
-                    {(lecturersMap[thesis.lecturerUids.advisor]?.name_en || lecturersMap[thesis.lecturerUids.advisor]?.name_th) && (
-                      <span style={{ fontSize: "0.85rem", color: "#64748b" }}>{thesis.lecturerUids.advisor}</span>
-                    )}
+                <strong style={{ display: "block", fontSize: "0.75rem", color: "var(--text-light)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>Chairperson</strong>
+                {thesis.lecturerUids.chairperson ? (
+                  <div style={{ display: "flex", flexDirection: "column", marginTop: "4px" }}>
+                    <span style={{ color: "var(--text-main)", fontWeight: 600, fontSize: "0.92rem" }}>
+                      {lecturersMap[thesis.lecturerUids.chairperson]?.name_en || lecturersMap[thesis.lecturerUids.chairperson]?.name_th || thesis.lecturerUids.chairperson}
+                    </span>
+                    <span style={{ fontSize: "0.8rem", color: "var(--text-light)" }}>{thesis.lecturerUids.chairperson}</span>
                   </div>
-                ) : <span style={{ color: "#4A4238" }}>None</span>}
+                ) : <span style={{ color: "var(--text-muted)", fontSize: "0.9rem" }}>None</span>}
               </div>
             </div>
           </div>
@@ -716,15 +767,16 @@ export default function StudentDashboard() {
 
       {/* Error Modal */}
       {errorDialog && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(0,0,0,0.6)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
-          <div style={{ background: "#fff", width: "400px", maxWidth: "100%", borderRadius: "12px", padding: "30px", boxShadow: "0 20px 25px -5px rgba(0, 0, 0, 0.2)", textAlign: "center" }}>
-            <h2 style={{ margin: "0 0 15px 0", color: "#dc2626", fontSize: "1.5rem" }}>Upload Error</h2>
-            <p style={{ color: "#4A4238", fontSize: "1.05rem", marginBottom: "30px", lineHeight: "1.5" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, background: "rgba(15, 23, 42, 0.45)", backdropFilter: "blur(8px)", display: "flex", justifyContent: "center", alignItems: "center", zIndex: 1200, padding: "20px" }}>
+          <div style={{ background: "#fff", width: "400px", maxWidth: "100%", borderRadius: "var(--radius-xl)", padding: "28px", boxShadow: "var(--shadow-modal)", textAlign: "center", border: "1px solid var(--border-color)" }}>
+            <h2 style={{ margin: "0 0 10px 0", color: "var(--danger-color)", fontSize: "1.25rem", fontWeight: 700 }}>Notice</h2>
+            <p style={{ color: "var(--text-main)", fontSize: "0.95rem", marginBottom: "24px", lineHeight: 1.5 }}>
               {errorDialog}
             </p>
             <button
               onClick={() => setErrorDialog(null)}
-              style={{ width: "100%", padding: "12px", borderRadius: "6px", background: "#EBE4D1", border: "none", color: "#4A4238", fontSize: "1rem", fontWeight: "bold", cursor: "pointer" }}
+              className={styles.btnPrimary}
+              style={{ width: "100%", padding: "10px" }}
             >
               Okay
             </button>

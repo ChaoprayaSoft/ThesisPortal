@@ -1,20 +1,23 @@
 .container {
-  max-width: 800px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 20px;
-  background-color: var(--bg-card);
+  padding: 32px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+  box-shadow: var(--shadow-card);
 }
 
 .header {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .header h1 {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   color: var(--text-main);
-  margin-bottom: 5px;
+  margin-bottom: 6px;
+  font-weight: 800;
+  letter-spacing: -0.025em;
 }
 
 .header p {
@@ -26,51 +29,64 @@
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   overflow: hidden;
-  background-color: var(--bg-main);
-  min-height: 400px;
+  background-color: #ffffff;
+  min-height: 420px;
   display: flex;
   flex-direction: column;
+  transition: border-color 0.2s;
+}
+
+.editorContainer:focus-within {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--primary-glow);
 }
 
 .toolbar {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  padding: 10px;
-  background-color: var(--bg-card);
+  gap: 6px;
+  padding: 10px 14px;
+  background-color: var(--bg-subtle);
   border-bottom: 1px solid var(--border-color);
 }
 
 .toolbar button {
-  padding: 5px 10px;
-  background-color: transparent;
-  border: 1px solid transparent;
+  padding: 6px 12px;
+  background-color: #ffffff;
+  border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
   color: var(--text-main);
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: all 0.2s;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  font-family: inherit;
 }
 
 .toolbar button:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  background-color: var(--primary-lighter);
+  border-color: var(--primary-border);
+  color: var(--primary-color);
 }
 
 .toolbar button.active {
   background-color: var(--primary-color);
-  color: white;
+  color: #ffffff;
   border-color: var(--primary-color);
+  box-shadow: 0 2px 6px rgba(99, 102, 241, 0.25);
 }
 
 .editorContent {
-  padding: 15px;
+  padding: 20px;
   flex-grow: 1;
   outline: none;
+  font-size: 0.95rem;
+  line-height: 1.7;
 }
 
 .editorContent > div {
   outline: none;
-  min-height: 300px;
+  min-height: 320px;
 }
 
 /* Tiptap styles */
@@ -79,72 +95,83 @@
 }
 
 .editorContent :global(.ProseMirror p.is-editor-empty:first-child::before) {
-  color: #adb5bd;
+  color: var(--text-light);
   content: attr(data-placeholder);
   float: left;
   height: 0;
   pointer-events: none;
 }
 
-.editorContent h1 { font-size: 2em; margin-bottom: 0.5em; }
-.editorContent h2 { font-size: 1.5em; margin-bottom: 0.5em; }
-.editorContent ul { list-style-type: disc; padding-left: 20px; }
-.editorContent ol { list-style-type: decimal; padding-left: 20px; }
-.editorContent a { color: var(--primary-color); text-decoration: underline; }
+.editorContent h1 { font-size: 1.6em; margin-bottom: 0.5em; font-weight: 700; color: var(--text-main); }
+.editorContent h2 { font-size: 1.3em; margin-bottom: 0.5em; font-weight: 600; color: var(--text-main); }
+.editorContent ul { list-style-type: disc; padding-left: 24px; margin-bottom: 10px; }
+.editorContent ol { list-style-type: decimal; padding-left: 24px; margin-bottom: 10px; }
+.editorContent a { color: var(--primary-color); text-decoration: underline; font-weight: 500; }
 .editorContent blockquote {
-  border-left: 3px solid var(--border-color);
-  padding-left: 10px;
-  margin-left: 0;
+  border-left: 3px solid var(--primary-color);
+  padding: 8px 16px;
+  margin: 12px 0;
   color: var(--text-muted);
+  background: var(--primary-light);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
 }
 
 .footer {
-  margin-top: 20px;
+  margin-top: 24px;
   display: flex;
   justify-content: flex-end;
 }
 
 .saveBtn {
-  padding: 10px 20px;
+  padding: 10px 24px;
   background-color: var(--primary-color);
   color: white;
   border: none;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-sm);
   font-weight: 600;
+  font-size: 0.92rem;
   cursor: pointer;
-  transition: opacity 0.2s;
+  transition: all 0.18s ease;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+  font-family: inherit;
 }
 
 .saveBtn:hover:not(:disabled) {
-  opacity: 0.9;
+  background-color: var(--primary-hover);
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.35);
+  transform: translateY(-1px);
 }
 
 .saveBtn:disabled {
-  background-color: var(--text-muted);
+  background-color: #cbd5e1;
   cursor: not-allowed;
+  transform: none;
 }
 
 .statusMessage {
-  margin-top: 15px;
-  padding: 10px;
-  border-radius: var(--radius-md);
-  font-size: 0.9rem;
+  margin-top: 18px;
+  padding: 12px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.88rem;
   text-align: center;
+  font-weight: 500;
 }
 
 .statusSuccess {
-  background-color: rgba(40, 167, 69, 0.1);
-  color: #28a745;
+  background-color: var(--success-bg);
+  color: var(--success-text);
+  border: 1px solid var(--success-border);
 }
 
 .statusError {
-  background-color: rgba(220, 53, 69, 0.1);
-  color: #dc3545;
+  background-color: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
 }
 
 @media (max-width: 768px) {
   .container {
-    padding: 15px;
+    padding: 20px 16px;
   }
   
   .toolbar button {
