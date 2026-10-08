@@ -43,6 +43,7 @@ ThesisPortal features a modern, vibrant, and eye-friendly **Chromatic Solid Desi
 ### 2. Typography & Surfaces
 * **Font Family**: Google Fonts `Plus Jakarta Sans`, supplemented with `Sarabun` for bilingual Thai/English legibility.
 * **Canvas Surface**: Gentle Slate (`#f8fafc`) to eliminate stark white glare and reduce eye fatigue.
+* **Table Headers**: Filled Deep Navy Midnight (`#0e2c42`) with crisp white text (`#ffffff`) across all tables.
 * **Elevation**: Soft diffused drop shadows (`--shadow-sm`, `--shadow-md`, `--shadow-lg`, `--shadow-modal`) avoiding harsh dark borders.
 * **Component Styling**: Reusable CSS classes (`.card`, `.btnPrimary`, `.btnSecondary`, `.badge`, `.tableResponsive`, `.modalOverlay`, `.modalContent`, `.modalClose`).
 * **Dedicated Modals**: Full-screen backdrop detail popups for both Lecturer (`/lecturer`) and Student (`/student`) workspaces for deep inspection of metadata, rosters, deadlines, and activity trails.

@@ -21,6 +21,10 @@
   --text-muted:      #475569;          /* Slate 600 */
   --text-light:      #94a3b8;          /* Slate 400 */
 
+  /* Table Header Tokens */
+  --table-th-bg:     #0e2c42;          /* Deep Navy Midnight filled table header */
+  --table-th-text:   #ffffff;          /* Crisp high-contrast white header text */
+
   /* Borders */
   --border-color:    #e2e8f0;          /* Subtle clean slate border */
   --border-subtle:   #f1f5f9;
