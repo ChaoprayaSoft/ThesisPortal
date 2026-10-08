@@ -1,60 +1,62 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Sarabun:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* ── 5 Solid Color Palette Design System ──────────────────────── */
-  --bg-app:          #f7f9fa;          /* Crisp, clean canvas */
+  /* ── Exact 5 Solid Color Palette Design System ────────────────── */
+  /* Palette: #82bab3 (Sage Teal), #514330 (Warm Umber), #0e2c42 (Navy Midnight), #ee5656 (Coral Red), #e7bf40 (Mustard Gold) */
+  --bg-app:          #f6f8f9;          /* Crisp canvas */
   --bg-card:         #ffffff;          /* Pure white card surface */
   --bg-sidebar:      #ffffff;
-  --bg-subtle:       #eff3f5;
+  --bg-subtle:       #edf2f5;
 
-  /* Color 1: Deep Ocean Teal (#0e4959) — Primary & Brand Accent */
-  --primary-color:   #0e4959;
-  --primary-hover:   #08333e;
-  --primary-light:   #e6f1f3;          /* Soft ocean wash */
-  --primary-lighter: #f2f8f9;
-  --primary-border:  #aed1d7;
-  --primary-glow:    rgba(14, 73, 89, 0.12);
+  /* Color 3: Deep Navy Midnight (#0e2c42) — Primary & Brand Accent */
+  --primary-color:   #0e2c42;
+  --primary-hover:   #071c2b;
+  --primary-light:   #e6f0f5;          /* Soft navy wash */
+  --primary-lighter: #f0f6f9;
+  --primary-border:  #9ec1d4;
+  --primary-glow:    rgba(14, 44, 66, 0.12);
 
   /* Text & Typography */
-  --text-main:       #152930;          /* Deep slate petrol */
-  --text-muted:      #4f6d7a;          /* Slate steel */
-  --text-light:      #819ba6;          /* Light steel */
+  --text-main:       #0e2c42;          /* Deep Navy Midnight */
+  --text-muted:      #514330;          /* Warm Umber */
+  --text-light:      #7c7062;          /* Muted Umber */
 
   /* Borders */
-  --border-color:    #dce5e9;          /* Refined slate border */
-  --border-subtle:   #eff3f5;
-  --border-strong:   #c3d4db;
+  --border-color:    #dce4e8;          /* Refined slate border */
+  --border-subtle:   #edf2f5;
+  --border-strong:   #b8cad2;
 
-  /* Color 5: Aqua Seafoam Teal (#48a9a6) — Success, Graduated, Info */
-  --success-color:   #48a9a6;
-  --success-bg:      #edf8f8;          /* Seafoam wash */
-  --success-text:    #19615f;
-  --success-border:  #aee0de;
+  /* Color 1: Sage Teal (#82bab3) — Success, Graduated, Info */
+  --success-color:   #82bab3;
+  --success-hover:   #6ea69f;
+  --success-bg:      #f0f7f6;          /* Sage wash */
+  --success-text:    #2d6b63;
+  --success-border:  #b8ded9;
 
-  --info-color:      #48a9a6;
-  --info-bg:         #edf8f8;
-  --info-text:       #19615f;
-  --info-border:     #aee0de;
+  --info-color:      #82bab3;
+  --info-bg:         #f0f7f6;
+  --info-text:       #2d6b63;
+  --info-border:     #b8ded9;
 
-  /* Color 3: Mustard Gold (#e5a812) — Warning, Pending, Deadlines */
-  --warning-color:   #e5a812;
-  --warning-hover:   #cb9208;
-  --warning-bg:      #fef8eb;          /* Golden wash */
-  --warning-text:    #825b00;
-  --warning-border:  #f8de9a;
+  /* Color 5: Mustard Gold (#e7bf40) — Warning, Pending, Deadlines */
+  --warning-color:   #e7bf40;
+  --warning-hover:   #d4a92c;
+  --warning-bg:      #fdfaf0;          /* Golden wash */
+  --warning-text:    #82660f;
+  --warning-border:  #f6e3a4;
 
-  /* Color 2: Coral Terracotta (#e0534c) — Danger, Revise, Action Alerts */
-  --danger-color:    #e0534c;
-  --danger-hover:    #cb3d36;
-  --danger-bg:       #fdf0ee;          /* Coral blush wash */
-  --danger-text:     #962823;
-  --danger-border:   #f8c2bf;
+  /* Color 4: Coral Red (#ee5656) — Danger, Revise, Alerts */
+  --danger-color:    #ee5656;
+  --danger-hover:    #d94242;
+  --danger-bg:       #fdf1f1;          /* Coral blush wash */
+  --danger-text:     #a82727;
+  --danger-border:   #f8bebe;
 
-  /* Color 4: Slate Steel Teal (#4f6d7a) — Secondary, Committee, Panels */
-  --purple-color:    #4f6d7a;
-  --purple-bg:       #eef3f5;          /* Steel wash */
-  --purple-text:     #2a3e47;
-  --purple-border:   #c3d4db;
+  /* Color 2: Warm Umber (#514330) — Secondary, Committee, Panels */
+  --purple-color:    #514330;
+  --purple-bg:       #f5f3f0;          /* Umber wash */
+  --purple-text:     #514330;
+  --purple-border:   #d6cfc7;
 
   /* Shadows (Diffused, soft, premium) */
   --shadow-sm:       0 1px 2px 0 rgba(15, 23, 42, 0.04);
