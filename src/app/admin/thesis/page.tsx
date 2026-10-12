@@ -6,6 +6,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { getLecturers, UserData } from "@/lib/db/users";
 import { getGroups, StudentGroup } from "@/lib/db/groups";
 import { createThesis, getAllTheses, deleteThesis, updateThesis, getDisplayStatus, getThesisActivities, logThesisActivity } from "@/lib/db/theses";
+import StatusBadge, { getStatusBadgeConfig } from "@/components/StatusBadge";
 
 export default function AdminThesisPage() {
   const { user, dbUser } = useAuth();
@@ -274,13 +275,7 @@ export default function AdminThesisPage() {
   };
 
   const getStageBadgeStyle = (status: string, stage: number) => {
-    if (status === "Graduate") return { bg: "var(--success-light)", text: "var(--success-color)", border: "var(--mint-border)" };
-    if (status === "Revise") return { bg: "var(--danger-light)", text: "var(--danger-color)", border: "var(--rose-border)" };
-    if (stage === 0) return { bg: "var(--primary-light)", text: "var(--primary-color)", border: "var(--primary-border)" };
-    if (stage === 1) return { bg: "var(--purple-light)", text: "var(--purple-color)", border: "var(--lilac-border)" };
-    if (stage === 2) return { bg: "var(--info-light)", text: "var(--info-color)", border: "var(--sky-border)" };
-    if (stage >= 3 && stage <= 5) return { bg: "var(--warning-light)", text: "var(--warning-color)", border: "var(--peach-border)" };
-    return { bg: "var(--bg-subtle)", text: "var(--text-muted)", border: "var(--border-color)" };
+    return getStatusBadgeConfig(status, stage);
   };
 
   const renderUserModal = () => {
@@ -700,20 +695,11 @@ export default function AdminThesisPage() {
                       <td data-label="Year">{t.year || "-"}</td>
                       <td data-label="Field" style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{t.fieldOfStudy || "-"}</td>
                       <td data-label="Status">
-                        <span style={{
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "4px",
-                          padding: "4px 10px",
-                          background: badgeStyle.bg,
-                          color: badgeStyle.text,
-                          border: `1px solid ${badgeStyle.border}`,
-                          borderRadius: "999px",
-                          fontSize: "0.8rem",
-                          fontWeight: 600
-                        }}>
-                          {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
-                        </span>
+                        <StatusBadge
+                          status={t.status}
+                          stage={t.currentStage}
+                          displayStatus={getDisplayStatus(t)}
+                        />
                         {t.status === "Graduate" && t.graduateComment && (
                           <div style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "4px", fontStyle: "italic" }}>
                             Reason: {t.graduateComment}
@@ -897,7 +883,7 @@ export default function AdminThesisPage() {
                 <div><strong>Group:</strong> <span style={{ color: "var(--text-muted)" }}>{groups.find(g => g.id === viewThesis.groupId)?.name}</span></div>
                 <div><strong>Year:</strong> <span style={{ color: "var(--text-muted)" }}>{viewThesis.year || "-"}</span></div>
                 <div><strong>Field of Study:</strong> <span style={{ color: "var(--text-muted)" }}>{viewThesis.fieldOfStudy || "-"}</span></div>
-                <div><strong>Status:</strong> <span style={{ padding: "2px 8px", background: "var(--primary-light)", color: "var(--primary-color)", borderRadius: "4px", fontSize: "0.8rem", fontWeight: 600 }}>{getDisplayStatus(viewThesis)}</span></div>
+                <div><strong style={{ display: "block", marginBottom: "4px" }}>Status:</strong> <StatusBadge status={viewThesis.status} stage={viewThesis.currentStage} displayStatus={getDisplayStatus(viewThesis)} size="sm" /></div>
               </div>
 
               {(viewThesis.deadlines?.advisor || viewThesis.deadlines?.committee || viewThesis.deadlines?.chairperson) && (

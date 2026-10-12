@@ -34,36 +34,46 @@
   --success-color:   #10b981;
   --success-hover:   #059669;
   --success-bg:      #ecfdf5;          /* Emerald wash */
+  --success-light:   #d1fae5;
   --success-text:    #065f46;
-  --success-border:  #a7f3d0;
+  --success-border:  #34d399;
+  --mint-border:     #34d399;
 
   /* Info / Highlights — Vibrant Sky Cyan */
   --info-color:      #0284c7;
   --info-hover:      #0369a1;
   --info-bg:         #f0f9ff;          /* Sky wash */
-  --info-text:       #075985;
-  --info-border:     #bae6fd;
+  --info-light:      #e0f2fe;
+  --info-text:       #0369a1;
+  --info-border:     #38bdf8;
+  --sky-border:      #38bdf8;
 
   /* Warning / Deadlines — Warm Amber & Honey Gold */
   --warning-color:   #f59e0b;
   --warning-hover:   #d97706;
   --warning-bg:      #fffbeb;          /* Honey wash */
+  --warning-light:   #fef3c7;
   --warning-text:    #92400e;
-  --warning-border:  #fde68a;
+  --warning-border:  #fbbf24;
+  --peach-border:    #fbbf24;
 
   /* Danger / Revisions — Soft Ruby Coral */
   --danger-color:    #ef4444;
   --danger-hover:    #dc2626;
   --danger-bg:       #fef2f2;          /* Coral wash */
+  --danger-light:    #fee2e2;
   --danger-text:     #991b1b;
-  --danger-border:   #fecaca;
+  --danger-border:   #f87171;
+  --rose-border:     #f87171;
 
   /* Purple / Committee & Faculty Panels — Royal Iris Violet */
   --purple-color:    #7c3aed;
   --purple-hover:    #6d28d9;
   --purple-bg:       #f5f3ff;          /* Violet wash */
+  --purple-light:    #ede9fe;
   --purple-text:     #5b21b6;
-  --purple-border:   #ddd6fe;
+  --purple-border:   #a78bfa;
+  --lilac-border:    #a78bfa;
 
   /* Shadows (Diffused, soft, modern) */
   --shadow-sm:       0 1px 2px 0 rgba(15, 23, 42, 0.05);

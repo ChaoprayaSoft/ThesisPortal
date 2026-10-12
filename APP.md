@@ -48,6 +48,16 @@ ThesisPortal features a modern, vibrant, and eye-friendly **Chromatic Solid Desi
 * **Component Styling**: Reusable CSS classes (`.card`, `.btnPrimary`, `.btnSecondary`, `.badge`, `.tableResponsive`, `.modalOverlay`, `.modalContent`, `.modalClose`).
 * **Dedicated Modals**: Full-screen backdrop detail popups for both Lecturer (`/lecturer`) and Student (`/student`) workspaces for deep inspection of metadata, rosters, deadlines, and activity trails.
 
+### 3. Visual Status Indicators & StatusBadge Component (`src/components/StatusBadge.tsx`)
+The platform incorporates an accessible, high-visibility status badge design language ensuring immediate recognition across tables, cards, and modal dialogs:
+* **Luminous Glow Dot**: An illuminated circular accent dot (`box-shadow: 0 0 6px ...`) accompanying each status indicator.
+* **Stage & Role Semantic Palette**:
+  * **Graduated (`Graduate`)**: Emerald mint wash (`#ecfdf5`), deep forest text (`#065f46`), crisp `#10b981` border, and `🎓` cap icon.
+  * **Revisions Required (`Revise`)**: High-urgency coral red (`#fef2f2`), crimson text (`#991b1b`), `#ef4444` border, and `⚠️` alert icon.
+  * **Pending Reviews**: Warm honey amber for Advisors (`⏳`), Royal Iris violet for Committees (`👥`), and vibrant sky cyan for Defense Chairpersons (`👨‍⚖️`).
+  * **Pending Signatures**: Dedicated orange (`✒️`), purple (`🖊️`), and teal (`🖋️`) styling.
+  * **In Preparation (`Preparing`)**: Stage-adaptive colored tints and icons (Stages 0–5) preventing visual ambiguity during student manuscript drafting.
+
 ---
 
 ## 🌟 Overview & Core Value

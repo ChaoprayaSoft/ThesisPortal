@@ -14,6 +14,7 @@ import {
   Search, 
   ArrowLeft 
 } from "lucide-react";
+import StatusBadge from "@/components/StatusBadge";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -489,8 +490,9 @@ export default function AdminDashboard() {
         <div className={styles.modalOverlay} onClick={() => setActiveStatusModal(null)}>
           <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "760px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingBottom: "14px", borderBottom: "1px solid var(--border-color)" }}>
-              <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--text-main)" }}>
-                Theses marked as &ldquo;{activeStatusModal}&rdquo;
+              <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--text-main)", display: "flex", alignItems: "center", gap: "10px" }}>
+                <span>Theses marked as:</span>
+                <StatusBadge status={activeStatusModal} size="md" />
               </h2>
               <button className={styles.modalClose} onClick={() => setActiveStatusModal(null)}>&times;</button>
             </div>
@@ -535,8 +537,8 @@ export default function AdminDashboard() {
                 return (
                   <div key={t.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
                     <div style={{ fontWeight: 700, color: "var(--primary-color)", fontSize: "0.95rem", marginBottom: "6px" }}>{t.title}</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "14px", fontSize: "0.82rem", color: "var(--text-muted)" }}>
-                      <div><strong style={{ color: "var(--text-main)" }}>Status:</strong> {t.status}</div>
+                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "14px", fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><strong style={{ color: "var(--text-main)" }}>Status:</strong> <StatusBadge status={t.status} stage={t.currentStage} size="sm" /></div>
                       <div><strong style={{ color: "var(--text-main)" }}>Group:</strong> {group?.name || "-"}</div>
                       <div><strong style={{ color: "var(--text-main)" }}>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
                     </div>
@@ -577,9 +579,9 @@ export default function AdminDashboard() {
                 return (
                   <div key={t.id} style={{ background: "var(--danger-bg)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--danger-border)" }}>
                     <div style={{ fontWeight: 700, color: "var(--danger-color)", fontSize: "0.95rem", marginBottom: "6px" }}>{t.title}</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "14px", fontSize: "0.82rem", color: "var(--danger-text)" }}>
+                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "14px", fontSize: "0.82rem", color: "var(--danger-text)" }}>
                       <div><strong>Group:</strong> {group?.name || "-"}</div>
-                      <div><strong>Status:</strong> {t.status}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><strong>Status:</strong> <StatusBadge status={t.status} stage={t.currentStage} size="sm" /></div>
                       <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
                       <div><strong>Missed Deadline:</strong> {new Date(deadline).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} ({stageName})</div>
                     </div>

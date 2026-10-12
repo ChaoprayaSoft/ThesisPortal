@@ -22,6 +22,7 @@ import { sendNotificationEmail } from "@/lib/actions/email";
 import styles from "./student.module.css";
 import { Plus, X, ExternalLink, Bell, Clock, CheckCircle2, AlertTriangle, ShieldCheck, Wrench, FileText, BookOpen, Layers, Users } from "lucide-react";
 import ImportantNoteModal from "@/components/ImportantNoteModal";
+import StatusBadge, { getStatusBadgeConfig } from "@/components/StatusBadge";
 
 const getStageLabel = (stage: number) => {
   switch (stage) {
@@ -122,20 +123,14 @@ export default function StudentDashboard() {
     }
   };
 
-  const getStatusBadgeStyle = (status: string) => {
-    if (status === "Graduate") {
-      return { background: "var(--success-bg)", color: "var(--success-text)", border: "1px solid var(--success-border)" };
-    }
-    if (status === "Revise") {
-      return { background: "var(--danger-bg)", color: "var(--danger-text)", border: "1px solid var(--danger-border)" };
-    }
-    if (status.includes("Chairperson")) {
-      return { background: "var(--info-bg)", color: "var(--info-text)", border: "1px solid var(--info-border)" };
-    }
-    if (status.includes("Committee")) {
-      return { background: "var(--purple-bg)", color: "var(--purple-text)", border: "1px solid var(--purple-border)" };
-    }
-    return { background: "var(--warning-bg)", color: "var(--warning-text)", border: "1px solid var(--warning-border)" };
+  const getStatusBadgeStyle = (status: string, stage: number = 0) => {
+    const config = getStatusBadgeConfig(status, stage);
+    return {
+      background: config.bg,
+      color: config.text,
+      border: `1.5px solid ${config.border}`,
+      boxShadow: config.shadow
+    };
   };
 
   const loadData = async () => {};
@@ -488,10 +483,7 @@ export default function StudentDashboard() {
         </div>
         <div className={styles.statusBadge}>
           <div style={{ fontSize: "0.78rem", color: "var(--text-light)", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 600, marginBottom: "6px" }}>Current Status</div>
-          <div style={{ padding: "6px 14px", borderRadius: "var(--radius-full)", fontWeight: 700, fontSize: "0.88rem", display: "inline-flex", alignItems: "center", gap: "6px", ...getStatusBadgeStyle(thesis.status) }}>
-            <span>{getStageIcon(thesis.currentStage)}</span>
-            <span>{getDisplayStatus(thesis)}</span>
-          </div>
+          <StatusBadge status={thesis.status} stage={thesis.currentStage} displayStatus={getDisplayStatus(thesis)} size="lg" />
         </div>
       </div>
 
@@ -822,9 +814,7 @@ export default function StudentDashboard() {
             {/* Modal Header */}
             <div style={{ padding: "20px 26px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--primary-light)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "4px 12px", borderRadius: "var(--radius-full)", fontSize: "0.82rem", fontWeight: 700, color: "var(--primary-color)", border: "1px solid var(--primary-border)" }}>
-                  {getStageIcon(thesis.currentStage)} {getDisplayStatus(thesis)}
-                </span>
+                <StatusBadge status={thesis.status} stage={thesis.currentStage} displayStatus={getDisplayStatus(thesis)} size="md" />
                 <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>
                   Academic Year: {thesis.year || "-"}
                 </span>

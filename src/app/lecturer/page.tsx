@@ -25,6 +25,7 @@ import { getAllUsers } from "@/lib/db/users";
 import { getGroups } from "@/lib/db/groups";
 import { Bell, ExternalLink, Plus, X, Search, CheckCircle2, AlertCircle, FileEdit, Clock, BookOpen, FileText, Users, Layers, ShieldCheck } from "lucide-react";
 import ImportantNoteModal from "@/components/ImportantNoteModal";
+import StatusBadge from "@/components/StatusBadge";
 
 export default function LecturerDashboard() {
   const { user, dbUser } = useAuth();
@@ -527,9 +528,7 @@ export default function LecturerDashboard() {
                         </td>
                         <td>{t.year || "-"}</td>
                         <td>
-                          <span style={{ padding: "3px 10px", background: "var(--primary-light)", borderRadius: "var(--radius-full)", fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "4px" }}>
-                            {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
-                          </span>
+                          <StatusBadge status={t.status} stage={t.currentStage} displayStatus={getDisplayStatus(t)} size="sm" />
                         </td>
                         <td>
                           <span style={{ fontWeight: 600, color: "var(--text-main)", fontSize: "0.88rem" }}>{roles.join(", ")}</span>
@@ -688,9 +687,7 @@ export default function LecturerDashboard() {
                           <td>{groupName}</td>
                           <td>{t.year || "-"}</td>
                           <td>
-                            <span style={{ padding: "3px 8px", background: "var(--primary-lighter)", borderRadius: "var(--radius-full)", fontSize: "0.8rem", color: "var(--primary-color)", fontWeight: 600 }}>
-                              {getStageIcon(t.currentStage)} {getDisplayStatus(t)}
-                            </span>
+                            <StatusBadge status={t.status} stage={t.currentStage} displayStatus={getDisplayStatus(t)} size="sm" />
                           </td>
                           <td style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 500 }}>{myRoles.join(", ")}</td>
                           <td>
@@ -776,8 +773,8 @@ export default function LecturerDashboard() {
                         <div style={{ color: "var(--text-main)", fontWeight: 700, fontSize: "1rem" }}>{activeWorkspace.thesis.title}</div>
                       </div>
                       <div style={{ flex: "1 1 240px" }}>
-                        <strong style={{ display: "block", color: "var(--text-light)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "2px" }}>Status</strong>
-                        <div style={{ color: "var(--primary-color)", fontWeight: 700, fontSize: "0.92rem" }}>{getStageIcon(activeWorkspace.thesis.currentStage)} {getDisplayStatus(activeWorkspace.thesis)}</div>
+                        <strong style={{ display: "block", color: "var(--text-light)", fontSize: "0.75rem", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "4px" }}>Status</strong>
+                        <StatusBadge status={activeWorkspace.thesis.status} stage={activeWorkspace.thesis.currentStage} displayStatus={getDisplayStatus(activeWorkspace.thesis)} size="md" />
                       </div>
                     </div>
 
@@ -1162,9 +1159,7 @@ export default function LecturerDashboard() {
             {/* Modal Header */}
             <div style={{ padding: "20px 26px", borderBottom: "1px solid var(--border-color)", display: "flex", justifyContent: "space-between", alignItems: "center", background: "var(--primary-light)" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-                <span style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#ffffff", padding: "4px 12px", borderRadius: "var(--radius-full)", fontSize: "0.82rem", fontWeight: 700, color: "var(--primary-color)", border: "1px solid var(--primary-border)" }}>
-                  {getStageIcon(detailModalThesis.currentStage)} {getDisplayStatus(detailModalThesis)}
-                </span>
+                <StatusBadge status={detailModalThesis.status} stage={detailModalThesis.currentStage} displayStatus={getDisplayStatus(detailModalThesis)} size="md" />
                 <span style={{ fontSize: "0.85rem", color: "var(--text-muted)", fontWeight: 600 }}>
                   Academic Year: {detailModalThesis.year || "-"}
                 </span>
