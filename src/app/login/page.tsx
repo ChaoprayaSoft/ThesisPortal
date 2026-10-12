@@ -5,20 +5,48 @@ import { signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { checkIsInAppBrowser } from "@/components/InAppBrowserHandler";
 import styles from "./login.module.css";
-import { GraduationCap, AlertCircle, LogOut } from "lucide-react";
+import { GraduationCap, AlertCircle, LogOut, ExternalLink, Globe } from "lucide-react";
 
 export default function LoginPage() {
   const { user, role, loading } = useAuth();
   const router = useRouter();
   const [error, setError] = useState("");
+  const [inAppInfo, setInAppInfo] = useState<{ isInApp: boolean; isLine: boolean; isIOS: boolean; isAndroid: boolean }>({
+    isInApp: false,
+    isLine: false,
+    isIOS: false,
+    isAndroid: false
+  });
+
+  useEffect(() => {
+    setInAppInfo(checkIsInAppBrowser());
+  }, []);
+
+  const handleOpenExternalBrowser = () => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set("openExternalBrowser", "1");
+      window.location.href = url.toString();
+    } catch {
+      window.location.href = window.location.href + "?openExternalBrowser=1";
+    }
+  };
 
   const handleLogin = async () => {
+    setError("");
     try {
       const provider = new GoogleAuthProvider();
       await signInWithPopup(auth, provider);
     } catch (err: any) {
-      setError(err.message);
+      if (err.message?.includes("disallowed_useragent") || err.code === "auth/disallowed-useragent") {
+        setError("Google blocks sign-in inside in-app browsers (LINE, Messenger, etc.). Please tap 'Open in External Browser' below.");
+      } else if (err.code === "auth/popup-blocked" || err.message?.includes("popup")) {
+        setError("Sign-in popup was blocked by your browser. Please tap 'Open in External Browser' or allow popups.");
+      } else {
+        setError(err.message || "An unexpected error occurred during sign-in.");
+      }
     }
   };
 
@@ -54,9 +82,49 @@ export default function LoginPage() {
         </h1>
         <p className={styles.subtitle}>Sign in with your university Google account to access your workspace</p>
 
+        {inAppInfo.isInApp && (
+          <div style={{
+            background: "var(--warning-light, #fef3c7)",
+            border: "1.5px solid var(--warning-border, #fbbf24)",
+            borderRadius: "var(--radius-md)",
+            padding: "14px 16px",
+            marginBottom: "20px",
+            textAlign: "left"
+          }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--warning-text, #92400e)", fontWeight: 700, fontSize: "0.88rem", marginBottom: "4px" }}>
+              <ExternalLink size={16} />
+              <span>In-App Browser Detected</span>
+            </div>
+            <p style={{ margin: "0 0 10px 0", fontSize: "0.82rem", color: "var(--warning-text, #92400e)", lineHeight: 1.5 }}>
+              Google blocks authentication inside in-app browsers (LINE, Messenger, Instagram). Please open in <strong>Safari</strong> or <strong>Chrome</strong> to sign in.
+            </p>
+            <button
+              onClick={handleOpenExternalBrowser}
+              style={{
+                width: "100%",
+                padding: "8px 14px",
+                background: "var(--warning-color, #f59e0b)",
+                color: "#ffffff",
+                border: "none",
+                borderRadius: "var(--radius-sm)",
+                fontWeight: 600,
+                fontSize: "0.82rem",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px"
+              }}
+            >
+              <Globe size={15} />
+              Open in Default Browser
+            </button>
+          </div>
+        )}
+
         {error && (
           <div className={styles.error}>
-            <AlertCircle size={16} />
+            <AlertCircle size={16} style={{ flexShrink: 0 }} />
             <span>{error}</span>
           </div>
         )}

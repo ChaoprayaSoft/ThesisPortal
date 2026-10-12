@@ -24,7 +24,7 @@ export async function GET(request: Request) {
         subject: `Action Required: Thesis Reminder (${role})`,
         html: `<p>Dear ${role},</p>
         <p>${actionRequiredText}</p>
-        <p>This action has been pending for more than 4 days. Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> at your earliest convenience to take action.</p>
+        <p>This action has been pending for more than 4 days. Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> at your earliest convenience to take action.</p>
         <p>Best regards,<br/>Thesis Portal System</p>`
       });
       reminderCount++;

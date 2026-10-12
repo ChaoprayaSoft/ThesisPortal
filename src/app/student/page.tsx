@@ -196,7 +196,7 @@ export default function StudentDashboard() {
         await sendNotificationEmail({
           to: thesis.lecturerUids.advisor,
           subject: `Thesis Edits Proposed: ${thesis.title}`,
-          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has proposed edits for the thesis <b>${thesis.title}</b>.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review them.</p>`
+          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has proposed edits for the thesis <b>${thesis.title}</b>.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to review them.</p>`
         });
       }
     } catch (error) {
@@ -259,21 +259,21 @@ export default function StudentDashboard() {
           await sendNotificationEmail({
             to: thesis.lecturerUids.advisor,
             subject: `Thesis Materials Submitted: ${thesis.title}`,
-            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your review/signature.</p>${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a>.</p>`
+            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your review/signature.</p>${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
           });
         } else if ((thesis.currentStage === 1 || thesis.currentStage === 4) && thesis.lecturerUids?.committees) {
           for (const comm of thesis.lecturerUids.committees) {
             await sendNotificationEmail({
               to: comm,
               subject: `Thesis Materials Updated: ${thesis.title}`,
-              html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a>.</p>`
+              html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
             });
           }
         } else if ((thesis.currentStage === 2 || thesis.currentStage === 5) && thesis.lecturerUids?.chairperson) {
           await sendNotificationEmail({
             to: thesis.lecturerUids.chairperson,
             subject: `Thesis Materials Updated: ${thesis.title}`,
-            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a>.</p>`
+            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
           });
         }
       }
@@ -308,7 +308,7 @@ export default function StudentDashboard() {
         await sendNotificationEmail({
           to: thesis.equipmentChecker,
           subject: `Equipment Check Request: ${thesis.title}`,
-          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has requested an equipment check for the thesis: <b>${thesis.title}</b>.</p>${equipmentCheckMessage.trim() ? `<p><b>Message:</b><br/>${equipmentCheckMessage.trim().replace(/\n/g, '<br/>')}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/">log in to the Thesis Portal</a> to review the request.</p>`
+          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has requested an equipment check for the thesis: <b>${thesis.title}</b>.</p>${equipmentCheckMessage.trim() ? `<p><b>Message:</b><br/>${equipmentCheckMessage.trim().replace(/\n/g, '<br/>')}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to review the request.</p>`
         });
       }
       setShowEquipmentCheckModal(false);

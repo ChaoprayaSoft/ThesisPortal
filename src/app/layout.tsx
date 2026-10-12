@@ -3,6 +3,7 @@ import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/AuthProvider";
 import ScrollToTop from "@/components/ScrollToTop";
+import InAppBrowserHandler from "@/components/InAppBrowserHandler";
 import { Analytics } from "@vercel/analytics/react";
 
 const fontSans = Plus_Jakarta_Sans({ 
@@ -46,6 +47,7 @@ export default function RootLayout({
           >
             © 2026 Thesis Portal · ChaoprayaSoft, THAILAND
           </footer>
+          <InAppBrowserHandler />
           <ScrollToTop />
           <Analytics />
         </AuthProvider>

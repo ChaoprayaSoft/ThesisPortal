@@ -320,6 +320,7 @@ System configuration and global templates:
 * **Google OAuth**: Instant single sign-on matching institutional email accounts with pre-registered Firestore user records.
 * **Automatic Inactivity Timeout**: A 3-hour inactivity timeout monitoring mouse, keyboard, and touch events to ensure security on shared lab computers (`src/components/AuthProvider.tsx`).
 * **Real-time Role Routing**: Automatically directs students to `/student`, lecturers to `/lecturer`, and admins to `/admin`.
+* **In-App Browser & LINE WebView Bypass**: Because Google OAuth blocks authentication from embedded WebViews (`disallowed_useragent` Error 403), the application automatically detects in-app browsers (`LINE`, `Messenger`, `Instagram`) and redirects via `?openExternalBrowser=1` to invoke the device's native browser (Safari on iOS, Chrome on Android) via `src/components/InAppBrowserHandler.tsx`. The login interface also features in-app detection banners and direct browser launch buttons.
 
 ### 7.2 Student Portal (`/student`)
 * **Live Progress Bar**: Visual stepper highlighting completed, active, and upcoming stages.
