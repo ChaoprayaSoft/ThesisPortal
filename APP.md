@@ -20,6 +20,7 @@
    - [8.5 Automated Reminder Engine (Cron)](#85-automated-reminder-engine-cron)
    - [8.6 Field-Specific Important Notes](#86-field-specific-important-notes)
    - [8.7 Excel Student Import Engine](#87-excel-student-import-engine)
+   - [8.8 Email Dispatch Engine (Google Apps Script / Resend)](#88-email-dispatch-engine-google-apps-script--resend)
 9. [API & Server Endpoints](#-api--server-endpoints)
 10. [Environment Configuration](#-environment-configuration)
 11. [Local Development & Deployment](#-local-development--deployment)
@@ -81,7 +82,7 @@ Managing academic theses often suffers from fragmented communications, lost feed
 | **Database** | [Google Cloud Firebase Firestore](https://firebase.google.com/docs/firestore) (Real-time snapshots & REST via Admin SDK) |
 | **Authentication** | Firebase Authentication (Google OAuth 2.0) |
 | **Backend & Admin SDK** | `firebase-admin` (Node.js runtime for Cron & batch operations) |
-| **Email Service** | [Resend](https://resend.com/) API (Transactional emails & reminders) |
+| **Email Service** | Google Apps Script Web App (Gmail API / `tiawongsombat@gmail.com`) with [Resend](https://resend.com/) fallback |
 | **Rich Text Editor** | [TipTap](https://tiptap.dev/) (StarterKit, Link Extension) |
 | **File / Spreadsheet Parsing** | [SheetJS (`xlsx`)](https://sheetjs.com/) for bulk student roster ingestion |
 | **Icons** | [Lucide React](https://lucide.dev/) |
@@ -113,7 +114,7 @@ flowchart TD
     end
 
     subgraph External["External Integrations"]
-        Resend[Resend Email API]
+        EmailService[Google Apps Script Mailer / Resend]
         GDrive[Google Drive / External Links]
     end
 
@@ -125,8 +126,8 @@ flowchart TD
     CRON --> FAdmin
     IMPORT --> FAdmin
     FAdmin --> Firestore
-    SA --> Resend
-    CRON --> Resend
+    SA --> EmailService
+    CRON --> EmailService
     A -.-> GDrive
     B -.-> GDrive
 ```
@@ -316,13 +317,13 @@ System configuration and global templates:
 
 ## 🚀 Core Modules & Features
 
-### 7.1 Authentication & Session Management
+### 8.1 Authentication & Session Management
 * **Google OAuth**: Instant single sign-on matching institutional email accounts with pre-registered Firestore user records.
 * **Automatic Inactivity Timeout**: A 3-hour inactivity timeout monitoring mouse, keyboard, and touch events to ensure security on shared lab computers (`src/components/AuthProvider.tsx`).
 * **Real-time Role Routing**: Automatically directs students to `/student`, lecturers to `/lecturer`, and admins to `/admin`.
 * **In-App Browser & LINE WebView Bypass**: Because Google OAuth blocks authentication from embedded WebViews (`disallowed_useragent` Error 403), the application automatically detects in-app browsers (`LINE`, `Messenger`, `Instagram`) and redirects via `?openExternalBrowser=1` to invoke the device's native browser (Safari on iOS, Chrome on Android) via `src/components/InAppBrowserHandler.tsx`. The login interface also features in-app detection banners and direct browser launch buttons.
 
-### 7.2 Student Portal (`/student`)
+### 8.2 Student Portal (`/student`)
 * **Live Progress Bar**: Visual stepper highlighting completed, active, and upcoming stages.
 * **Deadline Countdown**: Real-time ticker displaying remaining days, hours, minutes, and seconds until the stage deadline, with dynamic overdue alerts.
 * **Submission Module**: Support for multiple external artifacts per submission:
@@ -334,7 +335,7 @@ System configuration and global templates:
 * **Topic Modification System**: Submit requested updates to thesis title, abstract, or scope with automated notification sent to the Advisor.
 * **Field-Specific Important Note**: Dynamic floating modal containing guidance and formatting templates tailored to the student's field of study.
 
-### 7.3 Lecturer Review Portal (`/lecturer`)
+### 8.3 Lecturer Review Portal (`/lecturer`)
 * **Role-Adaptive Switcher**: Allows lecturers to switch perspectives seamlessly when they hold multiple roles across different theses (e.g., Advisor on Thesis A, Committee Member on Thesis B, Chairperson on Thesis C).
 * **Review Workspace**:
   * Quick-access links to student submissions.
@@ -345,7 +346,7 @@ System configuration and global templates:
 * **Equipment Verification**: One-click approval or rejection for lab/equipment clearances.
 * **Deadline Adjustments**: Edit deadlines for Advisor, Committee, and Chairperson stages.
 
-### 7.4 Admin Management Suite (`/admin`)
+### 8.4 Admin Management Suite (`/admin`)
 * **Executive Dashboard (`/admin`)**:
   * Total Theses, Active Student Groups, Faculty Lecturers, and Overdue Projects.
   * Interactive stage breakdown metrics.
@@ -369,18 +370,18 @@ System configuration and global templates:
 * **Comment Template Editor (`/admin/comments`)**:
   * Configure standard feedback sentences available to lecturers during review.
 
-### 7.5 Automated Reminder Engine (Cron)
+### 8.5 Automated Reminder Engine (Cron)
 Located at `/api/cron/reminders`, this automated route runs via Vercel Cron:
 * Scans all active theses in non-graduated states.
 * Determines if a thesis has been waiting in a specific approval state for **more than 4 days** (96 hours).
-* Dispatches HTML reminder emails via **Resend** directly to the pending party:
+* Dispatches HTML reminder emails via **Google Apps Script (Gmail)** or Resend directly to the pending party:
   * Advisor when pending advisor review or signature.
   * Unapproved Committee members when pending committee review or signature.
   * Chairperson when pending chairperson review or signature.
   * Students when a thesis is placed in `Revise` or `Preparing` stage.
   * Equipment Checker when an equipment inspection is pending.
 
-### 7.6 Field-Specific Important Notes
+### 8.6 Field-Specific Important Notes
 Different engineering and academic fields often have distinct submission guidelines, templates, and laboratory requirements. The system stores separate rich-text instructions for each field:
 * แขนงวิชาโทรคมนาคม (Telecommunications)
 * แขนงวิชาคอมพิวเตอร์และปัญญาประดิษฐ์ (Computer & AI)
@@ -388,6 +389,18 @@ Different engineering and academic fields often have distinct submission guideli
 * แขนงวิชาบรอดแคสต์และดิจิทัลมีเดีย (Broadcast & Digital Media)
 * ระบบสมองกลฝังตัวและการออกแบบอิเล็กทรอนิกส์ (Embedded Systems & Electronic Design)
 * สาขาวิชาเทคโนโลยีวิศวกรรมอิเล็กทรอนิกส์ประยุกต์ (Applied Electronics Engineering)
+
+### 8.7 Excel Student Import Engine
+* **Batch Roster Parsing**: Upload `.xlsx` or `.xls` spreadsheets via `/admin/groups` processed by `/api/upload-group`.
+* **Automated Account Provisioning**: Automatically generates student group records in `studentGroups` and provisions individual student accounts in `users` with standard roles and default parameters.
+* **Duplicate Prevention**: Intelligently handles existing student identifiers to prevent duplicate records.
+
+### 8.8 Email Dispatch Engine (Google Apps Script / Resend)
+* **Google Apps Script Web App**: Dispatches email notifications directly from `tiawongsombat@gmail.com` using `GmailApp.sendEmail()`, bypassing third-party domain verification hurdles.
+* **Security Secret Token**: Secured via `GOOGLE_APPS_SCRIPT_SECRET` shared passphrase to prevent unauthorized usage of the Web App endpoint.
+* **Fallback Architecture**: Automatically falls back to [Resend](https://resend.com/) API if configured, or console mock logs in local development when no credentials are present.
+* **Verification Utility**: Zero-dependency CLI testing utility ([test-gas-email.js](file:///i:/WebApp/ThesisPortal/test-gas-email.js)) to test and verify delivery directly from terminal.
+* **Source Script**: Deployable Apps Script file included at [google-apps-script-mailer.js](file:///i:/WebApp/ThesisPortal/google-apps-script-mailer.js).
 
 ---
 
@@ -404,7 +417,7 @@ Different engineering and academic fields often have distinct submission guideli
 * **Output**: `{ success: true, groupId: string, studentCount: number }`.
 
 ### 3. Server Action: `sendNotificationEmail` (`src/lib/actions/email.ts`)
-* **Purpose**: Dispatches transactional emails via Resend API.
+* **Purpose**: Dispatches transactional emails via Google Apps Script Web App (Gmail) or Resend API.
 * **Parameters**: `{ to: string, subject: string, html: string }`.
 
 ---
@@ -427,7 +440,11 @@ FIREBASE_PROJECT_ID="your-project-id"
 FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxx@your-project-id.iam.gserviceaccount.com"
 FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 
-# Email Delivery (Resend)
+# Email Delivery (Google Apps Script Web App - Primary)
+GOOGLE_APPS_SCRIPT_URL="https://script.google.com/macros/s/AKfycb.../exec"
+GOOGLE_APPS_SCRIPT_SECRET="your-gas-secret-key"
+
+# Email Delivery (Resend - Fallback)
 RESEND_API_KEY="re_xxxxxxxxxxxxxxxxx"
 EMAIL_FROM="Thesis Portal System"
 
