@@ -40,7 +40,15 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    const payload = JSON.parse(e.postData.contents);
+    // Decode payload safely with UTF-8
+    let rawString = "";
+    if (e.postData.contentsAsBlob) {
+      rawString = e.postData.contentsAsBlob.getDataAsString("UTF-8");
+    } else {
+      rawString = e.postData.contents;
+    }
+
+    const payload = JSON.parse(rawString);
     const { secret, to, subject, html } = payload;
 
     // Verify secret
@@ -58,8 +66,10 @@ function doPost(e) {
       })).setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Send email via GmailApp
-    GmailApp.sendEmail(to, subject, "", {
+    // Send email via MailApp (natively supports 4-byte UTF-8 emojis and international scripts)
+    MailApp.sendEmail({
+      to: to,
+      subject: subject,
       htmlBody: html,
       name: "ThesisPortal System"
     });

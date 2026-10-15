@@ -49,12 +49,12 @@ async function testGoogleAppsScriptEmail() {
     const response = await fetch(gasUrl, {
       method: "POST",
       headers: {
-        "Content-Type": "text/plain;charset=utf-8",
+        "Content-Type": "application/json; charset=utf-8",
       },
       body: JSON.stringify({
         secret: gasSecret,
         to: targetEmail,
-        subject: "🎓 ThesisPortal - Test Notification Email",
+        subject: "[ThesisPortal] Test Notification Email",
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px; color: #1e293b;">
             <h2 style="color: #2563eb;">ThesisPortal Email Verification</h2>
