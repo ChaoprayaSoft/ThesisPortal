@@ -8,7 +8,6 @@
   background: var(--bg-app);
   color: var(--text-main);
   position: relative;
-  overflow: hidden;
 }
 
 /* Ambient Pastel Orbs */
@@ -273,7 +272,6 @@
 .mainContent {
   flex: 1;
   overflow-y: auto;
-  z-index: 1;
   position: relative;
   min-width: 0;
 }
@@ -489,27 +487,28 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(15, 23, 42, 0.45);
+  background: rgba(15, 23, 42, 0.6);
   backdrop-filter: blur(8px);
   display: flex;
   justify-content: center;
   align-items: center;
-  z-index: 1100;
+  z-index: 9999;
   animation: fadeIn 0.2s ease;
   padding: 20px;
 }
 
 .modalContent {
   background: #ffffff;
-  padding: 32px;
+  padding: 28px 32px;
   border-radius: var(--radius-xl);
-  width: 900px;
-  max-width: 95vw;
+  width: min(860px, 94vw);
+  max-width: 94vw;
   max-height: 88vh;
   overflow-y: auto;
   box-shadow: var(--shadow-modal);
   border: 1px solid var(--border-color);
   animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
 }
 
 .modalClose {

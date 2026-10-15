@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import styles from "./admin.module.css";
 import { getAllTheses } from "@/lib/db/theses";
 import { getGroups } from "@/lib/db/groups";
@@ -12,7 +13,10 @@ import {
   Clock, 
   Download, 
   Search, 
-  ArrowLeft 
+  ArrowLeft,
+  FolderKanban,
+  Mail,
+  ExternalLink
 } from "lucide-react";
 import StatusBadge from "@/components/StatusBadge";
 
@@ -32,6 +36,7 @@ export default function AdminDashboard() {
   const [allLecturers, setAllLecturers] = useState<any[]>([]);
   const [activeStatusModal, setActiveStatusModal] = useState<string | null>(null);
   const [activeKpiModal, setActiveKpiModal] = useState<"Theses" | "Groups" | "Lecturers" | "Late" | null>(null);
+  const [kpiModalSearch, setKpiModalSearch] = useState("");
   
   const getLecturerNameTh = (email: string) => {
     const l = allLecturers.find(l => l.email === email);
@@ -487,34 +492,63 @@ export default function AdminDashboard() {
 
       {/* Insights Modal */}
       {activeStatusModal && (
-        <div className={styles.modalOverlay} onClick={() => setActiveStatusModal(null)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "760px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingBottom: "14px", borderBottom: "1px solid var(--border-color)" }}>
+        <div className={styles.modalOverlay} onClick={() => { setActiveStatusModal(null); setKpiModalSearch(""); }}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", paddingBottom: "14px", borderBottom: "1px solid var(--border-color)" }}>
               <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--text-main)", display: "flex", alignItems: "center", gap: "10px" }}>
                 <span>Theses marked as:</span>
                 <StatusBadge status={activeStatusModal} size="md" />
               </h2>
-              <button className={styles.modalClose} onClick={() => setActiveStatusModal(null)}>&times;</button>
+              <button className={styles.modalClose} onClick={() => { setActiveStatusModal(null); setKpiModalSearch(""); }}>&times;</button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "65vh", overflowY: "auto" }}>
-              {allTheses.filter(t => t.status === activeStatusModal).length === 0 ? (
-                <p style={{ color: "var(--text-light)", fontStyle: "italic", textAlign: "center", padding: "30px 0" }}>No theses found with this status.</p>
-              ) : (
-                allTheses.filter(t => t.status === activeStatusModal).map(t => {
+            <div style={{ position: "relative", marginBottom: "16px" }}>
+              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
+              <input
+                type="text"
+                placeholder="Search theses by title, group, advisor..."
+                value={kpiModalSearch}
+                onChange={e => setKpiModalSearch(e.target.value)}
+                style={{ width: "100%", padding: "9px 12px 9px 36px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "#ffffff" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "60vh", overflowY: "auto" }}>
+              {(() => {
+                const query = kpiModalSearch.toLowerCase().trim();
+                const filtered = allTheses.filter(t => t.status === activeStatusModal).filter(t => {
+                  if (!query) return true;
+                  const group = allGroups.find(g => g.id === t.groupId);
+                  const titleMatch = (t.title || "").toLowerCase().includes(query);
+                  const groupMatch = (group?.name || "").toLowerCase().includes(query);
+                  const advMatch = t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor).toLowerCase().includes(query) : false;
+                  return titleMatch || groupMatch || advMatch;
+                });
+
+                if (filtered.length === 0) {
+                  return <p style={{ color: "var(--text-light)", fontStyle: "italic", textAlign: "center", padding: "30px 0" }}>No theses found matching this status and search.</p>;
+                }
+
+                return filtered.map(t => {
                   const group = allGroups.find(g => g.id === t.groupId);
                   return (
-                    <div key={t.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-                      <div style={{ fontWeight: 700, color: "var(--primary-color)", fontSize: "0.95rem", marginBottom: "6px" }}>{t.title}</div>
+                    <div key={t.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
+                        <div style={{ fontWeight: 700, color: "var(--primary-color)", fontSize: "0.95rem" }}>{t.title}</div>
+                        <Link href="/admin/thesis" className={styles.btnSecondary} style={{ padding: "4px 8px", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                          View ➔
+                        </Link>
+                      </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: "14px", fontSize: "0.82rem", color: "var(--text-muted)" }}>
                         <div><strong style={{ color: "var(--text-main)" }}>Group:</strong> {group?.name || "-"}</div>
                         <div><strong style={{ color: "var(--text-main)" }}>Field:</strong> {group?.fieldOfStudy || t.fieldOfStudy || "-"}</div>
                         <div><strong style={{ color: "var(--text-main)" }}>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
+                        <div><strong style={{ color: "var(--text-main)" }}>Year:</strong> {t.year || "-"}</div>
                       </div>
                     </div>
                   );
-                })
-              )}
+                });
+              })()}
             </div>
           </div>
         </div>
@@ -522,72 +556,288 @@ export default function AdminDashboard() {
 
       {/* KPI Insights Modal */}
       {activeKpiModal && (
-        <div className={styles.modalOverlay} onClick={() => setActiveKpiModal(null)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "760px" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingBottom: "14px", borderBottom: "1px solid var(--border-color)" }}>
-              <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--text-main)" }}>
-                {activeKpiModal} Overview
-              </h2>
-              <button className={styles.modalClose} onClick={() => setActiveKpiModal(null)}>&times;</button>
+        <div className={styles.modalOverlay} onClick={() => { setActiveKpiModal(null); setKpiModalSearch(""); }}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "14px", paddingBottom: "14px", borderBottom: "1px solid var(--border-color)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ 
+                  width: "36px", 
+                  height: "36px", 
+                  borderRadius: "var(--radius-sm)", 
+                  display: "flex", 
+                  alignItems: "center", 
+                  justifyContent: "center",
+                  background: activeKpiModal === "Theses" ? "var(--primary-light)" : activeKpiModal === "Groups" ? "var(--success-bg)" : activeKpiModal === "Lecturers" ? "var(--purple-bg)" : "var(--danger-bg)",
+                  color: activeKpiModal === "Theses" ? "var(--primary-color)" : activeKpiModal === "Groups" ? "var(--success-color)" : activeKpiModal === "Lecturers" ? "var(--purple-color)" : "var(--danger-color)"
+                }}>
+                  {activeKpiModal === "Theses" && <BookOpen size={20} />}
+                  {activeKpiModal === "Groups" && <Users size={20} />}
+                  {activeKpiModal === "Lecturers" && <UserCheck size={20} />}
+                  {activeKpiModal === "Late" && <Clock size={20} />}
+                </div>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--text-main)" }}>
+                    {activeKpiModal === "Theses" && "Total Theses Overview"}
+                    {activeKpiModal === "Groups" && "Student Groups Overview"}
+                    {activeKpiModal === "Lecturers" && "Faculty Lecturers Overview"}
+                    {activeKpiModal === "Late" && "Overdue Projects Overview"}
+                  </h2>
+                  <p style={{ margin: "2px 0 0 0", fontSize: "0.8rem", color: "var(--text-muted)" }}>
+                    {activeKpiModal === "Theses" && `Showing ${allTheses.length} registered thesis projects`}
+                    {activeKpiModal === "Groups" && `Showing ${allGroups.length} cohorts with roster details`}
+                    {activeKpiModal === "Lecturers" && `Showing ${allLecturers.length} academic committee members`}
+                    {activeKpiModal === "Late" && `Projects that have exceeded their designated stage deadlines`}
+                  </p>
+                </div>
+              </div>
+              <button className={styles.modalClose} onClick={() => { setActiveKpiModal(null); setKpiModalSearch(""); }}>&times;</button>
             </div>
 
-            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "65vh", overflowY: "auto" }}>
-              {activeKpiModal === "Theses" && allTheses.map(t => {
-                const group = allGroups.find(g => g.id === t.groupId);
-                return (
-                  <div key={t.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-                    <div style={{ fontWeight: 700, color: "var(--primary-color)", fontSize: "0.95rem", marginBottom: "6px" }}>{t.title}</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "14px", fontSize: "0.82rem", color: "var(--text-muted)" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><strong style={{ color: "var(--text-main)" }}>Status:</strong> <StatusBadge status={t.status} stage={t.currentStage} size="sm" /></div>
-                      <div><strong style={{ color: "var(--text-main)" }}>Group:</strong> {group?.name || "-"}</div>
-                      <div><strong style={{ color: "var(--text-main)" }}>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
+            {/* Instant Search Bar */}
+            <div style={{ position: "relative", marginBottom: "16px" }}>
+              <Search size={16} style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "var(--text-light)" }} />
+              <input
+                type="text"
+                placeholder={
+                  activeKpiModal === "Theses" ? "Search by thesis title, advisor, or group..." :
+                  activeKpiModal === "Groups" ? "Search by group name, student ID, student name, or major..." :
+                  activeKpiModal === "Lecturers" ? "Search by faculty name, email, or department..." :
+                  "Search overdue projects..."
+                }
+                value={kpiModalSearch}
+                onChange={e => setKpiModalSearch(e.target.value)}
+                style={{ width: "100%", padding: "10px 14px 10px 38px", borderRadius: "var(--radius-sm)", border: "1.5px solid var(--border-color)", fontSize: "0.88rem", outline: "none", boxSizing: "border-box", background: "#ffffff" }}
+              />
+            </div>
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", maxHeight: "60vh", overflowY: "auto" }}>
+              {/* 1. THESES KPI MODAL */}
+              {activeKpiModal === "Theses" && (() => {
+                const query = kpiModalSearch.toLowerCase().trim();
+                const filtered = allTheses.filter(t => {
+                  if (!query) return true;
+                  const group = allGroups.find(g => g.id === t.groupId);
+                  const titleMatch = (t.title || "").toLowerCase().includes(query);
+                  const groupMatch = (group?.name || "").toLowerCase().includes(query);
+                  const advMatch = t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor).toLowerCase().includes(query) : false;
+                  return titleMatch || groupMatch || advMatch;
+                });
+
+                if (filtered.length === 0) {
+                  return <p style={{ color: "var(--text-light)", fontStyle: "italic", textAlign: "center", padding: "30px 0" }}>No theses match your search.</p>;
+                }
+
+                return filtered.map(t => {
+                  const group = allGroups.find(g => g.id === t.groupId);
+                  return (
+                    <div key={t.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
+                        <div style={{ fontWeight: 700, color: "var(--primary-color)", fontSize: "0.95rem" }}>{t.title}</div>
+                        <Link href="/admin/thesis" className={styles.btnSecondary} style={{ padding: "4px 8px", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                          View ➔
+                        </Link>
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "14px", fontSize: "0.82rem", color: "var(--text-muted)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><strong style={{ color: "var(--text-main)" }}>Status:</strong> <StatusBadge status={t.status} stage={t.currentStage} size="sm" /></div>
+                        <div><strong style={{ color: "var(--text-main)" }}>Group:</strong> {group?.name || "-"}</div>
+                        <div><strong style={{ color: "var(--text-main)" }}>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
+                        <div><strong style={{ color: "var(--text-main)" }}>Year:</strong> {t.year || "-"}</div>
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
 
-              {activeKpiModal === "Groups" && allGroups.map(g => (
-                <div key={g.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-                  <div style={{ fontWeight: 700, color: "var(--success-color)", fontSize: "0.95rem", marginBottom: "4px" }}>{g.name}</div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}><strong style={{ color: "var(--text-main)" }}>Field of Study:</strong> {g.fieldOfStudy || "-"}</div>
-                </div>
-              ))}
+              {/* 2. STUDENT GROUPS KPI MODAL */}
+              {activeKpiModal === "Groups" && (() => {
+                const query = kpiModalSearch.toLowerCase().trim();
+                const filtered = allGroups.filter(g => {
+                  if (!query) return true;
+                  const nameMatch = (g.name || "").toLowerCase().includes(query);
+                  const fieldMatch = (g.fieldOfStudy || "").toLowerCase().includes(query);
+                  const studentMatch = (g.students || []).some((s: any) => 
+                    (s.name || "").toLowerCase().includes(query) ||
+                    (s.name_en || "").toLowerCase().includes(query) ||
+                    (s.studentId || "").toLowerCase().includes(query) ||
+                    (s.email || "").toLowerCase().includes(query)
+                  );
+                  return nameMatch || fieldMatch || studentMatch;
+                });
 
-              {activeKpiModal === "Lecturers" && allLecturers.map(l => (
-                <div key={l.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
-                  <div style={{ fontWeight: 700, color: "var(--purple-color)", fontSize: "0.95rem", marginBottom: "4px" }}>{l.name_en || l.name_th || "Unnamed"}</div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginBottom: "2px" }}><strong style={{ color: "var(--text-main)" }}>Email:</strong> {l.email}</div>
-                  <div style={{ fontSize: "0.82rem", color: "var(--text-muted)" }}><strong style={{ color: "var(--text-main)" }}>Role:</strong> {l.role}</div>
-                </div>
-              ))}
+                if (filtered.length === 0) {
+                  return <p style={{ color: "var(--text-light)", fontStyle: "italic", textAlign: "center", padding: "30px 0" }}>No student groups match your search.</p>;
+                }
 
-              {activeKpiModal === "Late" && allTheses.filter(t => {
-                if (t.status === "Graduate") return false;
-                let deadline = undefined;
-                if (t.currentStage === 0 || t.status === "Revise" || t.status === "Preparing") deadline = t.deadlines?.advisor;
-                else if (t.currentStage === 1) deadline = t.deadlines?.committee;
-                else if (t.currentStage === 2) deadline = t.deadlines?.chairperson;
-                return deadline && Date.now() > deadline;
-              }).map(t => {
-                const group = allGroups.find(g => g.id === t.groupId);
-                let deadline = undefined;
-                let stageName = "";
-                if (t.currentStage === 0 || t.status === "Revise" || t.status === "Preparing") { deadline = t.deadlines?.advisor; stageName = "Advisor"; }
-                else if (t.currentStage === 1) { deadline = t.deadlines?.committee; stageName = "Committee"; }
-                else if (t.currentStage === 2) { deadline = t.deadlines?.chairperson; stageName = "Chairperson"; }
-                
-                return (
-                  <div key={t.id} style={{ background: "var(--danger-bg)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--danger-border)" }}>
-                    <div style={{ fontWeight: 700, color: "var(--danger-color)", fontSize: "0.95rem", marginBottom: "6px" }}>{t.title}</div>
-                    <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "14px", fontSize: "0.82rem", color: "var(--danger-text)" }}>
-                      <div><strong>Group:</strong> {group?.name || "-"}</div>
-                      <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><strong>Status:</strong> <StatusBadge status={t.status} stage={t.currentStage} size="sm" /></div>
-                      <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
-                      <div><strong>Missed Deadline:</strong> {new Date(deadline).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} ({stageName})</div>
+                return filtered.map(g => {
+                  const thesis = allTheses.find(t => t.groupId === g.id);
+                  return (
+                    <div key={g.id} style={{ background: "var(--bg-subtle)", padding: "16px 20px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "10px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "8px" }}>
+                        <div>
+                          <div style={{ fontWeight: 700, color: "var(--text-main)", fontSize: "1rem", display: "flex", alignItems: "center", gap: "8px" }}>
+                            <FolderKanban size={16} style={{ color: "var(--success-color)" }} />
+                            <span>{g.name}</span>
+                          </div>
+                          <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", marginTop: "3px" }}>
+                            <strong>Field of Study:</strong> {g.fieldOfStudy || "-"}
+                          </div>
+                        </div>
+                        <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                          <span style={{ fontSize: "0.78rem", fontWeight: 600, padding: "3px 9px", borderRadius: "var(--radius-full)", background: "var(--success-bg)", color: "var(--success-color)" }}>
+                            👥 {g.students?.length || 0} Students
+                          </span>
+                          <Link href="/admin/groups" className={styles.btnSecondary} style={{ padding: "4px 10px", fontSize: "0.78rem" }}>
+                            Manage ➔
+                          </Link>
+                        </div>
+                      </div>
+
+                      {/* Linked Thesis Information */}
+                      {thesis ? (
+                        <div style={{ background: "#ffffff", padding: "10px 14px", borderRadius: "var(--radius-sm)", border: "1px solid var(--border-color)", display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: "10px", fontSize: "0.82rem" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: "200px" }}>
+                            <BookOpen size={14} style={{ color: "var(--primary-color)" }} />
+                            <span style={{ fontWeight: 600, color: "var(--primary-color)" }}>{thesis.title}</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                            <StatusBadge status={thesis.status} stage={thesis.currentStage} size="sm" />
+                            <span style={{ color: "var(--text-muted)", fontSize: "0.8rem" }}>
+                              Advisor: <strong>{thesis.lecturerUids?.advisor ? getLecturerNameTh(thesis.lecturerUids.advisor) : "None"}</strong>
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: "0.8rem", color: "var(--text-light)", fontStyle: "italic" }}>
+                          No thesis record linked to this group yet.
+                        </div>
+                      )}
+
+                      {/* Student Roster Chips */}
+                      {g.students && g.students.length > 0 && (
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", paddingTop: "2px" }}>
+                          {g.students.map((s: any, idx: number) => (
+                            <span key={idx} style={{ background: "#ffffff", border: "1px solid var(--border-color)", borderRadius: "var(--radius-sm)", padding: "3px 8px", fontSize: "0.75rem", color: "var(--text-main)", display: "inline-flex", alignItems: "center", gap: "5px" }}>
+                              <span style={{ fontWeight: 600, color: "var(--primary-color)" }}>{s.studentId || "-"}</span>
+                              <span>{s.name || s.name_en || s.email}</span>
+                            </span>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  </div>
-                );
-              })}
+                  );
+                });
+              })()}
+
+              {/* 3. LECTURERS KPI MODAL */}
+              {activeKpiModal === "Lecturers" && (() => {
+                const query = kpiModalSearch.toLowerCase().trim();
+                const filtered = allLecturers.filter(l => {
+                  if (!query) return true;
+                  const nameTh = (l.name_th || "").toLowerCase().includes(query);
+                  const nameEn = (l.name_en || "").toLowerCase().includes(query);
+                  const emailMatch = (l.email || "").toLowerCase().includes(query);
+                  const fieldMatch = (l.fieldOfStudy || "").toLowerCase().includes(query);
+                  return nameTh || nameEn || emailMatch || fieldMatch;
+                });
+
+                if (filtered.length === 0) {
+                  return <p style={{ color: "var(--text-light)", fontStyle: "italic", textAlign: "center", padding: "30px 0" }}>No lecturers match your search.</p>;
+                }
+
+                return filtered.map(l => {
+                  const wl = stats.lecturerWorkload.find(w => w.email === l.email) || { advisorCount: 0, committeeCount: 0, chairpersonCount: 0, totalCount: 0 };
+                  return (
+                    <div key={l.id} style={{ background: "var(--bg-subtle)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
+                        <div>
+                          <div style={{ fontWeight: 700, color: "var(--purple-color)", fontSize: "0.95rem" }}>
+                            {l.name_th ? `${l.name_th} (${l.name_en || "-"})` : (l.name_en || l.email)}
+                          </div>
+                          <div style={{ fontSize: "0.82rem", color: "var(--text-muted)", display: "flex", alignItems: "center", gap: "6px", marginTop: "2px" }}>
+                            <Mail size={12} />
+                            <span>{l.email}</span>
+                            <span>&bull;</span>
+                            <span>{l.fieldOfStudy || "No Department"}</span>
+                          </div>
+                        </div>
+                        <Link href="/admin/lecturers" className={styles.btnSecondary} style={{ padding: "4px 8px", fontSize: "0.75rem", whiteSpace: "nowrap" }}>
+                          Manage ➔
+                        </Link>
+                      </div>
+
+                      {/* Workload badges */}
+                      <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", fontSize: "0.78rem", paddingTop: "4px" }}>
+                        <span style={{ background: "var(--primary-light)", color: "var(--primary-color)", padding: "2px 8px", borderRadius: "var(--radius-full)", fontWeight: 600 }}>
+                          Advisor: {wl.advisorCount}
+                        </span>
+                        <span style={{ background: "var(--purple-bg)", color: "var(--purple-text)", padding: "2px 8px", borderRadius: "var(--radius-full)", fontWeight: 600 }}>
+                          Committee: {wl.committeeCount}
+                        </span>
+                        <span style={{ background: "var(--info-bg)", color: "var(--info-text)", padding: "2px 8px", borderRadius: "var(--radius-full)", fontWeight: 600 }}>
+                          Chairperson: {wl.chairpersonCount}
+                        </span>
+                        <span style={{ background: "#ffffff", border: "1px solid var(--border-color)", color: "var(--text-main)", padding: "2px 8px", borderRadius: "var(--radius-full)", fontWeight: 700 }}>
+                          Total: {wl.totalCount}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+
+              {/* 4. OVERDUE PROJECTS MODAL */}
+              {activeKpiModal === "Late" && (() => {
+                const lateTheses = allTheses.filter(t => {
+                  if (t.status === "Graduate") return false;
+                  let deadline = undefined;
+                  if (t.currentStage === 0 || t.status === "Revise" || t.status === "Preparing") deadline = t.deadlines?.advisor;
+                  else if (t.currentStage === 1) deadline = t.deadlines?.committee;
+                  else if (t.currentStage === 2) deadline = t.deadlines?.chairperson;
+                  return deadline && Date.now() > deadline;
+                });
+
+                const query = kpiModalSearch.toLowerCase().trim();
+                const filtered = lateTheses.filter(t => {
+                  if (!query) return true;
+                  const group = allGroups.find(g => g.id === t.groupId);
+                  const titleMatch = (t.title || "").toLowerCase().includes(query);
+                  const groupMatch = (group?.name || "").toLowerCase().includes(query);
+                  const advMatch = t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor).toLowerCase().includes(query) : false;
+                  return titleMatch || groupMatch || advMatch;
+                });
+
+                if (filtered.length === 0) {
+                  return <p style={{ color: "var(--text-light)", fontStyle: "italic", textAlign: "center", padding: "30px 0" }}>No overdue projects found matching your search.</p>;
+                }
+
+                return filtered.map(t => {
+                  const group = allGroups.find(g => g.id === t.groupId);
+                  let deadline: any = undefined;
+                  let stageName = "";
+                  if (t.currentStage === 0 || t.status === "Revise" || t.status === "Preparing") { deadline = t.deadlines?.advisor; stageName = "Advisor Stage"; }
+                  else if (t.currentStage === 1) { deadline = t.deadlines?.committee; stageName = "Committee Stage"; }
+                  else if (t.currentStage === 2) { deadline = t.deadlines?.chairperson; stageName = "Chairperson Stage"; }
+                  
+                  const daysOverdue = Math.floor((Date.now() - deadline) / (1000 * 60 * 60 * 24));
+
+                  return (
+                    <div key={t.id} style={{ background: "var(--danger-bg)", padding: "16px 18px", borderRadius: "var(--radius-md)", border: "1px solid var(--danger-border)", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "10px" }}>
+                        <div style={{ fontWeight: 700, color: "var(--danger-color)", fontSize: "0.95rem" }}>{t.title}</div>
+                        <span style={{ background: "var(--danger-color)", color: "#ffffff", padding: "3px 8px", borderRadius: "var(--radius-full)", fontSize: "0.75rem", fontWeight: 700, whiteSpace: "nowrap" }}>
+                          ⚠️ Overdue by {daysOverdue} {daysOverdue === 1 ? "day" : "days"}
+                        </span>
+                      </div>
+                      <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "14px", fontSize: "0.82rem", color: "var(--danger-text)" }}>
+                        <div><strong>Group:</strong> {group?.name || "-"}</div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}><strong>Status:</strong> <StatusBadge status={t.status} stage={t.currentStage} size="sm" /></div>
+                        <div><strong>Advisor:</strong> {t.lecturerUids?.advisor ? getLecturerNameTh(t.lecturerUids.advisor) : "None"}</div>
+                        <div><strong>Deadline:</strong> {new Date(deadline).toLocaleString('th-TH', { day: '2-digit', month: '2-digit', year: 'numeric' })} ({stageName})</div>
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
             </div>
           </div>
         </div>
@@ -596,7 +846,7 @@ export default function AdminDashboard() {
       {/* Field Modal */}
       {activeFieldModal && (
         <div className={styles.modalOverlay} onClick={() => setActiveFieldModal(null)}>
-          <div className={styles.modalContent} onClick={e => e.stopPropagation()} style={{ width: "840px" }}>
+          <div className={styles.modalContent} onClick={e => e.stopPropagation()}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "20px", paddingBottom: "14px", borderBottom: "1px solid var(--border-color)" }}>
               <h2 style={{ margin: 0, fontSize: "1.25rem", color: "var(--text-main)", display: "flex", alignItems: "center", gap: "10px" }}>
                 {selectedFieldThesis ? (
