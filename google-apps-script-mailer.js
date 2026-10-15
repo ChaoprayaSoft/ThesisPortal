@@ -87,3 +87,19 @@ function doPost(e) {
     })).setMimeType(ContentService.MimeType.JSON);
   }
 }
+
+/**
+ * Run this function directly inside Google Apps Script (click ▶️ Run)
+ * to trigger Google's one-time "Review Permissions" authorization prompt for MailApp!
+ */
+function testMail() {
+  const email = Session.getActiveUser().getEmail() || "tiawongsombat@gmail.com";
+  MailApp.sendEmail({
+    to: email,
+    subject: "[ThesisPortal] Authorization Test 🎓",
+    htmlBody: "<p>MailApp permission is granted! Emojis and Thai work: ทดสอบ 🎓🚀</p>",
+    name: "ThesisPortal System"
+  });
+  Logger.log("✅ MailApp permission authorized successfully!");
+}
+
