@@ -54,14 +54,19 @@ async function testGoogleAppsScriptEmail() {
       body: JSON.stringify({
         secret: gasSecret,
         to: targetEmail,
-        subject: "[ThesisPortal] Test Notification Email",
+        subject: "[ThesisPortal] ทดสอบการแจ้งเตือนอีเมล 🎓",
         html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px; color: #1e293b;">
-            <h2 style="color: #2563eb;">ThesisPortal Email Verification</h2>
-            <p>Congratulations! Your Google Apps Script mail dispatcher on <b>tiawongsombat@gmail.com</b> is working properly.</p>
-            <p>Emails from students, lecturers, and the automated reminder engine will now be delivered through your Google account.</p>
+          <div style="font-family: Arial, sans-serif; padding: 20px; color: #1e293b; max-width: 600px; border: 1px solid #e2e8f0; border-radius: 8px;">
+            <h2 style="color: #2563eb; margin-top: 0;">ThesisPortal Email Verification 🎓🚀</h2>
+            <p>ยินดีด้วยครับ! ระบบส่งอีเมลแจ้งเตือนผ่าน <b>Google Apps Script (MailApp)</b> ใช้งานได้สมบูรณ์แล้ว</p>
+            <p>ขณะนี้ระบบสามารถส่งภาษาไทยและอิโมจิได้อย่างถูกต้อง ชัดเจน ทุกแพลตฟอร์ม</p>
+            <ul>
+              <li>ผู้ส่ง: <b>tiawongsombat@gmail.com</b></li>
+              <li>ผู้รับ: <b>${targetEmail}</b></li>
+              <li>สถานะ: <b>พร้อมใช้งานสำหรับ ThesisPortal ✨</b></li>
+            </ul>
             <hr style="border: none; border-top: 1px solid #e2e8f0; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #64748b;">Sent at: ${new Date().toLocaleString()}</p>
+            <p style="font-size: 12px; color: #64748b; margin-bottom: 0;">ส่งเมื่อ: ${new Date().toLocaleString()}</p>
           </div>
         `,
       }),
