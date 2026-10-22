@@ -7,6 +7,7 @@ import { getLecturers, UserData } from "@/lib/db/users";
 import { getGroups, StudentGroup } from "@/lib/db/groups";
 import { createThesis, getAllTheses, deleteThesis, updateThesis, getDisplayStatus, getThesisActivities, logThesisActivity } from "@/lib/db/theses";
 import StatusBadge, { getStatusBadgeConfig } from "@/components/StatusBadge";
+import { FileSpreadsheet } from "lucide-react";
 
 export default function AdminThesisPage() {
   const { user, dbUser } = useAuth();
@@ -84,6 +85,7 @@ export default function AdminThesisPage() {
   const [thesisActivities, setThesisActivities] = useState<any[]>([]);
   const [loadingActivities, setLoadingActivities] = useState(false);
   const [editThesisId, setEditThesisId] = useState<string | null>(null);
+  const [exportingExcel, setExportingExcel] = useState(false);
 
   // Confirmation Modal
   const [confirmAction, setConfirmAction] = useState<{ message: string, onConfirm: () => void } | null>(null);
@@ -236,6 +238,136 @@ export default function AdminThesisPage() {
   const startIndex = (activePage - 1) * itemsPerPage;
   const endIndex = Math.min(startIndex + itemsPerPage, totalItems);
   const paginatedTheses = filteredTheses.slice(startIndex, startIndex + itemsPerPage);
+
+  const handleExportExcel = async () => {
+    if (filteredTheses.length === 0) {
+      setInfoMessage("No thesis data to export for the current filters.");
+      return;
+    }
+
+    setExportingExcel(true);
+    try {
+      const XLSX = await import("xlsx");
+
+      const stageLabels: Record<number, string> = {
+        0: "Stage 0: Advisor Review",
+        1: "Stage 1: Committee Review",
+        2: "Stage 2: Chairperson Review",
+        3: "Stage 3: Sign. Advisor",
+        4: "Stage 4: Sign. Committee",
+        5: "Stage 5: Sign. Chairperson",
+        6: "Stage 6: Graduate"
+      };
+
+      const formatDeadline = (ts?: number | null) => {
+        if (!ts) return "-";
+        return new Date(ts).toLocaleString("th-TH", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      };
+
+      const exportRows = filteredTheses.map((t, index) => {
+        const group = groups.find(g => g.id === t.groupId);
+        const groupName = group?.name || "Unknown Group";
+
+        // Students in the group
+        const studentDetails = (t.studentUids || [])
+          .map((email: string) => {
+            const s = group?.students?.find(st => st.email === email);
+            if (s) {
+              return `${s.studentId ? `[${s.studentId}] ` : ""}${s.name}${s.name_en ? ` (${s.name_en})` : ""}`;
+            }
+            return email;
+          })
+          .join("; ");
+
+        // Advisor
+        const advEmail = t.lecturerUids?.advisor;
+        const adv = lecturers.find(l => l.email === advEmail);
+        const advisorName = adv
+          ? adv.name_th
+            ? `${adv.name_th}${adv.name_en ? ` (${adv.name_en})` : ""}`
+            : (adv.name_en || adv.email)
+          : (advEmail || "-");
+
+        // Committees
+        const committeeNames = (t.lecturerUids?.committees || [])
+          .map((email: string) => {
+            const l = lecturers.find(lec => lec.email === email);
+            return l ? (l.name_th ? `${l.name_th}${l.name_en ? ` (${l.name_en})` : ""}` : (l.name_en || email)) : email;
+          })
+          .join(", ");
+
+        // Chairperson
+        const chair = lecturers.find(l => l.email === t.lecturerUids?.chairperson);
+        const chairName = chair
+          ? chair.name_th
+            ? `${chair.name_th}${chair.name_en ? ` (${chair.name_en})` : ""}`
+            : (chair.name_en || chair.email)
+          : (t.lecturerUids?.chairperson || "-");
+
+        // Equipment Checker
+        const eq = lecturers.find(l => l.email === t.equipmentChecker);
+        const eqName = eq
+          ? eq.name_th
+            ? `${eq.name_th}${eq.name_en ? ` (${eq.name_en})` : ""}`
+            : (eq.name_en || eq.email)
+          : (t.equipmentChecker || "-");
+
+        return {
+          "ลำดับ": index + 1,
+          "ชื่อหัวข้อวิทยานิพนธ์ (Title)": t.title || "-",
+          "กลุ่มโครงงาน (Group)": groupName,
+          "ปีการศึกษา (Year)": t.year || "-",
+          "แขนงวิชา/สาขาวิชา (Field)": t.fieldOfStudy || "-",
+          "อาจารย์ที่ปรึกษา (Advisor)": advisorName,
+          "อีเมลอาจารย์ที่ปรึกษา": advEmail || "-",
+          "กรรมการ (Committees)": committeeNames || "-",
+          "ประธานกรรมการ (Chairperson)": chairName,
+          "ผู้ตรวจสอบอุปกรณ์ (Equipment Checker)": eqName,
+          "นักศึกษาในกลุ่ม (Students)": studentDetails || "-",
+          "ขั้นตอน (Stage)": stageLabels[t.currentStage] || `Stage ${t.currentStage}`,
+          "สถานะปัจจุบัน (Status)": getDisplayStatus(t),
+          "สถานะตรวจสอบอุปกรณ์": t.equipmentCheckStatus || "-",
+          "กำหนดเวลาอาจารย์ที่ปรึกษา": formatDeadline(t.deadlines?.advisor),
+          "กำหนดเวลากรรมการ": formatDeadline(t.deadlines?.committee),
+          "กำหนดเวลาประธาน": formatDeadline(t.deadlines?.chairperson),
+          "หมายเหตุจบการศึกษา": t.graduateComment || "-"
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(exportRows);
+
+      if (exportRows.length > 0) {
+        const colWidths = Object.keys(exportRows[0]).map(key => {
+          const maxLen = Math.max(
+            key.length,
+            ...exportRows.map(row => (row[key as keyof typeof row] ? String(row[key as keyof typeof row]).length : 0))
+          );
+          return { wch: Math.min(Math.max(maxLen + 3, 12), 60) };
+        });
+        worksheet["!cols"] = colWidths;
+      }
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Theses");
+
+      const today = new Date().toISOString().slice(0, 10);
+      const suffix = filterYear ? `_${filterYear}` : "";
+      const fileName = `theses_export${suffix}_${today}.xlsx`;
+
+      XLSX.writeFile(workbook, fileName);
+    } catch (err: any) {
+      console.error("Export error:", err);
+      setInfoMessage("Failed to export Excel file: " + (err?.message || "Unknown error"));
+    } finally {
+      setExportingExcel(false);
+    }
+  };
 
   const handleGraduateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -600,21 +732,48 @@ export default function AdminThesisPage() {
             <h2 style={{ margin: 0 }}>All Theses</h2>
             <p style={{ margin: "4px 0 0", fontSize: "0.875rem", color: "var(--text-muted)" }}>Filter and oversee all departmental thesis projects</p>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-muted)" }}>
-            <span>Show</span>
-            <select
-              value={itemsPerPage}
-              onChange={(e) => {
-                setItemsPerPage(Number(e.target.value));
-                setCurrentPage(1);
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
+            <button
+              type="button"
+              onClick={handleExportExcel}
+              disabled={exportingExcel || filteredTheses.length === 0}
+              className={styles.btnSecondary}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "8px",
+                padding: "7px 14px",
+                fontSize: "0.85rem",
+                fontWeight: 600,
+                borderRadius: "8px",
+                backgroundColor: filteredTheses.length === 0 ? "var(--bg-subtle)" : "#ecfdf5",
+                color: filteredTheses.length === 0 ? "var(--text-muted)" : "#065f46",
+                borderColor: filteredTheses.length === 0 ? "var(--border-color)" : "#10b981",
+                cursor: (exportingExcel || filteredTheses.length === 0) ? "not-allowed" : "pointer",
+                transition: "all 0.18s ease"
               }}
-              style={{ padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", fontWeight: 600, color: "var(--text-main)" }}
+              title={filteredTheses.length === 0 ? "No theses match current filter" : `Export ${filteredTheses.length} filtered theses to Excel`}
             >
-              <option value={10}>10</option>
-              <option value={20}>20</option>
-              <option value={50}>50</option>
-            </select>
-            <span>entries</span>
+              <FileSpreadsheet size={16} color={filteredTheses.length === 0 ? "currentColor" : "#10b981"} />
+              <span>{exportingExcel ? "Exporting..." : `Export Excel (${filteredTheses.length})`}</span>
+            </button>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", fontSize: "0.875rem", color: "var(--text-muted)" }}>
+              <span>Show</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => {
+                  setItemsPerPage(Number(e.target.value));
+                  setCurrentPage(1);
+                }}
+                style={{ padding: "4px 8px", borderRadius: "6px", border: "1px solid var(--border-color)", background: "var(--bg-subtle)", fontWeight: 600, color: "var(--text-main)" }}
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+              <span>entries</span>
+            </div>
           </div>
         </div>
 
@@ -673,18 +832,22 @@ export default function AdminThesisPage() {
               <table className={`${styles.table} ${styles.thesisTable}`}>
                 <thead>
                 <tr>
-                  <th style={{ width: "26%" }}>Title</th>
-                  <th style={{ width: "12%" }}>Group</th>
-                  <th style={{ width: "8%" }}>Year</th>
-                  <th style={{ width: "18%" }}>Field</th>
-                  <th style={{ width: "18%" }}>Status</th>
-                  <th style={{ width: "18%" }}>Actions</th>
+                  <th style={{ width: "23%" }}>Title</th>
+                  <th style={{ width: "11%" }}>Group</th>
+                  <th style={{ width: "6%" }}>Year</th>
+                  <th style={{ width: "14%" }}>Field</th>
+                  <th style={{ width: "16%" }}>ที่ปรึกษา</th>
+                  <th style={{ width: "15%" }}>Status</th>
+                  <th style={{ width: "15%" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {paginatedTheses.map((t) => {
                   const groupName = groups.find(g => g.id === t.groupId)?.name || "Unknown Group";
                   const badgeStyle = getStageBadgeStyle(t.status, t.currentStage);
+                  const advEmail = t.lecturerUids?.advisor;
+                  const adv = lecturers.find(l => l.email === advEmail);
+
                   return (
                     <tr key={t.id}>
                       <td data-label="Title" style={{ wordBreak: "break-word" }}>
@@ -694,6 +857,24 @@ export default function AdminThesisPage() {
                       <td data-label="Group"><span style={{ fontWeight: 500 }}>{groupName}</span></td>
                       <td data-label="Year">{t.year || "-"}</td>
                       <td data-label="Field" style={{ fontSize: "0.85rem", color: "var(--text-muted)" }}>{t.fieldOfStudy || "-"}</td>
+                      <td data-label="ที่ปรึกษา">
+                        {adv ? (
+                          <div>
+                            <div style={{ fontWeight: 600, color: "var(--text-main)", fontSize: "0.875rem" }}>
+                              {adv.name_th || adv.name_en}
+                            </div>
+                            {adv.name_en && adv.name_th && (
+                              <div style={{ fontSize: "0.775rem", color: "var(--text-muted)", marginTop: "2px" }}>
+                                {adv.name_en}
+                              </div>
+                            )}
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: "0.85rem", color: advEmail ? "var(--text-main)" : "var(--text-muted)" }}>
+                            {advEmail || "-"}
+                          </span>
+                        )}
+                      </td>
                       <td data-label="Status">
                         <StatusBadge
                           status={t.status}
