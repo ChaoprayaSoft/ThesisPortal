@@ -23,6 +23,7 @@ export async function sendNotificationEmail({ to, subject, html }: { to: string,
           html,
         }),
         redirect: "follow",
+        signal: AbortSignal.timeout(8000),
       });
 
       const rawText = await response.text();

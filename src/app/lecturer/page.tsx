@@ -243,12 +243,18 @@ export default function LecturerDashboard() {
             description: "Lecturer approved equipment check."
           });
           if (activeWorkspace.thesis.studentUids?.length > 0) {
-            for (const sEmail of activeWorkspace.thesis.studentUids) {
-              await sendNotificationEmail({
-                to: sEmail,
-                subject: `Equipment Check Approved`,
-                html: `<p>Your equipment check for <b>${activeWorkspace.thesis.title}</b> has been approved.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to continue submitting your materials.</p>`
-              });
+            try {
+              await Promise.allSettled(
+                activeWorkspace.thesis.studentUids.map(sEmail =>
+                  sendNotificationEmail({
+                    to: sEmail,
+                    subject: `Equipment Check Approved`,
+                    html: `<p>Your equipment check for <b>${activeWorkspace.thesis.title}</b> has been approved.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to continue submitting your materials.</p>`
+                  })
+                )
+              );
+            } catch (e) {
+              console.error("Failed to send equipment check approved emails:", e);
             }
           }
         } else {
@@ -265,12 +271,18 @@ export default function LecturerDashboard() {
           });
 
           if (activeWorkspace.thesis.studentUids?.length > 0) {
-            for (const sEmail of activeWorkspace.thesis.studentUids) {
-              await sendNotificationEmail({
-                to: sEmail,
-                subject: `Thesis Approved by ${activeWorkspace.role}`,
-                html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> has been approved by your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}).</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to view the updated status.</p>`
-              });
+            try {
+              await Promise.allSettled(
+                activeWorkspace.thesis.studentUids.map(sEmail =>
+                  sendNotificationEmail({
+                    to: sEmail,
+                    subject: `Thesis Approved by ${activeWorkspace.role}`,
+                    html: `<p>Your thesis <b>${activeWorkspace.thesis.title}</b> has been approved by your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}).</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to view the updated status.</p>`
+                  })
+                )
+              );
+            } catch (e) {
+              console.error("Failed to send thesis approved emails:", e);
             }
           }
         }
@@ -287,12 +299,18 @@ export default function LecturerDashboard() {
             description: reviewComments.trim() ? `Equipment check was rejected.\n\nReason: ${reviewComments.trim()}` : "Equipment check was rejected."
           });
           if (activeWorkspace.thesis.studentUids?.length > 0) {
-            for (const sEmail of activeWorkspace.thesis.studentUids) {
-              await sendNotificationEmail({
-                to: sEmail,
-                subject: `Equipment Check Rejected: ${activeWorkspace.thesis.title}`,
-                html: `<p>Your equipment check request for <b>${activeWorkspace.thesis.title}</b> was rejected by your Equipment Checker (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}).</p>${reviewComments.trim() ? `<p><b>Reason:</b><br/>${reviewComments.trim().replace(/\n/g, '<br/>')}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to re-request after resolving any issues.</p>`
-              });
+            try {
+              await Promise.allSettled(
+                activeWorkspace.thesis.studentUids.map(sEmail =>
+                  sendNotificationEmail({
+                    to: sEmail,
+                    subject: `Equipment Check Rejected: ${activeWorkspace.thesis.title}`,
+                    html: `<p>Your equipment check request for <b>${activeWorkspace.thesis.title}</b> was rejected by your Equipment Checker (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}).</p>${reviewComments.trim() ? `<p><b>Reason:</b><br/>${reviewComments.trim().replace(/\n/g, '<br/>')}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to re-request after resolving any issues.</p>`
+                  })
+                )
+              );
+            } catch (e) {
+              console.error("Failed to send equipment check rejected emails:", e);
             }
           }
         } else {
@@ -310,12 +328,18 @@ export default function LecturerDashboard() {
 
           if (activeWorkspace.thesis.studentUids?.length > 0) {
             const linksHtml = validLinks.length > 0 ? `<p><b>Feedback & Marked-up Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
-            for (const sEmail of activeWorkspace.thesis.studentUids) {
-              await sendNotificationEmail({
-                to: sEmail,
-                subject: `Revision Requested for: ${activeWorkspace.thesis.title}`,
-                html: `<p>Your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}) has requested revisions for <b>${activeWorkspace.thesis.title}</b>.</p><p><b>Comments:</b> ${reviewComments || "Please review attached notes."}</p>${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to upload your revisions.</p>`
-              });
+            try {
+              await Promise.allSettled(
+                activeWorkspace.thesis.studentUids.map(sEmail =>
+                  sendNotificationEmail({
+                    to: sEmail,
+                    subject: `Revision Requested for: ${activeWorkspace.thesis.title}`,
+                    html: `<p>Your ${activeWorkspace.role} (${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}) has requested revisions for <b>${activeWorkspace.thesis.title}</b>.</p><p><b>Comments:</b> ${reviewComments || "Please review attached notes."}</p>${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to upload your revisions.</p>`
+                  })
+                )
+              );
+            } catch (e) {
+              console.error("Failed to send revision requested emails:", e);
             }
           }
         }
@@ -388,12 +412,18 @@ export default function LecturerDashboard() {
       });
 
       if (topicReviewThesis.studentUids?.length > 0) {
-        for (const sEmail of topicReviewThesis.studentUids) {
-          await sendNotificationEmail({
-            to: sEmail,
-            subject: `Abstract & Scope Edits Approved: ${topicReviewThesis.title}`,
-            html: `<p>Your proposed Abstract & Scope edits for <b>${topicReviewThesis.title}</b> have been approved by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
-          });
+        try {
+          await Promise.allSettled(
+            topicReviewThesis.studentUids.map(sEmail =>
+              sendNotificationEmail({
+                to: sEmail,
+                subject: `Abstract & Scope Edits Approved: ${topicReviewThesis.title}`,
+                html: `<p>Your proposed Abstract & Scope edits for <b>${topicReviewThesis.title}</b> have been approved by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
+              })
+            )
+          );
+        } catch (e) {
+          console.error("Failed to send topic edits approved emails:", e);
         }
       }
       setTopicReviewThesis(null);
@@ -420,12 +450,18 @@ export default function LecturerDashboard() {
       });
 
       if (topicReviewThesis.studentUids?.length > 0) {
-        for (const sEmail of topicReviewThesis.studentUids) {
-          await sendNotificationEmail({
-            to: sEmail,
-            subject: `Abstract & Scope Edits Rejected: ${topicReviewThesis.title}`,
-            html: `<p>Your proposed Abstract & Scope edits for <b>${topicReviewThesis.title}</b> have been rejected by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to review.</p>`
-          });
+        try {
+          await Promise.allSettled(
+            topicReviewThesis.studentUids.map(sEmail =>
+              sendNotificationEmail({
+                to: sEmail,
+                subject: `Abstract & Scope Edits Rejected: ${topicReviewThesis.title}`,
+                html: `<p>Your proposed Abstract & Scope edits for <b>${topicReviewThesis.title}</b> have been rejected by your Advisor.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to review.</p>`
+              })
+            )
+          );
+        } catch (e) {
+          console.error("Failed to send topic edits rejected emails:", e);
         }
       }
       setTopicReviewThesis(null);

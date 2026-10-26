@@ -193,11 +193,15 @@ export default function StudentDashboard() {
       await loadData();
 
       if (thesis.lecturerUids?.advisor) {
-        await sendNotificationEmail({
-          to: thesis.lecturerUids.advisor,
-          subject: `Thesis Edits Proposed: ${thesis.title}`,
-          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has proposed edits for the thesis <b>${thesis.title}</b>.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to review them.</p>`
-        });
+        try {
+          await sendNotificationEmail({
+            to: thesis.lecturerUids.advisor,
+            subject: `Thesis Edits Proposed: ${thesis.title}`,
+            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has proposed edits for the thesis <b>${thesis.title}</b>.</p><p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to review them.</p>`
+          });
+        } catch (e) {
+          console.error("Failed to send topic edit email:", e);
+        }
       }
     } catch (error) {
       alert("Failed to submit edits.");
@@ -255,26 +259,32 @@ export default function StudentDashboard() {
 
         const linksHtml = validLinks.length > 0 ? `<p><b>Attachments:</b></p><ul>${validLinks.map(l => `<li><a href="${l.url}">${l.type}</a></li>`).join('')}</ul>` : "";
 
-        if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
-          await sendNotificationEmail({
-            to: thesis.lecturerUids.advisor,
-            subject: `Thesis Materials Submitted: ${thesis.title}`,
-            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your review/signature.</p>${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
-          });
-        } else if ((thesis.currentStage === 1 || thesis.currentStage === 4) && thesis.lecturerUids?.committees) {
-          for (const comm of thesis.lecturerUids.committees) {
+        try {
+          if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
             await sendNotificationEmail({
-              to: comm,
+              to: thesis.lecturerUids.advisor,
+              subject: `Thesis Materials Submitted: ${thesis.title}`,
+              html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b> and it is now pending your review/signature.</p>${linksHtml}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
+            });
+          } else if ((thesis.currentStage === 1 || thesis.currentStage === 4) && thesis.lecturerUids?.committees) {
+            await Promise.allSettled(
+              thesis.lecturerUids.committees.map(comm =>
+                sendNotificationEmail({
+                  to: comm,
+                  subject: `Thesis Materials Updated: ${thesis.title}`,
+                  html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
+                })
+              )
+            );
+          } else if ((thesis.currentStage === 2 || thesis.currentStage === 5) && thesis.lecturerUids?.chairperson) {
+            await sendNotificationEmail({
+              to: thesis.lecturerUids.chairperson,
               subject: `Thesis Materials Updated: ${thesis.title}`,
               html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
             });
           }
-        } else if ((thesis.currentStage === 2 || thesis.currentStage === 5) && thesis.lecturerUids?.chairperson) {
-          await sendNotificationEmail({
-            to: thesis.lecturerUids.chairperson,
-            subject: `Thesis Materials Updated: ${thesis.title}`,
-            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has submitted materials for <b>${thesis.title}</b>.</p>${linksHtml}<p>It is currently pending your review/signature. Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a>.</p>`
-          });
+        } catch (e) {
+          console.error("Failed to send submission notification emails:", e);
         }
       }
 
@@ -305,11 +315,15 @@ export default function StudentDashboard() {
         description: `Student requested equipment check for project "${thesis.title}" (Advisor: ${advisorName}).${equipmentCheckMessage.trim() ? `\n\nMessage: ${equipmentCheckMessage.trim()}` : ""}`
       });
       if (thesis.equipmentChecker) {
-        await sendNotificationEmail({
-          to: thesis.equipmentChecker,
-          subject: `Equipment Check Request: ${thesis.title}`,
-          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has requested an equipment check for the thesis: <b>${thesis.title}</b>.</p>${equipmentCheckMessage.trim() ? `<p><b>Message:</b><br/>${equipmentCheckMessage.trim().replace(/\n/g, '<br/>')}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to review the request.</p>`
-        });
+        try {
+          await sendNotificationEmail({
+            to: thesis.equipmentChecker,
+            subject: `Equipment Check Request: ${thesis.title}`,
+            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has requested an equipment check for the thesis: <b>${thesis.title}</b>.</p>${equipmentCheckMessage.trim() ? `<p><b>Message:</b><br/>${equipmentCheckMessage.trim().replace(/\n/g, '<br/>')}</p>` : ""}<p>Please <a href="https://thesis-portal-roan.vercel.app/?openExternalBrowser=1">log in to the Thesis Portal</a> to review the request.</p>`
+          });
+        } catch (e) {
+          console.error("Failed to send equipment check email:", e);
+        }
       }
       setShowEquipmentCheckModal(false);
       setEquipmentCheckMessage("");
@@ -338,32 +352,45 @@ export default function StudentDashboard() {
       const revertStatus = activity.type === "Initial Submission" ? "Preparing" : "Revise";
       await updateThesis(thesis.id, { status: revertStatus, statusUpdatedAt: Date.now() });
 
-      await sendNotificationEmail({
-        to: user.email,
-        subject: `Submission Cancelled: ${thesis.title}`,
-        html: `<p>You have successfully cancelled your recent submission for <b>${thesis.title}</b>.</p><p>You can make a new submission when ready.</p>`
-      });
-
-      if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
-        await sendNotificationEmail({
-          to: thesis.lecturerUids.advisor,
-          subject: `Submission Cancelled: ${thesis.title}`,
-          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
-        });
-      } else if ((thesis.currentStage === 1 || thesis.currentStage === 4) && thesis.lecturerUids?.committees) {
-        for (const comm of thesis.lecturerUids.committees) {
-          await sendNotificationEmail({
-            to: comm,
+      try {
+        const cancelPromises: Promise<any>[] = [
+          sendNotificationEmail({
+            to: user.email,
             subject: `Submission Cancelled: ${thesis.title}`,
-            html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
-          });
+            html: `<p>You have successfully cancelled your recent submission for <b>${thesis.title}</b>.</p><p>You can make a new submission when ready.</p>`
+          })
+        ];
+
+        if ((thesis.currentStage === 0 || thesis.currentStage === 3) && thesis.lecturerUids?.advisor) {
+          cancelPromises.push(
+            sendNotificationEmail({
+              to: thesis.lecturerUids.advisor,
+              subject: `Submission Cancelled: ${thesis.title}`,
+              html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
+            })
+          );
+        } else if ((thesis.currentStage === 1 || thesis.currentStage === 4) && thesis.lecturerUids?.committees) {
+          for (const comm of thesis.lecturerUids.committees) {
+            cancelPromises.push(
+              sendNotificationEmail({
+                to: comm,
+                subject: `Submission Cancelled: ${thesis.title}`,
+                html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
+              })
+            );
+          }
+        } else if ((thesis.currentStage === 2 || thesis.currentStage === 5) && thesis.lecturerUids?.chairperson) {
+          cancelPromises.push(
+            sendNotificationEmail({
+              to: thesis.lecturerUids.chairperson,
+              subject: `Submission Cancelled: ${thesis.title}`,
+              html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
+            })
+          );
         }
-      } else if ((thesis.currentStage === 2 || thesis.currentStage === 5) && thesis.lecturerUids?.chairperson) {
-        await sendNotificationEmail({
-          to: thesis.lecturerUids.chairperson,
-          subject: `Submission Cancelled: ${thesis.title}`,
-          html: `<p>Student <b>${dbUser?.name_th || dbUser?.name_en || user.displayName || user.email}</b> has cancelled their recent submission for <b>${thesis.title}</b>.</p>`
-        });
+        await Promise.allSettled(cancelPromises);
+      } catch (e) {
+        console.error("Failed to send cancellation emails:", e);
       }
 
       await loadData();
