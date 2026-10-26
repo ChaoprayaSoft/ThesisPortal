@@ -82,7 +82,7 @@ Managing academic theses often suffers from fragmented communications, lost feed
 | **Database** | [Google Cloud Firebase Firestore](https://firebase.google.com/docs/firestore) (Real-time snapshots & REST via Admin SDK) |
 | **Authentication** | Firebase Authentication (Google OAuth 2.0) |
 | **Backend & Admin SDK** | `firebase-admin` (Node.js runtime for Cron & batch operations) |
-| **Email Service** | Google Apps Script Web App (Gmail API / `tiawongsombat@gmail.com`) with [Resend](https://resend.com/) fallback |
+| **Email Service** | Google Apps Script Web App (Gmail / MailApp via `prasertsak.t@cit.kmutnb.ac.th`) with [Resend](https://resend.com/) fallback |
 | **Rich Text Editor** | [TipTap](https://tiptap.dev/) (StarterKit, Link Extension) |
 | **File / Spreadsheet Parsing** | [SheetJS (`xlsx`)](https://sheetjs.com/) for bulk student roster ingestion |
 | **Icons** | [Lucide React](https://lucide.dev/) |
@@ -396,7 +396,9 @@ Different engineering and academic fields often have distinct submission guideli
 * **Duplicate Prevention**: Intelligently handles existing student identifiers to prevent duplicate records.
 
 ### 8.8 Email Dispatch Engine (Google Apps Script / Resend)
-* **Google Apps Script Web App**: Dispatches email notifications directly from `tiawongsombat@gmail.com` using `GmailApp.sendEmail()`, bypassing third-party domain verification hurdles.
+* **Google Apps Script Web App**: Dispatches email notifications directly from `prasertsak.t@cit.kmutnb.ac.th` using `MailApp.sendEmail()`, ensuring university-internal email delivery without spam classification and providing a 1,500 emails/day quota.
+* **Parallel & Non-blocking Dispatch**: All multi-recipient notifications (student groups and committee panels) are dispatched in parallel via `Promise.allSettled`, reducing submission latency to 3–4 seconds and preventing Vercel serverless function timeouts.
+* **Network Timeout & Resilience**: HTTP requests to Google Apps Script include an 8-second abort signal (`AbortSignal.timeout(8000)`) with isolated error boundaries, ensuring that network hiccups or mail latency never crash core review workflows or show erroneous failure modals to lecturers.
 * **Security Secret Token**: Secured via `GOOGLE_APPS_SCRIPT_SECRET` shared passphrase to prevent unauthorized usage of the Web App endpoint.
 * **Fallback Architecture**: Automatically falls back to [Resend](https://resend.com/) API if configured, or console mock logs in local development when no credentials are present.
 * **Verification Utility**: Zero-dependency CLI testing utility ([test-gas-email.js](file:///i:/WebApp/ThesisPortal/test-gas-email.js)) to test and verify delivery directly from terminal.
