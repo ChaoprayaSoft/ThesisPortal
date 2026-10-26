@@ -61,7 +61,7 @@ async function testGoogleAppsScriptEmail() {
             <p>ยินดีด้วยครับ! ระบบส่งอีเมลแจ้งเตือนผ่าน <b>Google Apps Script (MailApp)</b> ใช้งานได้สมบูรณ์แล้ว</p>
             <p>ขณะนี้ระบบสามารถส่งภาษาไทยและอิโมจิได้อย่างถูกต้อง ชัดเจน ทุกแพลตฟอร์ม</p>
             <ul>
-              <li>ผู้ส่ง: <b>tiawongsombat@gmail.com</b></li>
+              <li>ผู้ส่ง: <b>Google Apps Script Web App</b></li>
               <li>ผู้รับ: <b>${targetEmail}</b></li>
               <li>สถานะ: <b>พร้อมใช้งานสำหรับ ThesisPortal ✨</b></li>
             </ul>

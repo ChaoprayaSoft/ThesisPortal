@@ -2,13 +2,13 @@
  * Google Apps Script - ThesisPortal Email Dispatcher
  *
  * Instructions:
- * 1. Go to https://script.google.com/ and create a New Project using tiawongsombat@gmail.com
+ * 1. Go to https://script.google.com/ and create a New Project using prasertsak.t@cit.kmutnb.ac.th
  * 2. Replace the contents of Code.gs with this file
  * 3. Change API_SECRET below to your own secret passphrase (matching GOOGLE_APPS_SCRIPT_SECRET in .env.local)
  * 4. Click "Deploy" > "New deployment"
  *    - Type: "Web app"
  *    - Description: "ThesisPortal Email Dispatcher"
- *    - Execute as: "Me (tiawongsombat@gmail.com)"
+ *    - Execute as: "Me (prasertsak.t@cit.kmutnb.ac.th)"
  *    - Who has access: "Anyone"
  * 5. Click "Deploy", authorize Google permissions.
  * 6. Copy the "Web app URL" (ends in /exec) and paste it into GOOGLE_APPS_SCRIPT_URL in your .env.local and Vercel.
@@ -23,7 +23,7 @@ const API_SECRET = "thesisportal";
 function doGet(e) {
   return ContentService.createTextOutput(JSON.stringify({
     status: "ok",
-    message: "ThesisPortal Mailer Web App is running active on tiawongsombat@gmail.com!",
+    message: "ThesisPortal Mailer Web App is running active on prasertsak.t@cit.kmutnb.ac.th!",
     timestamp: new Date().toISOString()
   })).setMimeType(ContentService.MimeType.JSON);
 }
@@ -93,7 +93,7 @@ function doPost(e) {
  * to trigger Google's one-time "Review Permissions" authorization prompt for MailApp!
  */
 function testMail() {
-  const email = Session.getActiveUser().getEmail() || "tiawongsombat@gmail.com";
+  const email = Session.getActiveUser().getEmail() || "prasertsak.t@cit.kmutnb.ac.th";
   MailApp.sendEmail({
     to: email,
     subject: "[ThesisPortal] Authorization Test 🎓",
